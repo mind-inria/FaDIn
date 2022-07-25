@@ -1,111 +1,119 @@
 import numba
 import numpy as np
 
-def shift(x, shift):
-    p = np.roll(x, shift=shift)
-    p[:shift] = 0.
-    return p
 
-#@numba.jit(nopython=True, cache=True)
-def compute_un_(events, size_discret):
-    """events: list of array of size G
-    constant_un: list of array of size size_discret"""
+@numba.jit(nopython=True, cache=True)
+def get_zG(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    zG.shape =  n_dim, n_discrete
+    """
+    n_dim, _ = events.shape
 
-    constant_un = []
-    n_dim = len(events)
-    
+    zG = np.zeros(shape=(n_dim, n_discrete))
     for i in range(n_dim):
-
-        n_events_i = events[i].sum()
-        sum_shift = np.zeros(size_discret) + n_events_i
-
-        #Compute cumsum at the end of the vector of timestamps of size L
+        ei = events[i]
+        n_ei = ei.sum()
+        zG[i] = n_ei
+        # Compute cumsum at the end of the vector of timestamps of size L
         # tau = 0:L-1
-        sum_shift[1:] -= np.cumsum(np.flip(events[i][-size_discret+1:]))
+        zG[i, 1:] -= np.cumsum(np.flip(ei[-n_discrete + 1:]))
 
-        constant_un.append(sum_shift)
-    
-    return constant_un
+    return zG
 
-#lent, à optimiser:
-def compute_un_prime_(events, size_discret):
-    """events: list of tensor of size G
-    constant_un: list of tensor of taille size_discret"""
 
-    constant_un_prime = []
-    n_dim = len(events)
+@numba.jit(nopython=True, cache=True)
+def get_zN(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    zN.shape = n_dim, n_dim, n_discrete
+    """
+    n_dim, _ = events.shape
 
+    zN = np.zeros(shape=(n_dim, n_dim, n_discrete))
     for i in range(n_dim):
-
-        timestamps = np.where(events[i] > 0)[0]
-        sum_shift = np.zeros(size_discret)
-        sum_shift[0] = events[i].sum()
-
-        for tau in range(1, size_discret):
-
-            shifted_events = shift(events[i], tau)
-            sum_shift[tau] = shifted_events[timestamps].sum()
-
-
-            
-        constant_un_prime.append(sum_shift)
-  
-    return constant_un_prime
-
-#numba ralentit le code
-#@numba.jit((numba.float32[:, :], numba.int64), nopython=True, cache=True)
-def compute_deux_(events, size_discret):
-    """events: list of tensor of size G
-    constant_udeux: list of tensor of taille size_discret"""
-    
-    n_dim = len(events)
-    constant_deux = np.zeros((n_dim, n_dim, size_discret, size_discret))
-
-    for i in range(n_dim):
+        ei = events[i]
         for j in range(n_dim):
-            for tau in range(size_discret):
-                for tau_p in range(tau+1):
+            ej = events[j]
+            zN[i, j, 0] = ej @ ei #useless in the solver since kernel[i,j, 0] = 0.
+            for tau in range(1, n_discrete):
+                zN[i, j, tau] = ej[:-tau] @ ei[tau:]
+
+    return zN
+
+
+@numba.jit(nopython=True, cache=True)
+def _get_ztzG(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    """
+    n_dim, _ = events.shape
+
+    ztzG = np.zeros(shape=(n_dim, n_dim,
+                           n_discrete,
+                           n_discrete))
+    for i in range(n_dim):
+        ei = events[i]
+        for j in range(n_dim):
+            ej = events[j]
+            for tau in range(n_discrete):
+                for tau_p in range(tau + 1):
                     if tau_p == 0:
                         if tau == 0:
-                            constant_deux[i, j, tau, tau_p] = (
-                            events[i]  * events[j]).sum()                                   
+                            ztzG[i, j, tau, tau_p] = ei @ ej
                         else:
-                            constant_deux[i, j, tau, tau_p] = (
-                            events[i][:-tau]  * events[j][tau:]).sum()
-                    else:                       
+                            ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
+                    else:
                         diff = tau - tau_p
-                        constant_deux[i, j, tau, tau_p] = (
-                        events[i][:-tau]  * events[j][diff:-tau_p]).sum()
-    return constant_deux
+                        ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
 
+    return ztzG
 
-def compute_trois_(events, size_discret):
-    constant_trois = []
+def get_ztzG(events, n_discrete):
+    ztzG = _get_ztzG(events, n_discrete)
+    idx = np.arange(n_discrete)
+    ztzG_nodiag = ztzG.copy()
+    ztzG_nodiag[:, :, idx, idx] = 0.
+    ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
 
-    constant_un = compute_un_(events, size_discret)
+    return ztzG_
 
-    n_dim = len(events)
+def get_zLG(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    zG.shape = n_dim, n_discrete
+    zLG.shape = n_dim
+    """
+    n_dim, _ = events.shape
 
+    zLG = np.zeros(n_dim)
+    zG = get_zG(events, n_discrete)
     for i in range(n_dim):
-        constant_trois.append(constant_un[i].sum())
+        zLG[i] = zG[i].sum()
 
-    return constant_trois
+    return zLG
 
-def compute_trois_prime_(events, size_discret):
-    constant_trois_prime = []
 
-    constant_un = compute_un_prime_(events, size_discret)
+def get_zLN(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    zN.shape = n_dim, n_dim, n_discrete
+    zLN.shape = n_dim, n_dim
+    """
+    zN = get_zN(events, n_discrete)
+    zLN = zN.sum(2)
 
-    n_dim = len(events)
+    return zLN
 
-    for i in range(n_dim):
-        constant_trois_prime.append(constant_un[i].sum())
 
-    return constant_trois_prime
+def get_zLtzG(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    zLtzG.shape = n_dim, n_dim, n_discrete
+    """
+    ztzG = get_ztzG(events, n_discrete)
+    zLtzG = ztzG.sum(3)
 
-def compute_quatre_(events, size_discret):
-
-    constant_deux = compute_deux_(events, size_discret)
-    constant_quatre = constant_deux.sum(3)
-
-    return constant_quatre
+    return zLtzG

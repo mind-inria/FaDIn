@@ -1,4 +1,4 @@
-#import numpy as np
+import numpy as np
 import torch
 import torch.optim as optim
 import hawkes_discret.kernels as kernels
@@ -57,3 +57,9 @@ def init_kernel(kernel_params, upper, discret_step,  kernel_name='KernelExpDiscr
                                                 upper, 
                                                 discret_step)
     return kernel_model
+
+
+def shift(x, shift):
+    p = np.roll(x, shifts=shift)
+    p[:shift] = 0.
+    return p
