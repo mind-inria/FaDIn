@@ -3,19 +3,21 @@ import torch
 import torch.optim as optim
 import hawkes_discret.kernels as kernels
 
+
 def projected_grid(events, grid_step, size_grid):
-    dim = len(events)
+    n_dim = len(events)
     size_discret = 1 / grid_step
-    projected_timestamps = []
 
-    timestamps_loc = torch.zeros(dim, size_grid)
+    timestamps_loc = torch.zeros(n_dim, size_grid)
+    for i in range(n_dim):
+        ei_torch = torch.tensor(events[i])
+        temp = torch.round(ei_torch/grid_step) * grid_step
+        temp2 = torch.round(temp * size_discret).long()
+        for j in range(ei_torch.shape[0]):
+            timestamps_loc[i, temp2[j]] += 1.
 
-    for i in range(dim):
-        temp = torch.round(events[i]/grid_step) * grid_step      
-        timestamps_loc[i, torch.round(temp * size_discret).long()] = 1.     
-        projected_timestamps.append(temp)
+    return timestamps_loc
 
-    return projected_timestamps, timestamps_loc
 
 def optimizer(param, lr, solver='GD'):
     """
@@ -49,12 +51,12 @@ def optimizer(param, lr, solver='GD'):
             f"solver must be 'GD', 'RMSProp', 'Adam', 'LBFGS' or 'CG',"
             " got '{solver}'"
         )
-    
-def init_kernel(kernel_params, upper, discret_step,  kernel_name='KernelExpDiscret'):
+
+
+def init_kernel(upper, discret_step,  kernel_name='KernelExpDiscret'):
 
     if kernel_name == 'KernelExpDiscret':
-        kernel_model = kernels.KernelExpDiscret(kernel_params, 
-                                                upper, 
+        kernel_model = kernels.KernelExpDiscret(upper,
                                                 discret_step)
     return kernel_model
 

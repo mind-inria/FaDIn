@@ -19,7 +19,7 @@ def test_zG():
     kernel = rng.randn(n_discrete)
     events = rng.randn(n_grid)
 
-    zG = get_zG(events.reshape(1, n_grid), n_discrete)
+    zG, _ = get_zG(events.reshape(1, n_grid), n_discrete)
     kzG = zG @ kernel
     kzG_conv = torch.conv_transpose1d(
         torch.tensor(events).view(
@@ -43,7 +43,7 @@ def test_zN():
     kernel = rng.randn(n_discrete)
     events = rng.randn(n_grid)
 
-    zN = get_zN(events.reshape(1, n_grid), n_discrete)
+    zN, _ = get_zN(events.reshape(1, n_grid), n_discrete)
     kzN = zN @ kernel
 
     kzN_conv = torch.conv_transpose1d(
@@ -70,7 +70,7 @@ def test_ztzG():
     kernel2 = rng.randn(n_discrete)
     events = rng.randn(n_grid)
 
-    ztzG = get_ztzG(events.reshape(1, n_grid), n_discrete)
+    ztzG, _ = get_ztzG(events.reshape(1, n_grid), n_discrete)
 
     K = np.outer(kernel1, kernel2)
     K_ztzG = K * ztzG
