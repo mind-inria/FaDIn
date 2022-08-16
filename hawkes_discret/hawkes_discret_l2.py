@@ -87,6 +87,7 @@ class HawkesDiscretL2(object):
         ####################################################
         self.intensity = torch.zeros(self.max_iter, 2, size_grid)
         for i in range(self.max_iter):
+            print(f"Fitting model... {i/self.max_iter:6.1%}\r", end='', flush=True)
             self.opt.zero_grad()
 
             # Optim conv discrete
@@ -112,7 +113,7 @@ class HawkesDiscretL2(object):
                                               self.params_optim[1],
                                               kernel, n_events,
                                               self.discrete_step,
-                                              end_time)
+                                              end_time).detach()
 
             self.params_optim[0].grad = get_grad_mu(zG,
                                                     self.params_optim[0],
