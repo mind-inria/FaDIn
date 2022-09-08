@@ -47,6 +47,7 @@ def get_zG(events, n_discrete):
     """
     events.shape = n_dim, n_grid
     zG.shape =  n_dim, n_discrete
+    zLG.shape = n_dim
     """
     n_dim, _ = events.shape
 
@@ -69,6 +70,7 @@ def get_zN(events, n_discrete):
     """
     events.shape = n_dim, n_grid
     zN.shape = n_dim, n_dim, n_discrete
+    zLN.shape = n_dim, n_dim
     """
     n_dim, _ = events.shape
 
@@ -80,8 +82,9 @@ def get_zN(events, n_discrete):
             zN[i, j, 0] = ej @ ei #useless in the solver since kernel[i,j, 0] = 0.
             for tau in range(1, n_discrete):
                 zN[i, j, tau] = ej[:-tau] @ ei[tau:]
+    zLN = zN.sum(2)
 
-    return zN, zN.sum(2)
+    return zN, zLN
 
 
 @numba.jit(nopython=True, cache=True)
@@ -99,7 +102,11 @@ def _get_ztzG(events, n_discrete):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
+            #eij = ei * ej
+            #eij_sum = eij[n_discrete:-n_discrete].sum()            
             for tau in range(n_discrete):
+                #for tau_p in range(n_discrete):
+                #    ztzG[i, j, tau, tau_p] = eij_sum + eij[-n_discrete:(n_ei-tau)] + eij[-tau_p:]
                 for tau_p in range(tau + 1):
                     if tau_p == 0:
                         if tau == 0:
@@ -113,13 +120,19 @@ def _get_ztzG(events, n_discrete):
     return ztzG
 
 def get_ztzG(events, n_discrete):
+    """
+    events.shape = n_dim, n_grid
+    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    zLtzG.shape = n_dim, n_dim, n_discrete
+    """
     ztzG = _get_ztzG(events, n_discrete)
     idx = np.arange(n_discrete)
     ztzG_nodiag = ztzG.copy()
     ztzG_nodiag[:, :, idx, idx] = 0.
     ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
+    zLtzG = ztzG_.sum(3)
 
-    return ztzG_, ztzG_.sum(3)
+    return ztzG_, zLtzG
 
 def get_zLG(events, n_discrete):
     """
