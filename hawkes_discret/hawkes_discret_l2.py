@@ -192,5 +192,14 @@ class HawkesDiscretL2(object):
             self.params_optim[2].clip(0)
             self.params_optim[3].clip(0)
         print('iterations in ', time.time()-start)
-        return [v_loss, grad_baseline, grad_adjacency, grad_u_v, grad_sigma_v,
-                param_baseline, param_adjacency, param_u, param_sigma]
+        return dict(
+            v_loss=v_loss,
+            grad_baseline=grad_baseline,
+            grad_adjacency=grad_adjacency,
+            grad_u_v=grad_u_v,
+            grad_sigma_v=grad_sigma_v,
+            param_baseline=param_baseline,
+            param_adjacency=param_adjacency,
+            param_u=param_u,
+            param_sigma=param_sigma
+        )
