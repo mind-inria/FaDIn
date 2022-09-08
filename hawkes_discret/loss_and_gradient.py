@@ -97,19 +97,20 @@ def term3(ztzG, adjacency, kernel):
     adjacency : tensor, shape (n_dim)
     kernel : tensor, shape (n_dim, n_dim, n_discrete)
     """
-    n_dim, _, n_discrete = kernel.shape
+    n_dim, _, L = kernel.shape
 
     res = 0
     for i in range(n_dim):
         for k in range(n_dim):
             for j in range(n_dim):
                 temp = adjacency[i, j] * adjacency[i, k]
-                temp2 = 0
-                for tau in range(n_discrete):
-                    for tau_p in range(n_discrete):
-                        temp2 += (kernel[i, j, tau] * kernel[i,
-                                  k, tau_p]) * ztzG[j, k, tau, tau_p]
-                res += temp * temp2
+                #temp2 = kernel[i, j].view(1, L) * (ztzG[j, k] * kernel[i, k].view(L, 1)).sum(0)
+                temp2 = kernel[i, k].view(1, L) * (ztzG[j, k] * kernel[i, j].view(L, 1)).sum(0)
+                #for tau in range(n_discrete):
+                #    for tau_p in range(n_discrete):
+                #        temp2 += (kernel[i, j, tau] * kernel[i,
+                #                  k, tau_p]) * ztzG[j, k, tau, tau_p]
+                res += temp * temp2.sum()
 
     return res
 
@@ -213,12 +214,13 @@ def get_grad_theta(zG, zN, ztzG,  baseline,
             for k in range(n_dim):
                 cst2 = adjacency[m, l] * adjacency[m, k]
                 temp_ = 0
-                for tau in range(L):
-                    for taup in range(L):
-                        temp_ += (grad_kernel[m, l, tau]
-                                  * kernel[m, k, taup]
-                                  * ztzG[l, k, tau, taup])
-                temp += cst2 * temp_
+                temp_ = kernel[m, k].view(1, L) * (ztzG[l, k] * grad_kernel[m, l].view(L, 1)).sum(0)
+                #for tau in range(L):
+                #    for taup in range(L):
+                #        temp_ += (grad_kernel[m, l, tau]
+                #                  * kernel[m, k, taup]
+                #                  * ztzG[l, k, tau, taup])
+                temp += cst2 * temp_.sum()
 
             grad_theta[m, l] += 2 * delta * temp
 
