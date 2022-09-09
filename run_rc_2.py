@@ -6,6 +6,7 @@ import time
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import matplotlib
 from joblib import Memory, Parallel, delayed
 
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
@@ -68,7 +69,7 @@ events = simulate_data(baseline, alpha, mu, sigma, T, dt)
 @mem.cache
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
-    max_iter = 1000
+    max_iter = 2000
     solver = HawkesDiscretL2(
         "RaisedCosine",
         torch.tensor(u_init),
@@ -87,14 +88,16 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
     results["time"] = time.time() - start
     results["seed"] = seed
     results["T"] = T
+    results["dt"] = dt
     return results
 
 
-v = 0.15
-baseline_init = baseline + v
-alpha_init = alpha + v
-sigma_init = sigma + v
-u_init = mu - sigma + v
+
+baseline_init = baseline + np.random.rand()*0.5
+alpha_init = alpha + np.random.rand()*0.5
+mu_init = mu + np.random.rand()*0.5
+sigma_init = sigma + np.random.rand()*0.2
+u_init = mu - sigma 
 
 results_1 = run_solver(
     events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0
@@ -109,37 +112,71 @@ open_file.close()
 
 def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
     events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=seed)
-    v = 0.15
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    sigma_init = sigma + v
-    u_init = mu - sigma + v
+    baseline_init = baseline + np.random.rand()*0.5
+    alpha_init = alpha + np.random.rand()*0.5
+    mu_init = mu + np.random.rand()*0.5
+    sigma_init = sigma + np.random.rand()*0.2
+    u_init = mu_init - sigma_init 
     results = run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T)
     return results
 
 T_list = [100_000, 200_000, 300_000, 400_000, 500_000]
+dt_list = [0.1, 0.01]
 seeds = np.arange(10)
 all_results = Parallel(n_jobs=n_jobs, verbose=10)(
+    #delayed(run_experiment)(baseline, alpha, mu, sigma, T, dt, seed=seed)
     delayed(run_solver)(
         events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=seed
     )
-    for T, seed in itertools.product(
-        T_list, seeds
+    for T, dt, seed in itertools.product(
+        T_list, dt_list, seeds
     )
 )
-
+file_name = "benchmark.pkl"
+open_file = open(file_name, "wb")
+pickle.dump(all_results, open_file)
+open_file.close()
 # %% name
-# loss = results_1[0]
-# grad_baseline = results_1[1]
-# grad_adjacency = results_1[2]
-# grad_u = results_1[3]
-# grad_sigma = results_1[4]
-# param_baseline_e = torch.abs(results_1[5])  # - baseline)
-# param_adjacency_e = torch.abs(results_1[6])  # - adjacency)
-# param_u_e = torch.abs(results_1[7])  # - u)
-# param_sigma_e = torch.abs(results_1[8])  # - sigma)
-# epochs = torch.arange(max_iter)
-# epochss = torch.arange(max_iter + 1)
+n_T = len(T_list)
+n_dt = len(dt_list) 
+n_seeds = len(seeds)
+n_xp = n_T * n_dt * n_seeds
+
+# %% plot loss
+%matplotlib inline
+matplotlib.rc("xtick", labelsize=13)
+matplotlib.rc("ytick", labelsize=13)
+lw = 5
+fontsize = 18
+fig, axs = plt.subplots(n_T, n_dt, figsize=(15, 10))
+
+
+for i in range(n_T):
+    for j in range(n_dt):
+        for l in range(n_seeds):
+            idx = i*n_seeds + j*n_seeds + l
+            axs[i, j].plot(all_results[idx]["v_loss"], lw=lw, label='seed={}'.format(seeds[l]))
+            axs[i, j].set_title("model: T={}, dt={} ".format(T_list[i], dt_list[j]), size=fontsize)
+
+fig.tight_layout()
+
+# %% plot param
+
+matplotlib.rc("xtick", labelsize=13)
+matplotlib.rc("ytick", labelsize=13)
+lw = 5
+fontsize = 18
+fig, axs = plt.subplots(n_T, n_dt, figsize=(15, 10))
+
+for i in range(n_T):
+    for j in range(n_dt):
+        for l in range(n_seeds):
+            idx = j*n_T + i* + l*n_seeds
+            axs[i, j].plot(all_results__[idx]["param_adjacency"], lw=lw, label='seed={}'.format(seeds[l]))
+            axs[i, j].set_title("model: T={}, dt={} ".format(T_list[i]).format(dt_list[j]), size=fontsize)
+
+fig.tight_layout()
+
 
 # %% plot
 #% matplotlib inline
@@ -155,32 +192,31 @@ def plot_results(results):
     fig, axs = plt.subplots(2, 4, figsize=(15, 10))
 
     for i in range(n_dim):
-        axs[0, 0].plot(epochs, results["grad_baseline"], lw=lw)
+        axs[0, 0].plot(results["grad_baseline"], lw=lw)
         axs[0, 0].set_title("grad_baseline", size=fontsize)
 
-        axs[1, 0].plot(epochss, results["param_baseline_e"], lw=lw)
+        axs[1, 0].plot(results["param_baseline_e"], lw=lw)
         axs[1, 0].set_title("mu", size=fontsize)
 
         for j in range(n_dim):
-            axs[0, 1].plot(
-                epochs, results["grad_adjacency"][:, i, j], lw=lw, label=(i, j)
+            axs[0, 1].plot(results["grad_adjacency"][:, i, j], lw=lw, label=(i, j)
             )
             axs[0, 1].set_title("grad_alpha", size=fontsize)
             axs[0, 1].legend(fontsize=fontsize - 5)
 
-            axs[0, 2].plot(epochs, grad_u[:, i, j], lw=lw)
+            axs[0, 2].plot(grad_u[:, i, j], lw=lw)
             axs[0, 2].set_title("grad_u", size=fontsize)
 
-            axs[0, 3].plot(epochs, grad_sigma[:, i, j], lw=lw)
+            axs[0, 3].plot(grad_sigma[:, i, j], lw=lw)
             axs[0, 3].set_title("grad_sigma", size=fontsize)
 
-            axs[1, 1].plot(epochss, param_adjacency_e[:, i, j], lw=lw)
+            axs[1, 1].plot(param_adjacency_e[:, i, j], lw=lw)
             axs[1, 1].set_title("alpha", size=fontsize)
 
-            axs[1, 2].plot(epochss, param_u_e[:, i, j], lw=lw)
+            axs[1, 2].plot(param_u_e[:, i, j], lw=lw)
             axs[1, 2].set_title("u", size=fontsize)
 
-            axs[1, 3].plot(epochss, param_sigma_e[:, i, j], lw=lw)
+            axs[1, 3].plot(param_sigma_e[:, i, j], lw=lw)
             axs[1, 3].set_title("sigma", size=fontsize)
 
     plt.figure(figsize=(12, 4))
