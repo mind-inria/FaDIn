@@ -14,6 +14,8 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 from hawkes_discret.kernels import KernelRaisedCosineDiscret
 from hawkes_discret.hawkes_discret_l2 import HawkesDiscretL2
 
+from hawkes_discret.utils.compute_constants_np import get_ztzG, _get_ztzG
+from hawkes_discret.utils.utils import projected_grid
 ################################
 ## Meta parameters
 ################################
@@ -59,7 +61,7 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
     return events
 
 
-events = simulate_data(baseline, alpha, mu, sigma, T, dt)
+events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0)
 
 # %% solver
 ##
@@ -68,7 +70,7 @@ events = simulate_data(baseline, alpha, mu, sigma, T, dt)
 @mem.cache
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
-    max_iter = 2000
+    max_iter = 1000
     solver = HawkesDiscretL2(
         "RaisedCosine",
         torch.tensor(u_init),
@@ -120,10 +122,10 @@ def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
     results = run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed)
     return results
 
-T_list = [100000]
+T_list = [1000]
 dt_list = [0.1, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02,  
-0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002, 0.001 ]
-seeds = np.arange(10)
+0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002, 0.001]
+seeds = np.arange(100)
 info = dict(T_list=T_list, dt_list=dt_list, seeds=seeds)
 n_jobs=30
 all_results = Parallel(n_jobs=n_jobs, verbose=10)(
@@ -133,98 +135,54 @@ all_results = Parallel(n_jobs=n_jobs, verbose=10)(
     )
 )
 all_results.append(info)
-file_name = "benchmark2.pkl"
+file_name = "benchmark3.pkl"
 open_file = open(file_name, "wb")
 pickle.dump(all_results, open_file)
 open_file.close()
-# %% name
-n_T = len(T_list)
-n_dt = len(dt_list) 
-n_seeds = len(seeds)
-n_xp = n_T * n_dt * n_seeds
 
-# %% plot loss
-#%matplotlib inline
-matplotlib.rc("xtick", labelsize=13)
-matplotlib.rc("ytick", labelsize=13)
-lw = 5
-fontsize = 18
-fig, axs = plt.subplots(n_T, n_dt, figsize=(15, 10))
-
-
-for i in range(n_T):
-    for j in range(n_dt):
-        for l in range(n_seeds):
-            idx = i*n_seeds + j*n_seeds + l
-            axs[i, j].plot(all_results[idx]["v_loss"], lw=lw, label='seed={}'.format(seeds[l]))
-            axs[i, j].set_title("model: T={}, dt={} ".format(T_list[i], dt_list[j]), size=fontsize)
-
-fig.tight_layout()
-
-# %% plot param
-
-matplotlib.rc("xtick", labelsize=13)
-matplotlib.rc("ytick", labelsize=13)
-lw = 5
-fontsize = 18
-fig, axs = plt.subplots(n_T, n_dt, figsize=(15, 10))
-
-for i in range(n_T):
-    for j in range(n_dt):
-        for l in range(n_seeds):
-            idx = j*n_T + i* + l*n_seeds
-            axs[i, j].plot(all_results__[idx]["param_adjacency"], lw=lw, label='seed={}'.format(seeds[l]))
-            axs[i, j].set_title("model: T={}, dt={} ".format(T_list[i]).format(dt_list[j]), size=fontsize)
-
-fig.tight_layout()
+##############################################################################
+"""
+L = int(1/dt)
+events_ = projected_grid(events, dt, size_grid)
+start = time.time()
+#q = _get_ztzG(events_.numpy(), L)
+qq, _ = get_ztzG(events_.numpy(), L)
+print('premiere:', time.time() - start)
+def strided_method(ar):
+    a = np.concatenate(( ar, ar ))
+    L = len(ar)
+    n = a.strides[0]
+    return np.lib.stride_tricks.as_strided(a[L:], (L,L), (-n,n))
 
 
-# %% plot
-#% matplotlib inline
-import matplotlib
+def test(events, n_discrete):
+    n_dim, _ = events.shape
 
-
-def plot_results(results):
-    matplotlib.rc("xtick", labelsize=13)
-    matplotlib.rc("ytick", labelsize=13)
-    lw = 5
-    fontsize = 18
-    n_dim = 1
-    fig, axs = plt.subplots(2, 4, figsize=(15, 10))
-
+    ztzG = np.zeros(shape=(n_dim, n_dim,
+                           n_discrete,
+                           n_discrete))
     for i in range(n_dim):
-        axs[0, 0].plot(results["grad_baseline"], lw=lw)
-        axs[0, 0].set_title("grad_baseline", size=fontsize)
-
-        axs[1, 0].plot(results["param_baseline_e"], lw=lw)
-        axs[1, 0].set_title("mu", size=fontsize)
-
+        ei = events[i]
         for j in range(n_dim):
-            axs[0, 1].plot(results["grad_adjacency"][:, i, j], lw=lw, label=(i, j)
-            )
-            axs[0, 1].set_title("grad_alpha", size=fontsize)
-            axs[0, 1].legend(fontsize=fontsize - 5)
+            ej = events[j]
+            #eij = ei * ej
+            #eij_sum = eij[n_discrete:-n_discrete].sum()
+            temp = np.zeros(n_discrete)
+            temp[0] =  ei @ ej        
+            for tau in range(1, n_discrete):
+                temp[tau] = ei[:-tau] @ ej[tau:]
+            temp_ = strided_method(temp)
+            ztzG[i, j] = np.triu(temp_) + np.triu(temp_, 1).T
+            #for tau in range(n_discrete):
+            #    for tau_p in range(n_discrete):
+            #        idx = np.absolute(tau-tau_p)
+            #        ztzG[i, j, tau, tau_p] = temp[idx]
 
-            axs[0, 2].plot(grad_u[:, i, j], lw=lw)
-            axs[0, 2].set_title("grad_u", size=fontsize)
-
-            axs[0, 3].plot(grad_sigma[:, i, j], lw=lw)
-            axs[0, 3].set_title("grad_sigma", size=fontsize)
-
-            axs[1, 1].plot(param_adjacency_e[:, i, j], lw=lw)
-            axs[1, 1].set_title("alpha", size=fontsize)
-
-            axs[1, 2].plot(param_u_e[:, i, j], lw=lw)
-            axs[1, 2].set_title("u", size=fontsize)
-
-            axs[1, 3].plot(param_sigma_e[:, i, j], lw=lw)
-            axs[1, 3].set_title("sigma", size=fontsize)
-
-    plt.figure(figsize=(12, 4))
-
-    plt.tight_layout()
-    plt.plot(epochs, loss, lw=10)
-    plt.title("Loss", size=fontsize)
-
-
-# %%
+    return ztzG
+start = time.time()
+ztzG_test = test(events_.numpy(), L)
+print("deuxième", time.time() - start)
+start = time.time()
+ztzG_test2 = _test2(events_.numpy(), L)
+print("troisième:", time.time() - start)
+"""
