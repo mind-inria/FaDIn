@@ -50,9 +50,8 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 
     tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
     kernels = [[tf]]
-
     hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=seed
+        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
     )
 
     hawkes.simulate()
@@ -109,30 +108,32 @@ pickle.dump(results_1, open_file)
 open_file.close()
 
 # %% eval on grid
-
+##
 def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
+    v =  0.15
     events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=seed)
-    baseline_init = baseline + np.random.rand()*0.5
-    alpha_init = alpha + np.random.rand()*0.5
-    mu_init = mu + np.random.rand()*0.5
-    sigma_init = sigma + np.random.rand()*0.2
+    baseline_init = baseline + v #np.random.rand()*0.5
+    alpha_init = alpha + v #np.random.rand()*0.5
+    mu_init = mu + v #np.random.rand()*0.5
+    sigma_init = sigma - v #np.random.rand()*0.2
     u_init = mu_init - sigma_init 
-    results = run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T)
+    results = run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed)
     return results
 
-T_list = [100_000, 200_000, 300_000, 400_000, 500_000]
-dt_list = [0.1, 0.01]
+T_list = [100000]
+dt_list = [0.1, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02,  
+0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002, 0.001 ]
 seeds = np.arange(10)
+info = dict(T_list=T_list, dt_list=dt_list, seeds=seeds)
+n_jobs=30
 all_results = Parallel(n_jobs=n_jobs, verbose=10)(
-    #delayed(run_experiment)(baseline, alpha, mu, sigma, T, dt, seed=seed)
-    delayed(run_solver)(
-        events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=seed
-    )
+    delayed(run_experiment)(baseline, alpha, mu, sigma, T, dt, seed=seed)
     for T, dt, seed in itertools.product(
         T_list, dt_list, seeds
     )
 )
-file_name = "benchmark.pkl"
+all_results.append(info)
+file_name = "benchmark2.pkl"
 open_file = open(file_name, "wb")
 pickle.dump(all_results, open_file)
 open_file.close()
@@ -143,7 +144,7 @@ n_seeds = len(seeds)
 n_xp = n_T * n_dt * n_seeds
 
 # %% plot loss
-%matplotlib inline
+#%matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 lw = 5
