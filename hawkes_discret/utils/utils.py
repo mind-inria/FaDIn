@@ -11,12 +11,13 @@ def projected_grid(events, grid_step, size_grid):
     for i in range(n_dim):
         ei_torch = torch.tensor(events[i])
         temp = torch.round(ei_torch/grid_step) * grid_step 
-        print(temp)
-        temp2 = torch.round(temp * size_discret).long()  
-        print(temp2)
-        for j in range(ei_torch.shape[0]):   
-            timestamps_loc[i, temp2[j]] += 1.     
-
+        temp2 = torch.round(temp * size_discret).long()
+        
+        indices, counts = np.unique(temp2, return_counts=True)
+        timestamps_loc[i, indices] += torch.tensor(counts)  
+        #for j in range(ei_torch.shape[0]):   
+        #    timestamps_loc[i, temp2[j]] += 1.     
+            
     return timestamps_loc
 
 def optimizer(param, lr, solver='GD'):

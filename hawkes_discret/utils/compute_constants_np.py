@@ -101,12 +101,8 @@ def _get_ztzG(events, n_discrete):
     for i in range(n_dim):
         ei = events[i]
         for j in range(n_dim):
-            ej = events[j]
-            #eij = ei * ej
-            #eij_sum = eij[n_discrete:-n_discrete].sum()            
+            ej = events[j]          
             for tau in range(n_discrete):
-                #for tau_p in range(n_discrete):
-                #    ztzG[i, j, tau, tau_p] = eij_sum + eij[-n_discrete:(n_ei-tau)] + eij[-tau_p:]
                 for tau_p in range(tau + 1):
                     if tau_p == 0:
                         if tau == 0:
@@ -131,9 +127,35 @@ def get_ztzG(events, n_discrete):
     ztzG_nodiag[:, :, idx, idx] = 0.
     ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
     zLtzG = ztzG_.sum(3)
-
+    print(ztzG_)
     return ztzG_, zLtzG
+"""
+def get_ztzG2(events, n_discrete):
+    n_dim, _ = events.shape
 
+    ztzG = np.zeros(shape=(n_dim, n_dim,
+                           n_discrete,
+                           n_discrete))
+    for i in range(n_dim):
+        ei = events[i]
+        for j in range(n_dim):
+            ej = events[j]
+            ztzG[i, j, 0, 0] = ei @ ej                      
+            for tau in range(1, n_discrete):
+                ztzG[i, j, tau, 0] = ei[:-tau] @ ej[tau:] 
+                ztzG[i, j, 0, tau] = ei[tau:] @ ej[:-tau] #le terme en tau_p
+                for tau_p in range(1, n_discrete):                      
+                    if (tau_p == tau):
+                        ztzG[i, j, tau, tau] = ei[:-tau] @ ej[:-tau]
+                    elif (tau > tau_p):
+                        diff = tau - tau_p
+                        ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
+                    elif (tau < tau_p):
+                        diff_ = tau_p - tau
+                        ztzG[i, j, tau, tau_p] = ei[diff_:-tau] @ ej[:-tau_p]
+
+    return ztzG
+"""
 def get_zLG(events, n_discrete):
     """
     events.shape = n_dim, n_grid

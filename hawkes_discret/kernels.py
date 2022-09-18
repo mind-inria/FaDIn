@@ -20,7 +20,7 @@ class KernelExpDiscret(object):
         self.discrete_step = discrete_step
         self.upper = upper
 
-    def eval(self, decay, discretization):
+    def eval(self, kernel_param, discretization):
         """Return kernel evaluate on the discretisation grid
 
         Parameters
@@ -30,7 +30,7 @@ class KernelExpDiscret(object):
         -------       
         kernel_values:  tensor of size (dim x dim x L)
         """
-
+        decay = kernel_param[0]
         kernel_values = decay.unsqueeze(
             2) * torch.exp(-decay.unsqueeze(2) * discretization)
         mask_kernel = (discretization <= 0) | (discretization > self.upper)
@@ -41,7 +41,7 @@ class KernelExpDiscret(object):
 
         return kernel_values
 
-    def compute_grad(self, decay, discretization):
+    def compute_grad(self, kernel_param, discretization):
         """Return kernel's gradient evaluate on the discretization grid
 
         Parameters
@@ -51,6 +51,7 @@ class KernelExpDiscret(object):
         -------
         kernel_grad:  tensor of size (dim x dim x L)
         """
+        decay = kernel_param[0]
         temp1 = decay.unsqueeze(2) * torch.exp(-decay.unsqueeze(2)
                                                * discretization)
 
@@ -63,10 +64,27 @@ class KernelExpDiscret(object):
         temp2_sum = temp2.sum(2)[:, :, None] * self.discrete_step
         kernel_grad = (temp2*temp1_sum - temp1*temp2_sum) / (temp1_sum**2)
 
-        return kernel_grad
+        return [kernel_grad]
 
+    def compute_grad_(self, kernel_param, discretization):
+        """Return kernel's gradient evaluate on the discretization grid
+
+        Parameters
+        ---------- 
+
+        Returns
+        -------
+        kernel_grad:  tensor of size (dim x dim x L)
+        """
+        decay = kernel_param[0]
+        kernel_grad = (1 - 
+                        decay.unsqueeze(2)*discretization) * torch.exp(
+                                                            -decay.unsqueeze(2)
+                                                            * discretization)
+
+        return [kernel_grad]
     def intensity_eval(self, baseline, adjacency,
-                       decay, events_grid, discretization):
+                       kernel_param, events_grid, discretization):
         """ return the evaluation of the intensity in each point of the grid
         Parameters
         ---------- 
@@ -75,6 +93,7 @@ class KernelExpDiscret(object):
         -------
         intensity: tensor of size (dim x size_grid)
         """
+        decay = kernel_param[0]
         kernel_values = self.eval(decay, discretization)
         n_dim, _, _ = kernel_values.shape
 
@@ -105,11 +124,12 @@ class KernelRaisedCosineDiscret(object):
         self.size_discrete = int(1 / discrete_step)
         self.discrete_step = discrete_step
 
-    def eval(self, u, sigma, discretization):
+    def eval(self, kernel_param, discretization):
         """Return kernel evaluate on the discretisation grid: time
         kernel_values:  tensor de taille (dim x dim x len(time))"""
-        n_dim, _ = sigma.shape
 
+        u, sigma = kernel_param
+        n_dim, _ = sigma.shape
         kernel = torch.zeros(n_dim, n_dim, self.size_discrete)
         for i in range(n_dim):
             for j in range(n_dim):
@@ -122,7 +142,7 @@ class KernelRaisedCosineDiscret(object):
         return kernel
 
 
-    def compute_grad(self, u, sigma, discretization):
+    def compute_grad(self, kernel_param, discretization):
         """Return kernel's gradient evaluate on the discretization grid
 
         Parameters
@@ -132,7 +152,8 @@ class KernelRaisedCosineDiscret(object):
         -------
         kernel_grad:  tensor of size (dim x dim x L)
         """
-        n_dim, _ = u.shape
+        u, sigma = kernel_param
+        n_dim, _ = u.shape   
         grad_u = torch.zeros(n_dim, n_dim, self.size_discrete)
         grad_sigma = torch.zeros(n_dim, n_dim, self.size_discrete)
 
@@ -153,13 +174,14 @@ class KernelRaisedCosineDiscret(object):
                 grad_u[i, j, mask_grad] = 0.
                 grad_sigma[i, j, mask_grad] = 0.        
 
-        return grad_u, grad_sigma
+        return [grad_u, grad_sigma]
 
     def intensity_eval(self, baseline, adjacency,
-                       u, sigma, events_grid, discretization):
+                       kernel_param, events_grid, discretization):
         """ return the evaluation of the intensity in each point of the grid
             vector of size: dim x size_grid
         """
+        u, sigma = kernel_param
         kernel_values = self.eval(u, sigma, discretization)
         n_dim, _, _ = kernel_values.shape
 
