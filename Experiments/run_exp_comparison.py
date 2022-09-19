@@ -174,7 +174,7 @@ all_results = Parallel(n_jobs=n_jobs, verbose=10)(
     )
 )
 all_results.append(info)
-file_name = "results/erreur_discret_tick.pkl"
+file_name = "results/error_discrete_tick.pkl"
 open_file = open(file_name, "wb")
 pickle.dump(all_results, open_file)
 open_file.close()

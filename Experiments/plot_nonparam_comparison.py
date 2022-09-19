@@ -93,6 +93,7 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick, l, T_idx, kernel='
 
     fig.tight_layout()
     fig.subplots_adjust(top=0.8)
+    fig.savefig('plots/comparison_nonparam_T={}_dt={}_K={}.pdf'.format(T, np.round(all_results[l][0]['dt'], 3), kernel))
     return 0;
 
 #%matplotlib inline

@@ -79,4 +79,4 @@ for i in range(3):
         plot_one_curve(axs, data[idx][1], titles[idx], dt_list, i, j, 'b', T_list[1])
         plot_one_curve(axs, data[idx][2], titles[idx], dt_list, i, j, 'r', T_list[2])
 
-fig.savefig('plots/approx_discret.pdf')
+fig.savefig('plots/approx_discrete.pdf')
