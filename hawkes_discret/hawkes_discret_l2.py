@@ -69,7 +69,7 @@ class HawkesDiscretL2(object):
 
         self.device = 'cuda' if torch.cuda.is_available() and device == 'cuda' else 'cpu'
 
-    def fit(self, events, end_time, sparse):
+    def fit(self, events, end_time, sparse=False):
         start = time.time()
         size_grid = self.n_discrete * end_time + 1
         n_dim = len(events)
