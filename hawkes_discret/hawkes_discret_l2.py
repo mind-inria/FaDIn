@@ -69,13 +69,13 @@ class HawkesDiscretL2(object):
 
         self.device = 'cuda' if torch.cuda.is_available() and device == 'cuda' else 'cpu'
 
-    def fit(self, events, end_time):
+    def fit(self, events, end_time, sparse):
         start = time.time()
         size_grid = self.n_discrete * end_time + 1
         n_dim = len(events)
         discretization = torch.linspace(0, 1, int(1 / self.discrete_step))
         start = time.time()
-        events_grid = projected_grid(
+        events_grid, events_grid_sparse = projected_grid(
             events, self.discrete_step, size_grid)
         print('projec grid', time.time()-start)
         start = time.time()
@@ -84,10 +84,14 @@ class HawkesDiscretL2(object):
         ####################################################
         # Precomputations
         ####################################################
+        print('number of events is:', n_events)
         start = time.time()
         zG, _ = get_zG(events_grid.numpy(), self.n_discrete)
         zN, _ = get_zN(events_grid.numpy(), self.n_discrete)
-        ztzG, _ = get_ztzG(events_grid.numpy(), self.n_discrete)
+        if sparse:
+            ztzG, _ = get_ztzG(events_grid_sparse, self.n_discrete)
+        else:    
+            ztzG, _ = get_ztzG(events_grid.numpy(), self.n_discrete)
         zG = torch.tensor(zG).float()
         zN = torch.tensor(zN).float()
         ztzG = torch.tensor(ztzG).float()
@@ -127,7 +131,7 @@ class HawkesDiscretL2(object):
                                                 discretization)
 
             if self.optimize_kernel:
-                grad_theta = self.kernel_model.compute_grad_(self.params_optim[2:],
+                grad_theta = self.kernel_model.compute_grad(self.params_optim[2:],
                                                                 discretization)
             if self.log:                                       
                 v_loss[i] = l2loss_precomputation(zG, zN, ztzG,
