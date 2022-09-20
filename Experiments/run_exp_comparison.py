@@ -12,12 +12,13 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc, HawkesExpKern, HawkesK
 from hawkes_discret.kernels import KernelExpDiscret
 from hawkes_discret.hawkes_discret_l2 import HawkesDiscretL2
 
+from hawkes_discret.utils.utils import optimizer, projected_grid, init_kernel
 
 ################################
 ## Meta parameters
 ################################
 dt = 0.01
-T = 10000
+T = 100_0000
 size_grid = int(T / dt) + 1
 
 mem = Memory(location=".", verbose=2)
@@ -33,10 +34,10 @@ decay= np.array([[7]])
 def exp_f(decay, discretisation):
     return decay*np.exp(-decay*discretisation)
 
-@mem.cache
+#@mem.cache
 def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     L = int(1 / dt)
-    discretization = torch.linspace(0, 1, 10000)
+    discretization = torch.linspace(0, 1, 1000)
 
     #Exp = KernelExpDiscret(1, dt)
     #kernel_values = Exp.eval([torch.tensor(decay)], discretization
@@ -66,7 +67,7 @@ events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
 
 # %% one run test
 # 
-@mem.cache
+#@mem.cache
 def run_solver(events, decay, baseline_init, alpha_init,  T, dt, seed=0):
     start = time.time()
     max_iter = 2000
@@ -76,7 +77,7 @@ def run_solver(events, decay, baseline_init, alpha_init,  T, dt, seed=0):
         torch.tensor(baseline_init),
         torch.tensor(alpha_init),
         dt,
-        solver='GD',
+        solver='RMSprop',
         step_size=1e-3,
         max_iter=max_iter,
         log=False,
@@ -85,7 +86,7 @@ def run_solver(events, decay, baseline_init, alpha_init,  T, dt, seed=0):
         optimize_kernel=False
     )
     print(time.time()-start)
-    results = solver.fit(events, T)
+    results = solver.fit(events, T, sparse=True)
     results["time"] = time.time() - start
     results["seed"] = seed
     results["T"] = T
@@ -109,9 +110,11 @@ print(torch.abs(results_1['param_baseline'][-1])) #- baseline))
 print(torch.abs(results_1['param_adjacency'][-1])) #- alpha))
 print(torch.abs(results_1['param_kernel'][0][-1] ))#- decay))
 # %% Tick solver 
-
+np.random.seed(0)
+baseline_init = np.array([np.random.rand()*0.5])
+alpha_init = np.array([[np.random.rand()]]) 
 solver_tick = HawkesExpKern(7, gofit='least-squares', penalty='none',
- C=1000.0, solver='gd', step=None, tol=1e-05, max_iter=2000, 
+ C=1000.0, solver='agd', step=None, tol=1e-05, max_iter=2000, 
  verbose=True, print_every=10, record_every=10, 
  elastic_net_ratio=0.95, random_state=0)
 solver_tick.fit(events, start=np.array([baseline_init.item(),alpha_init.item()]))
@@ -123,9 +126,10 @@ print(adjacency_tick)
 # %% Experiment
 
 def run_experiment(baseline, alpha, decay, T, dt, seed=0):
-    np.random.seed(seed)
+    
     events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
     
+    np.random.seed(seed)
     baseline_init = np.array([np.random.rand()*0.5])
     alpha_init = np.array([[np.random.rand()]]) 
 
@@ -137,7 +141,7 @@ def run_experiment(baseline, alpha, decay, T, dt, seed=0):
 
     start = time.time()
     solver_tick = HawkesExpKern(decay.item(), gofit='least-squares', penalty='none',
-                C=1000.0, solver='agd', step=None, tol=1e-05, max_iter=2000, 
+                C=1000.0, solver='gd', step=None, tol=1e-05, max_iter=2000, 
                 verbose=False, print_every=10, record_every=10, 
                 elastic_net_ratio=0.95, random_state=0)
     solver_tick.fit(events, start=np.array([baseline_init.item(),alpha_init.item()]))
@@ -153,7 +157,15 @@ def run_experiment(baseline, alpha, decay, T, dt, seed=0):
     baseline_diff = np.abs(baseline_our.numpy() - baseline_tick)
     adjacency_diff = np.abs(adjacency_our.numpy() - adjacency_tick)
 
+    baseline_error_tick = np.abs(baseline_tick - baseline)
+    alpha_error_tick = np.abs(adjacency_tick - alpha)
+
+    baseline_error_our = np.abs(baseline_our.numpy() - baseline)
+    alpha_error_our = np.abs(adjacency_our.numpy() - alpha)
+
     res = dict(baseline_diff=baseline_diff, adjacency_diff=adjacency_diff, 
+               baseline_error_tick=baseline_error_tick, alpha_error_tick=alpha_error_tick,
+               baseline_error_our=baseline_error_our, alpha_error_our=alpha_error_our,
                our_time=our_time, tick_time=tick_time, T=T, dt=dt, seed=seed)
     return res
 
@@ -162,8 +174,8 @@ baseline = np.array([.2])
 alpha = np.array([[0.8]])
 decay= np.array([[7]])
 T_list = [1000, 10_000, 100_000]
-dt_list = np.logspace(1, 3, 20) / 10e3
-seeds = np.arange(100)
+dt_list = np.logspace(1, 3, 10) / 10e3
+seeds = np.arange(10)
 info = dict(T_list=T_list, dt_list=dt_list, seeds=seeds)
 
 n_jobs=60
