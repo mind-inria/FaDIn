@@ -59,7 +59,7 @@ def plot_one_curve(axs, data,  title, dt_list, i, j, col, T):
 
 titles = ['Baseline', 'Alpha', 'decay', 'Computation time']
 # %% plot loss
-%matplotlib inline
+# %matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 
@@ -94,7 +94,7 @@ fig.savefig(
 )
 # %%
 # %% plot loss
-%matplotlib inline
+# %matplotlib inline
 
 lw = 4
 fontsize = 18

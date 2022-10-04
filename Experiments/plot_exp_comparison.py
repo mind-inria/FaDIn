@@ -74,7 +74,7 @@ titles = ['Baseline_diff', 'Alpha_diff', 'Computation time',
           'Baseline_tick', 'Alpha_tick',
           'Baseline_our', 'Alpha_our', ]
 # %% plot loss
-%matplotlib inline
+# %matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 

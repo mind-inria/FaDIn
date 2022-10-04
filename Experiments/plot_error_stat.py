@@ -70,7 +70,7 @@ titles = ['Baseline', 'Alpha', 'u', 'Sigma', 'Loss', 'Computation time']
 
 
 # %% plot loss
-#%matplotlib inline
+# %matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 

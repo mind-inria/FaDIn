@@ -47,7 +47,7 @@ def get_results(results, T_list, dt_list, seeds):
 data = get_results(all_results, T_list, dt_list, seeds)
 
 # %% Figure norm l2
-#%matplotlib inline
+# %matplotlib inline
 palette = [matplotlib.cm.viridis_r(x) for x in np.linspace(0, 1, 4)]
 
 lw = 4
@@ -101,7 +101,7 @@ def plot_one_curve(axs, data,  dt_list, i, j, col, T):
 
 titles = ['Baseline', 'Alpha', 'm', 'Sigma',  'Computation time']
 
-%matplotlib inline
+# %matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 

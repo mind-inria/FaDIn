@@ -11,7 +11,7 @@ open_file.close()
 
 # %% plot results
 ##
-%matplotlib inline
+# %matplotlib inline
 
 dt_list = all_results[-1]['dt_list']
 T_list = all_results[-1]['T_list']

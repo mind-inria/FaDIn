@@ -1,10 +1,13 @@
 import numpy as np
 
+
 def check_consistent_shape(*args):
     for array in args[1:]:
         if array is not None and array.shape != args[0].shape:
-            raise ValueError('Incompatible shapes. Got '
-                             '(%s != %s)' % (array.shape, args[0].shape))
+            raise ValueError(
+                "Incompatible shapes. Got " "(%s != %s)" % (array.shape, args[0].shape)
+            )
+
 
 def check_random_state(seed):
     """Turn seed into a np.random.RandomState instance.
@@ -19,8 +22,9 @@ def check_random_state(seed):
         return np.random.RandomState(seed)
     if isinstance(seed, np.random.RandomState):
         return seed
-    raise ValueError('%r cannot be used to seed a numpy.random.RandomState'
-                     ' instance' % seed)
+    raise ValueError(
+        "%r cannot be used to seed a numpy.random.RandomState" " instance" % seed
+    )
 
 
 def check_dimension(X, expected_shape="n_trials, n_channels, n_times"):
@@ -38,10 +42,11 @@ def check_dimension(X, expected_shape="n_trials, n_channels, n_times"):
     shape : tuple
         The shape of the input signal.
     """
-    ndim = len(expected_shape.split(','))
+    ndim = len(expected_shape.split(","))
     if X.ndim != ndim:
-        raise ValueError("Expected shape ({}) but got input signal with "
-                         "ndim={} and shape {}".format(
-                             expected_shape, X.ndim, X.shape))
+        raise ValueError(
+            "Expected shape ({}) but got input signal with "
+            "ndim={} and shape {}".format(expected_shape, X.ndim, X.shape)
+        )
 
     return X.shape

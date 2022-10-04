@@ -189,7 +189,7 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick, comptime_autodiff,
 )
     return 0;
 
-#%matplotlib inline
+# %matplotlib inline
 matplotlib.rc("xtick", labelsize=20)
 matplotlib.rc("ytick", labelsize=20)
 
