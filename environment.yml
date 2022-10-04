@@ -1,0 +1,15 @@
+name: hawkes_discrete
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - scipy
+  - numpy
+  - matplotlib
+  - pytorch
+  - numba
+
+  - pip
+  - pip:
+    - tick
