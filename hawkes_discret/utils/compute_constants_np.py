@@ -1,6 +1,6 @@
 import numba
 import numpy as np
-
+import time
 """
 @numba.jit(nopython=True, cache=True)
 def get_constants(events, n_discrete):
@@ -88,11 +88,64 @@ def get_zN(events, n_discrete):
 
 
 @numba.jit(nopython=True, cache=True)
-def _get_ztzG(events, n_discrete):
+def _get_ztzG(events, n_discrete, sparse):
     """
     events.shape = n_dim, n_grid
     ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
     """
+    n_dim, _ = events.shape
+    ztzG = np.zeros(shape=(n_dim, n_dim,
+                           n_discrete,
+                           n_discrete))
+    if sparse == True:
+        if n_dim == 1:
+            start = time.time()
+            for tau in range(n_discrete):
+                for tau_p in range(tau + 1):
+                    if tau_p == 0:
+                        if tau == 0:
+                            ztzG[0, 0, tau, tau_p] = (events @ events.T).toarray().item()
+                        else:
+                            ztzG[0, 0, tau, tau_p] = (events[:, :-tau] @ events[:, tau:].T).toarray().item()
+                    else:
+                        diff = tau - tau_p
+                        ztzG[0, 0, tau, tau_p] = (events[:, :-tau] @ events[:, diff:-tau_p].T).toarray().item()   
+            print('precom_sparse', time.time()-start)
+    else:
+        #not available yet for sparse matrix                   
+        for i in range(n_dim):
+            ei = events[i]
+            for j in range(n_dim):
+                ej = events[j]          
+                for tau in range(n_discrete):
+                    for tau_p in range(tau + 1):
+                        if tau_p == 0:
+                            if tau == 0:
+                                ztzG[i, j, tau, tau_p] = ei @ ej
+                            else:
+                                ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
+                        else:
+                            diff = tau - tau_p
+                            ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
+
+    return ztzG
+
+def get_ztzG(events, n_discrete, sparse):
+    """
+    events.shape = n_dim, n_grid
+    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    zLtzG.shape = n_dim, n_dim, n_discrete
+    """
+    ztzG = _get_ztzG(events, n_discrete, sparse)
+    idx = np.arange(n_discrete)
+    ztzG_nodiag = ztzG.copy()
+    ztzG_nodiag[:, :, idx, idx] = 0.
+    ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
+    zLtzG = ztzG_.sum(3)
+    print(ztzG_)
+    return ztzG_, zLtzG
+"""
+def get_ztzG2(events, n_discrete):
     n_dim, _ = events.shape
 
     ztzG = np.zeros(shape=(n_dim, n_dim,
@@ -102,38 +155,22 @@ def _get_ztzG(events, n_discrete):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
-            #eij = ei * ej
-            #eij_sum = eij[n_discrete:-n_discrete].sum()            
-            for tau in range(n_discrete):
-                #for tau_p in range(n_discrete):
-                #    ztzG[i, j, tau, tau_p] = eij_sum + eij[-n_discrete:(n_ei-tau)] + eij[-tau_p:]
-                for tau_p in range(tau + 1):
-                    if tau_p == 0:
-                        if tau == 0:
-                            ztzG[i, j, tau, tau_p] = ei @ ej
-                        else:
-                            ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
-                    else:
+            ztzG[i, j, 0, 0] = ei @ ej                      
+            for tau in range(1, n_discrete):
+                ztzG[i, j, tau, 0] = ei[:-tau] @ ej[tau:] 
+                ztzG[i, j, 0, tau] = ei[tau:] @ ej[:-tau] #le terme en tau_p
+                for tau_p in range(1, n_discrete):                      
+                    if (tau_p == tau):
+                        ztzG[i, j, tau, tau] = ei[:-tau] @ ej[:-tau]
+                    elif (tau > tau_p):
                         diff = tau - tau_p
                         ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
+                    elif (tau < tau_p):
+                        diff_ = tau_p - tau
+                        ztzG[i, j, tau, tau_p] = ei[diff_:-tau] @ ej[:-tau_p]
 
     return ztzG
-
-def get_ztzG(events, n_discrete):
-    """
-    events.shape = n_dim, n_grid
-    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
-    zLtzG.shape = n_dim, n_dim, n_discrete
-    """
-    ztzG = _get_ztzG(events, n_discrete)
-    idx = np.arange(n_discrete)
-    ztzG_nodiag = ztzG.copy()
-    ztzG_nodiag[:, :, idx, idx] = 0.
-    ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
-    zLtzG = ztzG_.sum(3)
-
-    return ztzG_, zLtzG
-
+"""
 def get_zLG(events, n_discrete):
     """
     events.shape = n_dim, n_grid

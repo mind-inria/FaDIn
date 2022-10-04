@@ -110,6 +110,7 @@ def term3(ztzG, adjacency, kernel):
                 #    for tau_p in range(n_discrete):
                 #        temp2 += (kernel[i, j, tau] * kernel[i,
                 #                  k, tau_p]) * ztzG[j, k, tau, tau_p]
+
                 res += temp * temp2.sum()
 
     return res
