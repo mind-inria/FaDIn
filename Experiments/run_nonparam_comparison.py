@@ -6,7 +6,7 @@ import time
 import numpy as np
 import torch
 from joblib import Memory, Parallel, delayed
-from scipy.stats import skewnorm #, beta
+from scipy.stats import skewnorm 
 
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 from tick.hawkes import HawkesBasisKernels
@@ -47,8 +47,6 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0, kernel='RC'):
         kernel_values = torch.tensor(skewnorm.pdf(np.linspace(-3, 3, L), 3))
         kernel_values = kernel_values * alpha[:, :, None]
         k = kernel_values.squeeze().numpy()
-        
-    #kernel_values = torch.tensor(beta.pdf(discretization.numpy(), 2, 3))
 
     t_values = discretization.double().numpy()
     
@@ -138,13 +136,13 @@ def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0, kernel='RC'):
     return res_our, res_tick
 # %% run 
 
-dt_list = np.logspace(1, 3, 10) / 10e3
-T_list = [1000, 10_000, 100_000]#, 10_000, 100_000]
-seeds = np.arange(100)
+dt_list = [0.1, 0.01, 0.001]
+T_list = [1000, 10_000, 100_000, 1_000_000]
+seeds = np.arange(10)
 kernel_ = ['RC', 'SG']
 info = dict(kernel=kernel_, T_list=T_list, dt_list=dt_list, seeds=seeds)
 
-n_jobs=30
+n_jobs=60
 all_results = Parallel(n_jobs=n_jobs, verbose=10)(
     delayed(run_experiment)(baseline, alpha, mu, sigma, T, dt, seed=seed, kernel=kernel)
     for kernel, T, dt, seed in itertools.product(

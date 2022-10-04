@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
 
-file_name = "results/erreur_discret_tick.pkl"
+file_name = "../Experiments/results/error_discrete_tick.pkl"
 open_file = open(file_name, "rb")
 all_results = pickle.load(open_file)
 open_file.close()
@@ -16,6 +16,10 @@ def get_results(results):
 
     mu_vis = np.zeros((n_T, n_seeds, n_dt))
     alpha_vis = np.zeros((n_T, n_seeds, n_dt))
+    mu_tick_stat = np.zeros((n_T, n_seeds, n_dt))
+    alpha_tick_stat = np.zeros((n_T, n_seeds, n_dt))
+    mu_our_stat = np.zeros((n_T, n_seeds, n_dt))
+    alpha_our_stat= np.zeros((n_T, n_seeds, n_dt))
     comptime_vis = np.zeros((n_T, 2, n_seeds, n_dt))
 
     for j in range(n_T):
@@ -24,10 +28,18 @@ def get_results(results):
                 idx = j*(n_dt*n_seeds) + k*(n_seeds)  + l 
                 mu_vis[j, l, k] = np.abs(results[idx]['baseline_diff'].item())
                 alpha_vis[j, l, k] = np.abs(results[idx]['adjacency_diff'].item())
+                mu_tick_stat[j, l, k] = np.abs(results[idx]['baseline_error_tick'].item())
+                alpha_tick_stat[j, l, k] = np.abs(results[idx]['alpha_error_tick'].item())
+                mu_our_stat[j, l, k] = np.abs(results[idx]['baseline_error_our'].item())
+                alpha_our_stat[j, l, k] = np.abs(results[idx]['alpha_error_our'].item())
+
+
                 comptime_vis[j, 0, l, k] = results[idx]['our_time']
                 comptime_vis[j, 1, l, k] = results[idx]['tick_time']
 
-    return [mu_vis, alpha_vis, comptime_vis]
+    return [mu_vis, alpha_vis, comptime_vis, 
+            mu_tick_stat, alpha_tick_stat,
+            mu_our_stat, alpha_our_stat]
 
 data = get_results(all_results)
 
@@ -58,21 +70,29 @@ def plot_one_curve(axs, data, title, dt_list, i, col, T):
     axs[i].set_xscale('log')
     return 0;
 
-titles = ['Baseline', 'Alpha', 'Computation time']
+titles = ['Baseline_diff', 'Alpha_diff', 'Computation time',
+          'Baseline_tick', 'Alpha_tick',
+          'Baseline_our', 'Alpha_our', ]
 # %% plot loss
-#%matplotlib inline
+%matplotlib inline
 matplotlib.rc("xtick", labelsize=13)
 matplotlib.rc("ytick", labelsize=13)
 
 dt_list = all_results[-1]['dt_list']; T_list = all_results[-1]['T_list'];
 seeds = all_results[-1]['seeds'];
 
-fig, axs = plt.subplots(2, 1, figsize=(15, 12))
+fig, axs = plt.subplots(2, 1, figsize=(15, 24))
 fig.suptitle('Approximation w.r.t. continuous solver for various T', fontsize=30)
 for i in range(2):
-    plot_one_curve(axs, data[i][0], titles[i], dt_list, i,  'g', T_list[0])
-    plot_one_curve(axs, data[i][1], titles[i], dt_list, i,  'b', T_list[1])
+    plot_one_curve(axs, data[i+5][0], titles[i+5], dt_list, i,  'g', T_list[0])
+    plot_one_curve(axs, data[i+5][1], titles[i+5], dt_list, i,  'b', T_list[1])
     #plot_one_curve(axs, data[i][2], titles[i], dt_list, i, 'r', T_list[2])
+
+#for i in range(3,6):
+#    plot_one_curve(axs, data[i][0], titles[i], dt_list, i,  'g', T_list[0])
+#    plot_one_curve(axs, data[i][1], titles[i], dt_list, i,  'b', T_list[1])
+    #plot_one_curve(axs, data[i][2], titles[i], dt_list, i, 'r', T_list[2])
+    
 fig.tight_layout()
-fig.savefig('plots/approx_dt_tick.pdf')
+fig.savefig('../Experiments/plots/approx_dt_tick.pdf')
 # %%

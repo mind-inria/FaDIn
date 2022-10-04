@@ -2,23 +2,29 @@ import numpy as np
 import torch
 import torch.optim as optim
 import hawkes_discret.kernels as kernels
+from scipy.sparse import csr_array
 
 def projected_grid(events, grid_step, size_grid):
     n_dim = len(events)
     size_discret = int(1 / grid_step)
   
-    timestamps_loc = torch.zeros(n_dim, size_grid)
+    events_grid = torch.zeros(n_dim, size_grid)
     for i in range(n_dim):
         ei_torch = torch.tensor(events[i])
         temp = torch.round(ei_torch/grid_step) * grid_step 
         temp2 = torch.round(temp * size_discret).long()
         
-        indices, counts = np.unique(temp2, return_counts=True)
-        timestamps_loc[i, indices] += torch.tensor(counts)  
+        idx, data = np.unique(temp2, return_counts=True)
+        
+        events_grid[i, idx] += torch.tensor(data)  
+        
+        events_grid_sparse = csr_array((data, idx, [0, len(data)]))  
+
         #for j in range(ei_torch.shape[0]):   
         #    timestamps_loc[i, temp2[j]] += 1.     
             
-    return timestamps_loc
+    return events_grid, events_grid_sparse
+
 
 def optimizer(param, lr, solver='GD'):
     """
@@ -53,13 +59,19 @@ def optimizer(param, lr, solver='GD'):
             " got '{solver}'"
         )
     
-def init_kernel(upper, discret_step,  kernel_name='KernelExpDiscret'):
+def init_kernel(lower, upper, discret_step,  kernel_name='KernelExpDiscret'):
 
     if kernel_name == 'KernelExpDiscret':
-        kernel_model = kernels.KernelExpDiscret(upper, 
+        kernel_model = kernels.KernelExpDiscret(lower, upper, 
                                                 discret_step)
-    if kernel_name == 'RaisedCosine':
+    elif kernel_name == 'RaisedCosine':
         kernel_model = kernels.KernelRaisedCosineDiscret(discret_step)
+
+    elif kernel_name == 'TruncatedGaussian':
+        kernel_model = kernels.KernelTruncatedGaussianDiscret(lower, upper, discret_step)
+
+    else:
+        raise NotImplementedError('This kernel is not implemented')
 
     return kernel_model
 

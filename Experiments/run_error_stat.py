@@ -60,7 +60,7 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 @mem.cache
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
-    max_iter = 800
+    max_iter = 2000
     solver = HawkesDiscretL2(
         "RaisedCosine",
         [torch.tensor(u_init),
@@ -71,7 +71,7 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
         solver="RMSprop",
         step_size=1e-3,
         max_iter=max_iter,
-        log=False,
+        log=True,
         random_state=0,
         device="cpu",
         optimize_kernel=True
@@ -95,8 +95,8 @@ def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
     results = run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed)
     return results
 
-T_list = [1000, 5000, 10_000, 50_000, 100_000, 500_000, 1_000_000]
-dt_list = [0.01]
+T_list = [100, 500, 1000, 5000, 10_000, 50_000, 100_000, 500_000, 1_000_000]
+dt_list = [0.1, 0.01]
 seeds = np.arange(100)
 info = dict(T_list=T_list, dt_list=dt_list, seeds=seeds)
 
