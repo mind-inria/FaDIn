@@ -1,27 +1,26 @@
 # %% import stuff
-## import libraries
-from ast import increment_lineno
+# import libraries
 import itertools
-import pickle
 import time
 import numpy as np
 import torch
-from joblib import Memory, Parallel, delayed
+import pandas as pd
+from joblib import Parallel, delayed, Memory
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
-from hawkes_discret.kernels import KernelExpDiscret
-from hawkes_discret.hawkes_discret_l2 import HawkesDiscretL2
+from fadin.kernels import DiscreteKernelFiniteSupport
+from fadin.solver import FaDIn
 
 
 ################################
-## Meta parameters
+# Meta parameters
 ################################
 
 dt = 0.01
-T = 10_000_000
+T = 10_000
 size_grid = int(T / dt) + 1
 
-#mem = Memory(location=".", verbose=2)
+mem = Memory(location="__cache__", verbose=2)
 
 # %% simulate data
 # Simulated data
@@ -31,14 +30,15 @@ baseline = np.array([.1])
 alpha = np.array([[0.8]])
 decay = np.array([[5]])
 
-#@mem.cache
+
+@mem.cache
 def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     L = int(1 / dt)
     discretization = torch.linspace(0, 1, L)
-    Exp = KernelExpDiscret(0, 1, dt)
+    Exp = DiscreteKernelFiniteSupport(0, 1, dt, kernel='Exponential', n_dim=1)
     kernel_values = Exp.eval(
         [torch.Tensor(decay)], discretization
-    )  
+    )
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -54,31 +54,31 @@ def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     events = hawkes.timestamps
     return events
 
+
 events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
 
 
-#@mem.cache
+@mem.cache
 def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = HawkesDiscretL2(
-        "KernelExpDiscret",
-        [torch.tensor(decay_init)],
-        torch.tensor(baseline_init),
-        torch.tensor(alpha_init),
-        dt,
-        solver="RMSprop",
-        step_size=1e-3,
-        max_iter=max_iter,
-        log=False,
-        random_state=0,
-        device="cpu",
-        optimize_kernel=True
+    solver = FaDIn("Exponential",
+                   [torch.tensor(decay_init)],
+                   torch.tensor(baseline_init),
+                   torch.tensor(alpha_init),
+                   dt,
+                   solver="RMSprop",
+                   step_size=1e-3,
+                   max_iter=max_iter,
+                   log=False,
+                   random_state=0,
+                   device="cpu",
+                   optimize_kernel=True
     )
-    print(time.time()-start)
+    print(time.time() - start)
     results = solver.fit(events, T)
     results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_adjacency=results['param_adjacency'][-10:].mean().item(),
+                    param_alpha=results['param_alpha'][-10:].mean().item(),
                     param_kernel=[results['param_kernel'][0][-10:].mean().item()])
     results_["time"] = time.time() - start
     results_["seed"] = seed
@@ -86,36 +86,51 @@ def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
     results_["dt"] = dt
     return results_
 
-# %%
 
-# %%
 # %% eval on grid
-##
+
+
 def run_experiment(baseline, alpha, decay, T, dt, seed=0):
-    v =  0.2
+    v = 0.2
     events = simulate_data(baseline, alpha, decay, T, dt, seed=seed)
-    baseline_init = baseline + v 
-    alpha_init = alpha + v 
+    baseline_init = baseline + v
+    alpha_init = alpha + v
     decay_init = decay + v
 
     results = run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed)
 
     return results
 
+
 T_list = [1000, 10_000, 100_000, 1_000_000]
 dt_list = np.logspace(1, 3, 10) / 10e3
 seeds = np.arange(100)
-info = dict(T_list=T_list, dt_list=dt_list, seeds=seeds)
 
-n_jobs=40
+n_jobs = 60
 all_results = Parallel(n_jobs=n_jobs, verbose=10)(
     delayed(run_experiment)(baseline, alpha, decay, T, dt, seed=seed)
     for T, dt, seed in itertools.product(
         T_list, dt_list, seeds
     )
 )
-all_results.append(info)
-file_name = "results/error_discrete_EXP.pkl"
-open_file = open(file_name, "wb")
-pickle.dump(all_results, open_file)
-open_file.close()
+
+# save results
+df = pd.DataFrame(all_results)
+df['param_decay'] = df['param_kernel'].apply(lambda x: x[0])
+true_param = {'baseline': .1, 'alpha': 0.8, 'decay': 5}
+for param, value in true_param.items():
+    df[param] = value
+
+
+def compute_norm2_error(s):
+    return np.sqrt(np.array([(s[param] - s[f'param_{param}'])**2
+                            for param in ['baseline', 'alpha', 'decay']]).sum())
+
+
+df['err_norm2'] = df.apply(
+    lambda x: compute_norm2_error(x), axis=1)
+
+df.to_csv('results/error_discrete_EXP.csv', index=False)
+
+# df['param_sigma'] = df['param_kernel'].apply(lambda x: x[1])
+# , 'sigma': 0.3}
