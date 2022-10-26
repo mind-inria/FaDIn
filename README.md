@@ -1,1 +1,1 @@
-# FADIN: FAST DISCRETIZED INFERENCE FOR HAWKES PROCESSES WITH GENERAL PARAMETRIC KERNELS
+# FaDIn: Fast Discretized Inference For Hawkes Processes with General Parametric Kernels
