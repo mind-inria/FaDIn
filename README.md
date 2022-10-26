@@ -1,1 +1,1 @@
-# hawkes_discret
+# hawkes_discrete
