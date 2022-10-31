@@ -68,9 +68,9 @@ def projected_grid(events, grid_step, size_grid):
         temp2 = torch.round(temp * size_discret).long()
         idx, data = np.unique(temp2, return_counts=True)
         events_grid[i, idx] += torch.tensor(data)
-        #events_grid_sparse = csr_array((data, idx, [0, len(data)]))
+        #  events_grid_sparse = csr_array((data, idx, [0, len(data)]))
 
-    return events_grid# , events_grid_sparse
+    return events_grid  # , events_grid_sparse
 
 
 def optimizer(param, lr, solver='GD'):
@@ -111,3 +111,7 @@ def shift(x, shift):
     p = np.roll(x, shifts=shift)
     p[:shift] = 0.
     return p
+
+
+def l2_error(x, a):
+    return torch.sqrt(((x - a)**2).sum()).item()

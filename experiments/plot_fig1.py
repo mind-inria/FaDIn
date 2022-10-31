@@ -14,7 +14,7 @@ plt.rcParams["grid.linestyle"] = "--"
 plt.rcParams['xtick.labelsize'] = FONTSIZE
 plt.rcParams['ytick.labelsize'] = FONTSIZE
 plt.rcParams['font.size'] = FONTSIZE
-plt.rc('legend', fontsize=FONTSIZE-1)
+plt.rc('legend', fontsize=FONTSIZE - 1)
 
 
 def plot_fig1_paper(kernel='TG', leg=True):
@@ -43,7 +43,7 @@ def plot_fig1_paper(kernel='TG', leg=True):
         methods = [("RC", "s-", None)]
     elif is_EXP:
         df['estimates'] = 'EXP'
-        methods = [("EXP", "s-", None)]                
+        methods = [("EXP", "s-", None)]
     else:
         raise ValueError()
 
@@ -89,7 +89,7 @@ def plot_fig1_paper(kernel='TG', leg=True):
         custom_lines_T = [
             Line2D([], [], color=palette[i], lw=3) for i in range(4)
         ]
-        if leg==True:
+        if leg:
             plt.legend(
                 custom_lines_T,
                 [r"$10^{%d}$" % np.log10(t) for t in T],
@@ -112,7 +112,7 @@ plt.close('all')
 plot_fig1_paper(kernel='TG')
 plot_fig1_paper(kernel='RC', leg=False)
 plot_fig1_paper(kernel='EXP', leg=False)
-#plot_fig1_paper(kernel='EM')
+# plot_fig1_paper(kernel='EM')
 # plt.show()
 
 # %%

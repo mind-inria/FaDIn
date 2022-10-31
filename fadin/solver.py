@@ -2,7 +2,7 @@ import torch
 from fadin.utils.utils import optimizer, projected_grid
 from fadin.loss_and_gradient import l2loss_precomputation, l2loss_conv
 from fadin.loss_and_gradient import get_grad_mu, get_grad_alpha, get_grad_theta
-from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG_
+from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, get_ztzG_
 from fadin.kernels import DiscreteKernelFiniteSupport
 import time
 
@@ -16,7 +16,8 @@ class FaDIn(object):
                  solver='GD', step_size=1e-3,
                  max_iter=100, log=False,
                  random_state=None, device='cpu',
-                 optimize_kernel=False, precomputations=True):
+                 optimize_kernel=False, precomputations=True,
+                 side_effects=True):
         """
         events: list of tensor of size number of timestamps, size of the list is dim
         events_grid: tensor dim x (size_grid)
@@ -28,8 +29,8 @@ class FaDIn(object):
 
         # param discretisation
         self.discrete_step = discrete_step
-        self.n_discrete = int(1 / discrete_step)
-
+        self.L = int(1 / discrete_step)
+        self.side_effects = side_effects
         # param optim
         self.solver = solver
         self.step_size = step_size
@@ -71,7 +72,7 @@ class FaDIn(object):
             self.device = 'cpu'
 
     def fit(self, events, end_time):
-        size_grid = self.n_discrete * end_time + 1
+        size_grid = self.L * end_time + 1
         discretization = torch.linspace(0, 1, int(1 / self.discrete_step))
         start = time.time()
         events_grid = projected_grid(
@@ -86,9 +87,14 @@ class FaDIn(object):
         if self.precomputations:
             print('number of events is:', n_events)
             start = time.time()
-            zG = get_zG(events_grid.numpy(), self.n_discrete)
-            zN = get_zN(events_grid.numpy(), self.n_discrete)
-            ztzG  = get_ztzG_(events_grid.numpy(), self.n_discrete)
+            zG = get_zG(events_grid.numpy(), self.L)
+            zN = get_zN(events_grid.numpy(), self.L)
+
+            if self.side_effects:
+                ztzG = get_ztzG(events_grid.numpy(), self.L)
+            else:
+                ztzG = get_ztzG_(events_grid.numpy(), self.L)
+
             zG = torch.tensor(zG).float()
             zN = torch.tensor(zN).float()
             ztzG = torch.tensor(ztzG).float()
@@ -165,7 +171,7 @@ class FaDIn(object):
                                                           self.params_optim[2:],
                                                           events_grid,
                                                           discretization)
-
+                # print(intens)
                 loss = l2loss_conv(intens, events_grid, self.discrete_step)
                 loss.backward()
 

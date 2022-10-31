@@ -4,25 +4,25 @@ from scipy.linalg import toeplitz
 
 """
 @numba.jit(nopython=True, cache=True)
-def get_constants(events, n_discrete):
+def get_constants(events, L):
     n_dim, _ = events.shape
 
-    zG = np.zeros(shape=(n_dim, n_discrete))
-    zN = np.zeros(shape=(n_dim, n_dim, n_discrete))
+    zG = np.zeros(shape=(n_dim, L))
+    zN = np.zeros(shape=(n_dim, n_dim, L))
     ztzG = np.zeros(shape=(n_dim, n_dim,
-                           n_discrete,
-                           n_discrete))
+                           L,
+                           L))
     zLG = np.zeros(n_dim)
 
     for i in range(n_dim):
         ei = events[i]
         n_ei = ei.sum()
         zG[i] = n_ei
-        zG[i, 1:] -= np.cumsum(np.flip(ei[-n_discrete + 1:]))
+        zG[i, 1:] -= np.cumsum(np.flip(ei[-L + 1:]))
         for j in range(n_dim):
             ej = events[j]
             #zN[i, j, 0] = ej @ ei useless in the solver since kernel[i,j, 0] = 0.
-            for tau in range(n_discrete):
+            for tau in range(L):
                 if tau > 0:
                     zN[i, j, tau] = ej[:-tau] @ ei[tau:]
                 for tau_p in range(tau + 1):
@@ -35,7 +35,7 @@ def get_constants(events, n_discrete):
                         diff = tau - tau_p
                         ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
         zLG[i] = zG[i].sum()
-    #idx = np.arange(n_discrete)
+    #idx = np.arange(L)
     #ztzG_nodiag = ztzG.copy()
     #ztzG_nodiag[:, :, idx, idx] = 0.
     #ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
@@ -44,44 +44,42 @@ def get_constants(events, n_discrete):
 
 
 @numba.jit(nopython=True, cache=True)
-def get_zG(events, n_discrete):
+def get_zG(events, L):
     """
     events.shape = n_dim, n_grid
-    zG.shape =  n_dim, n_discrete
+    zG.shape =  n_dim, L
     zLG.shape = n_dim
     """
     n_dim, _ = events.shape
 
-    zG = np.zeros(shape=(n_dim, n_discrete))
-    #zLG = np.zeros(n_dim)
+    zG = np.zeros(shape=(n_dim, L))
     for i in range(n_dim):
         ei = events[i]
         n_ei = ei.sum()
         zG[i] = n_ei
         # Compute cumsum at the end of the vector of timestamps of size L
         # tau = 0:L-1
-        zG[i, 1:] -= np.cumsum(np.flip(ei[-n_discrete + 1:]))
-        # zLG[i] = zG[i].sum()
+        zG[i, 1:] -= np.cumsum(np.flip(ei[-L + 1:]))
 
     return zG
 
 
 @numba.jit(nopython=True, cache=True)
-def get_zN(events, n_discrete):
+def get_zN(events, L):
     """
     events.shape = n_dim, n_grid
-    zN.shape = n_dim, n_dim, n_discrete
+    zN.shape = n_dim, n_dim, L
     zLN.shape = n_dim, n_dim
     """
     n_dim, _ = events.shape
 
-    zN = np.zeros(shape=(n_dim, n_dim, n_discrete))
+    zN = np.zeros(shape=(n_dim, n_dim, L))
     for i in range(n_dim):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
             zN[i, j, 0] = ej @ ei  # useless in the solver since kernel[i,j, 0] = 0.
-            for tau in range(1, n_discrete):
+            for tau in range(1, L):
                 zN[i, j, tau] = ej[:-tau] @ ei[tau:]
     # zLN = zN.sum(2)
 
@@ -89,19 +87,19 @@ def get_zN(events, n_discrete):
 
 
 # @numba.jit(nopython=True, cache=True)
-def _get_ztzG(events, n_discrete):
+def _get_ztzG(events, L):
     """
     events.shape = n_dim, n_grid
-    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    ztzG.shape = n_dim, n_dim, L, L
     """
     n_dim, _ = events.shape
-    ztzG = np.zeros(shape=(n_dim, n_dim, n_discrete, n_discrete))
+    ztzG = np.zeros(shape=(n_dim, n_dim, L, L))
 
     for i in range(n_dim):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
-            for tau in range(n_discrete):
+            for tau in range(L):
                 for tau_p in range(tau + 1):
                     if tau_p == 0:
                         if tau == 0:
@@ -114,58 +112,57 @@ def _get_ztzG(events, n_discrete):
     return ztzG
 
 
-def get_ztzG(events, n_discrete):
+def get_ztzG(events, L):
     """
     events.shape = n_dim, n_grid
-    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
-    zLtzG.shape = n_dim, n_dim, n_discrete
+    ztzG.shape = n_dim, n_dim, L, L
+    zLtzG.shape = n_dim, n_dim, L
     """
-    ztzG = _get_ztzG(events, n_discrete)
-    idx = np.arange(n_discrete)
+    ztzG = _get_ztzG(events, L)
+    idx = np.arange(L)
     ztzG_nodiag = ztzG.copy()
     ztzG_nodiag[:, :, idx, idx] = 0.0
     ztzG_ = np.transpose(ztzG_nodiag, axes=(1, 0, 3, 2)) + ztzG
-    # zLtzG = ztzG_.sum(3)
-    print(ztzG_)
+
     return ztzG_
 
 
-def get_ztzG_(events, n_discrete):
+def get_ztzG_(events, L):
     """
     events.shape = n_dim, n_grid
-    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
+    ztzG.shape = n_dim, n_dim, L, L
     """
     n_dim, _ = events.shape
-    ztzG = np.zeros(shape=(n_dim, n_dim, n_discrete, n_discrete))
+    ztzG = np.zeros(shape=(n_dim, n_dim, L, L))
 
-    diff_tau = np.zeros(shape=(n_dim, n_dim, n_discrete))
+    diff_tau = np.zeros(shape=(n_dim, n_dim, L))
     for i in range(n_dim):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
-            diff_tau[0] = ei @ ej
-            for tau in range(1, n_discrete):
+            diff_tau[i, j, 0] = ei @ ej
+            for tau in range(1, L):
                 diff_tau[i, j, tau] = ei[:-tau] @ ej[tau:]
             ztzG[i, j] = toeplitz(diff_tau[i, j])
     return ztzG
 
 
 """
-def get_ztzG2(events, n_discrete):
+def get_ztzG2(events, L):
     n_dim, _ = events.shape
 
     ztzG = np.zeros(shape=(n_dim, n_dim,
-                           n_discrete,
-                           n_discrete))
+                           L,
+                           L))
     for i in range(n_dim):
         ei = events[i]
         for j in range(n_dim):
             ej = events[j]
             ztzG[i, j, 0, 0] = ei @ ej
-            for tau in range(1, n_discrete):
+            for tau in range(1, L):
                 ztzG[i, j, tau, 0] = ei[:-tau] @ ej[tau:]
                 ztzG[i, j, 0, tau] = ei[tau:] @ ej[:-tau] #le terme en tau_p
-                for tau_p in range(1, n_discrete):
+                for tau_p in range(1, L):
                     if (tau_p == tau):
                         ztzG[i, j, tau, tau] = ei[:-tau] @ ej[:-tau]
                     elif (tau > tau_p):
@@ -179,41 +176,41 @@ def get_ztzG2(events, n_discrete):
 """
 
 
-def get_zLG(events, n_discrete):
+def get_zLG(events, L):
     """
     events.shape = n_dim, n_grid
-    zG.shape = n_dim, n_discrete
+    zG.shape = n_dim, L
     zLG.shape = n_dim
     """
     n_dim, _ = events.shape
 
     zLG = np.zeros(n_dim)
-    zG = get_zG(events, n_discrete)
+    zG = get_zG(events, L)
     for i in range(n_dim):
         zLG[i] = zG[i].sum()
 
     return zLG
 
 
-def get_zLN(events, n_discrete):
+def get_zLN(events, L):
     """
     events.shape = n_dim, n_grid
-    zN.shape = n_dim, n_dim, n_discrete
+    zN.shape = n_dim, n_dim, L
     zLN.shape = n_dim, n_dim
     """
-    zN = get_zN(events, n_discrete)
+    zN = get_zN(events, L)
     zLN = zN.sum(2)
 
     return zLN
 
 
-def get_zLtzG(events, n_discrete):
+def get_zLtzG(events, L):
     """
     events.shape = n_dim, n_grid
-    ztzG.shape = n_dim, n_dim, n_discrete, n_discrete
-    zLtzG.shape = n_dim, n_dim, n_discrete
+    ztzG.shape = n_dim, n_dim, L, L
+    zLtzG.shape = n_dim, n_dim, L
     """
-    ztzG = get_ztzG(events, n_discrete)
+    ztzG = get_ztzG(events, L)
     zLtzG = ztzG.sum(3)
 
     return zLtzG

@@ -1,51 +1,54 @@
 # %% import stuff
 # import libraries
 import itertools
+import pandas as pd
 import time
 import numpy as np
 import torch
-import pandas as pd
 from joblib import Parallel, delayed, Memory
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
+from fadin.utils.utils import l2_error
 
 
-################################
-# Meta parameters
-################################
+mem = Memory(location=".", verbose=2)
 
-dt = 0.01
-T = 10_000
-size_grid = int(T / dt) + 1
-
-mem = Memory(location="__cache__", verbose=2)
 
 # %% simulate data
 # Simulated data
 ################################
 
-baseline = np.array([.1])
-alpha = np.array([[0.8]])
-decay = np.array([[5]])
+baseline = np.array([.1, .2])
+alpha = np.array([[0.8, 0.1], [0.1, 0.8]])
+decay = np.array([[5, 3], [4, 6]])
 
 
 @mem.cache
 def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     L = int(1 / dt)
     discretization = torch.linspace(0, 1, L)
-    Exp = DiscreteKernelFiniteSupport(0, 1, dt, kernel='Exponential', n_dim=1)
-    kernel_values = Exp.eval(
+    n_dim = decay.shape[0]
+    EXP = DiscreteKernelFiniteSupport(0, 1, dt, kernel='Exponential', n_dim=n_dim)
+
+    kernel_values = EXP.eval(
         [torch.Tensor(decay)], discretization
     )
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
-    k = kernel_values[0, 0].double().numpy()
+    k11 = kernel_values[0, 0].double().numpy()
+    k12 = kernel_values[0, 1].double().numpy()
+    k21 = kernel_values[1, 0].double().numpy()
+    k22 = kernel_values[1, 1].double().numpy()
 
-    tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
-    kernels = [[tf]]
+    tf11 = HawkesKernelTimeFunc(t_values=t_values, y_values=k11)
+    tf12 = HawkesKernelTimeFunc(t_values=t_values, y_values=k12)
+    tf21 = HawkesKernelTimeFunc(t_values=t_values, y_values=k21)
+    tf22 = HawkesKernelTimeFunc(t_values=t_values, y_values=k22)
+
+    kernels = [[tf11, tf12], [tf21, tf22]]
     hawkes = SimuHawkes(
         baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
     )
@@ -54,38 +57,40 @@ def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     events = hawkes.timestamps
     return events
 
+    # %% solver
+##
 
-events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
+# %% solver
 
 
 @mem.cache
-def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
+def run_solver(events, decay_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
     solver = FaDIn("Exponential",
                    [torch.tensor(decay_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt,
-                   solver="RMSprop",
+                   dt, solver="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
                    random_state=0,
                    device="cpu",
-                   optimize_kernel=True
-                   )
+                   optimize_kernel=True,
+                   precomputations=True,
+                   side_effects=False)
+
     print(time.time() - start)
     results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_alpha=results['param_alpha'][-10:].mean().item(),
-                    param_kernel=[results['param_kernel'][0][-10:].mean().item()])
+    results_ = dict(param_baseline=results['param_baseline'][-10:].mean(0),
+                    param_alpha=results['param_alpha'][-10:].mean(0),
+                    param_kernel=[results['param_kernel'][0][-10:].mean(0)])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
     results_["dt"] = dt
     return results_
-
 
 # %% eval on grid
 
@@ -97,8 +102,9 @@ def run_experiment(baseline, alpha, decay, T, dt, seed=0):
     alpha_init = alpha + v
     decay_init = decay + v
 
-    results = run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed)
-
+    results = run_solver(events, decay_init,
+                         baseline_init, alpha_init,
+                         dt, T, seed)
     return results
 
 
@@ -116,21 +122,14 @@ all_results = Parallel(n_jobs=n_jobs, verbose=10)(
 
 # save results
 df = pd.DataFrame(all_results)
+
 df['param_decay'] = df['param_kernel'].apply(lambda x: x[0])
-true_param = {'baseline': .1, 'alpha': 0.8, 'decay': 5}
-for param, value in true_param.items():
-    df[param] = value
 
+df['err_baseline'] = df['param_baseline'].apply(lambda x: l2_error(x, baseline))
+df['err_alpha'] = df['param_alpha'].apply(lambda x: l2_error(x, alpha))
+df['err_decay'] = df['param_decay'].apply(lambda x: l2_error(x, decay))
 
-def compute_norm2_error(s):
-    return np.sqrt(np.array([(s[param] - s[f'param_{param}'])**2
-                            for param in ['baseline', 'alpha', 'decay']]).sum())
+df['err_sum'] = np.sqrt(df['err_baseline']**2 + df['err_alpha']**2 +
+                        df['err_decay']**2)
 
-
-df['err_norm2'] = df.apply(
-    lambda x: compute_norm2_error(x), axis=1)
-
-df.to_csv('results/error_discrete_EXP.csv', index=False)
-
-# df['param_sigma'] = df['param_kernel'].apply(lambda x: x[1])
-# , 'sigma': 0.3}
+df.to_csv('results/error_discrete_EXP_m.csv', index=False)

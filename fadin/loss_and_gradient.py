@@ -11,8 +11,6 @@ def l2loss_conv(intensity, events, delta):
     events : tensor, shape (n_trials, n_channels, n_times)
     delta : float
             step size of the discretization grid.
-    end_time : float
-        The end time of grid.
     """
     return 2 * (((intensity**2).sum(1) * 0.5 * delta -
                  (intensity * events).sum(1)).sum()) / events.sum()
@@ -156,7 +154,8 @@ def get_grad_mu(zG, baseline, adjacency, kernel,
         for j in range(n_dim):
             temp += adjacency[k, j] * (zG[j] @ kernel[k, j])
         grad_mu[k] = delta * temp
-        grad_mu[k] += end_time * baseline[k] - n_events[k]
+        grad_mu[k] += end_time * baseline[k]
+        grad_mu[k] -= n_events[k]
 
     return 2 * (grad_mu / n_events.sum())
 
@@ -211,15 +210,20 @@ def get_grad_theta(zG, zN, ztzG, baseline,
             for k in range(n_dim):
                 cst2 = adjacency[m, n] * adjacency[m, k]
                 temp_ = 0
-                temp_ = (kernel[m, k].view(1, L)
-                         * (ztzG[n, k] * grad_kernel[m, n].view(L, 1)).sum(0))
+                temp_ += 2 * (kernel[m, k].view(1, L)
+                              * (ztzG[n, k] * grad_kernel[m, n].view(L, 1)).sum(0))
+                # temp_ += (grad_kernel[m, n].view(1, L)
+                #          * (ztzG[k, n] * kernel[m, k].view(L, 1)).sum(0))
                 # for tau in range(L):
-                #    for taup in range(L):
-                #        temp_ += (grad_kernel[m, l, tau]
-                #                  * kernel[m, k, taup]
-                #                  * ztzG[l, k, tau, taup])
+                #   for taup in range(L):
+                #       temp_ += (grad_kernel[m, n, tau]
+                #                 * kernel[m, k, taup]
+                #              * ztzG[n, k, tau, taup])
+                #       temp_ += (grad_kernel[m, n, taup]
+                #                 * kernel[m, k, tau]
+                #              * ztzG[k, n, tau, taup])
                 temp += cst2 * temp_.sum()
 
-            grad_theta[m, n] += 2 * delta * temp
+            grad_theta[m, n] += delta * temp
 
     return grad_theta / n_events.sum()

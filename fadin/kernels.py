@@ -88,19 +88,19 @@ class DiscreteKernelFiniteSupport(object):
         intensity: tensor of size (dim x size_grid)
         """
         kernel_values = self.eval(kernel_param, discretization)
-
+        # print("calcul kernel", torch.isnan(kernel_values).any())
         size_grid = events_grid[0].shape[0]
         kernel_values_alp = kernel_values * alpha[:, :, None]
-
+        # print("alpha fois kernel", torch.isnan(kernel_values_alp).any())
         intensity_temp = torch.zeros(self.n_dim, self.n_dim, size_grid)
         for i in range(self.n_dim):
             intensity_temp[i, :, :] = torch.conv_transpose1d(
                 events_grid[i].view(1, size_grid),
                 kernel_values_alp[:, i].view(1, self.n_dim, self.L))[
                     :, :-self.L + 1]
-
+        # print("intens calcul", torch.isnan(intensity_temp).any())
         intensity_values = intensity_temp.sum(0) + baseline.unsqueeze(1)
-
+        # print("baseline add intens", torch.isnan(intensity_temp).any())
         return intensity_values
 
 
@@ -113,8 +113,8 @@ def RaisedCosine(kernel_params, time_values):
     values = torch.zeros(n_dim, n_dim, len(time_values))
     for i in range(n_dim):
         for j in range(n_dim):
-            values[i, j] = (1 + torch.cos((time_values - u[i, j]) / sigma[i, j]
-                                          * np.pi - np.pi))
+            values[i, j] = (1 + torch.cos(((time_values - u[i, j]) / sigma[i, j]
+                                          * np.pi) - np.pi))
 
             mask_kernel = (time_values < u[i, j]) | (
                 time_values > (u[i, j] + 2 * sigma[i, j]))
@@ -133,8 +133,8 @@ def grad_RaisedCosine(kernel_params, time_values, L):
         for j in range(n_dim):
             temp_1 = ((time_values - u[i, j]) / sigma[i, j])
             temp_2 = temp_1 * np.pi - np.pi
-            grad_u[i, j] = np.pi * torch.sin(temp_2) / sigma[i, j]  # / temp_3
-            grad_sigma[i, j] = (np.pi * temp_1 / sigma[i, j]) * torch.sin(temp_2)
+            grad_u[i, j] = np.pi * torch.sin(temp_2) / sigma[i, j]
+            grad_sigma[i, j] = (np.pi * temp_1 / sigma[i, j]**2) * torch.sin(temp_2)
             mask_grad = (time_values < u[i, j]) | (
                 time_values > (u[i, j] + 2 * sigma[i, j]))
             grad_u[i, j, mask_grad] = 0.
