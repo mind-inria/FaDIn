@@ -31,10 +31,8 @@ def simulate_data(n_dim, T, dt, seed=0):
     alpha = 0.001 + np.zeros((n_dim, n_dim))
     decay = 5 + np.zeros((n_dim, n_dim))
 
-    Exp = DiscreteKernelFiniteSupport(0, 1, dt, kernel='Exponential', n_dim=n_dim)
-    kernel_values = Exp.eval(
-        [torch.Tensor(decay)], discretization
-    )
+    Exp = DiscreteKernelFiniteSupport(dt, n_dim, kernel='exponential')
+    kernel_values = Exp.kernel_eval([torch.Tensor(decay)], discretization)
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -63,11 +61,11 @@ def simulate_data(n_dim, T, dt, seed=0):
 def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 800
-    solver = FaDIn("Exponential",
+    solver = FaDIn("exponential",
                    [torch.tensor(decay_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt, solver="RMSprop",
+                   delta=dt, optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
@@ -75,7 +73,7 @@ def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
                    device="cpu",
                    optimize_kernel=True,
                    precomputations=True,
-                   side_effects=False)
+                   ztzG_approx=True)
 
     print(time.time() - start)
     results = solver.fit(events, T)

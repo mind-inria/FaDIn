@@ -53,21 +53,21 @@ def get_results(results):
     for i in range(2):
         for j in range(n_T):
             for k in range(n_dt):
-                for l in range(n_seeds):
+                for m in range(n_seeds):
                     idx = (
                         i * (n_T * n_dt * n_seeds)
                         + j * (n_dt * n_seeds)
                         + k * (n_seeds)
-                        + l
+                        + m
                     )
-                    our_results[i, j, k, l] = all_results[idx][0]["comp_time"]
-                    tick_results[i, j, k, l] = all_results[idx][1]["comp_time"]
+                    our_results[i, j, k, m] = all_results[idx][0]["comp_time"]
+                    tick_results[i, j, k, m] = all_results[idx][1]["comp_time"]
     return our_results, tick_results
 
 
 comp_time_FaDIn, comp_time_tick = get_results(all_results)
 
-## Load results on autodiff solver
+# Load results on autodiff solver
 file_name = "results/comp_autodiff_.pkl"
 open_file = open(file_name, "rb")
 results_autodiff = pickle.load(open_file)
@@ -86,9 +86,9 @@ def get_results_(results, T_list, dt_list, seeds):
     comptime_autodiff = np.zeros((n_T, n_dt, n_seeds))
     for j in range(n_T):
         for k in range(n_dt):
-            for l in range(n_seeds):
-                idx = j * (n_dt * n_seeds) + k * (n_seeds) + l
-                comptime_autodiff[j, k, l] = results[idx]["time_autodiff"]
+            for m in range(n_seeds):
+                idx = j * (n_dt * n_seeds) + k * (n_seeds) + m
+                comptime_autodiff[j, k, m] = results[idx]["time_autodiff"]
 
     return comptime_autodiff
 
@@ -111,9 +111,9 @@ def mean_int(x, y, dt):
 
 
 def plot_nonparam(all_results, comp_time_our, comp_time_tick,
-                  comptime_autodiff, autodiff_, l, T_idx, kernel="RC"):
+                  comptime_autodiff, autodiff_, m, T_idx, kernel="RC"):
 
-    dt = all_results[l][0]["dt"]
+    dt = all_results[m][0]["dt"]
     dt_list = all_results[-1]["dt_list"]
     T_list = all_results[-1]["T_list"]
     L = int(1 / dt)
@@ -125,17 +125,10 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick,
         mu = np.array([[0.5]])
         sigma = np.array([[0.3]])
         u = mu - sigma
-        RC = DiscreteKernelFiniteSupport(lower=0, upper=1, delta=dt, 
+        RC = DiscreteKernelFiniteSupport(lower=0, upper=1, delta=dt,
                                          kernel='RaisedCosine', n_dim=1)
-        true_kernel = (
-            RC.eval(
-                [torch.Tensor(u),
-                torch.Tensor(sigma)],
-                discretization
-            )
-            .squeeze()
-            .numpy()
-        )
+        true_kernel = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
+                                     discretization).squeeze().numpy()
     else:
         K_idx = 1
         true_kernel = skewnorm.pdf(np.linspace(-3, 3, L), 3)
@@ -149,8 +142,8 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick,
 
     autodiff = comptime_autodiff[0]
 
-    our_kernel = all_results[l][0]["kernel"]
-    tick_kernel = all_results[l][1]["kernel"] /0.8
+    our_kernel = all_results[m][0]["kernel"]
+    tick_kernel = all_results[m][1]["kernel"] / 0.8
     tick_kernel = np.insert(tick_kernel, [-1], tick_kernel[-1])
     T = T_list[T_idx]
     fig1, ax1 = plt.subplots(1, 1)
@@ -219,7 +212,7 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick,
     fig2.tight_layout()
     fig1.savefig(
         "plots/comparison/ker_comparison_nonparam_T={}_dt={}_K={}.pdf".format(
-            T, np.round(all_results[l][0]["dt"], 3), kernel
+            T, np.round(all_results[m][0]["dt"], 3), kernel
         ),
         # we need a bounding box in inches
         bbox_inches="tight",
@@ -228,9 +221,8 @@ def plot_nonparam(all_results, comp_time_our, comp_time_tick,
         "plots/comparison/time_comparison_nonparam_T={}_K={}.pdf".format(T, kernel),
         bbox_inches="tight",
     )
-    fig3.savefig(
-        "plots/comparison/legend_fig2__T={}_K={}.pdf".format(T, kernel), bbox_inches="tight",
-    )
+    fig3.savefig("plots/comparison/legend_fig2__T={}_K={}.pdf".format(T, kernel),
+                 bbox_inches="tight")
     return 0
 
 

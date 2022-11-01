@@ -3,7 +3,7 @@ import torch
 
 from fadin.utils.compute_constants import get_zG, \
     get_zN, get_ztzG
-from fadin.utils.validation import check_random_state
+from fadin.utils.utils import check_random_state
 
 
 def test_zG():

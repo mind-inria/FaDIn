@@ -43,27 +43,27 @@ def test_eval_grad():
     sigma = torch.randn(2, 2)
     kernel_params = [m, sigma]
 
-    kernel = "TruncatedGaussian"
+    kernel = "truncated_gaussian"
     L = 100
     n_dim = 2
     delta = 1 / L
     t = torch.linspace(0, 1, L)
     lower = 0.
     upper = 1
-    TG = DiscreteKernelFiniteSupport(lower, upper, delta, kernel, n_dim)
-    closedform = TG.eval(kernel_params, t)
+    TG = DiscreteKernelFiniteSupport(delta, n_dim, kernel, lower, upper)
+    closedform = TG.kernel_eval(kernel_params, t)
 
-    TG = DiscreteKernelFiniteSupport(lower, upper, delta, tg_def, n_dim)
-    callabled = TG.eval(kernel_params, t)
+    TG = DiscreteKernelFiniteSupport(delta, n_dim, tg_def, lower, upper)
+    callabled = TG.kernel_eval(kernel_params, t)
 
     for i in range(len(kernel_params)):
         assert torch.allclose(closedform[i], callabled[i])
 
-    TG = DiscreteKernelFiniteSupport(lower, upper, delta, kernel, n_dim)
-    closedform_grad = TG.get_grad(kernel_params, t)
+    TG = DiscreteKernelFiniteSupport(delta, n_dim, kernel, lower, upper)
+    closedform_grad = TG.grad_eval(kernel_params, t)
 
-    TG = DiscreteKernelFiniteSupport(lower, upper, delta, tg_def, n_dim, tg_grad)
-    callabled_grad = TG.get_grad(kernel_params, t)
+    TG = DiscreteKernelFiniteSupport(delta, n_dim, tg_def, lower, upper, tg_grad)
+    callabled_grad = TG.grad_eval(kernel_params, t)
 
     for i in range(len(kernel_params)):
         assert torch.allclose(closedform_grad[i], callabled_grad[i])

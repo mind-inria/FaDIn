@@ -14,7 +14,8 @@ plt.rcParams["grid.linestyle"] = "--"
 plt.rcParams['xtick.labelsize'] = FONTSIZE
 plt.rcParams['ytick.labelsize'] = FONTSIZE
 plt.rcParams['font.size'] = FONTSIZE
-plt.rc('legend', fontsize=FONTSIZE-1)
+plt.rc('legend', fontsize=FONTSIZE - 1)
+
 
 def plot_fig1_paper(kernel='TG', param='baseline', leg=False):
     """
@@ -39,13 +40,12 @@ def plot_fig1_paper(kernel='TG', param='baseline', leg=False):
         methods = [("RC", "s-", None)]
     elif is_EXP:
         df['estimates'] = 'EXP'
-        methods = [("EXP", "s-", None)]                
+        methods = [("EXP", "s-", None)]
     else:
         raise ValueError()
 
     new_col = 'l2{}'.format(param)
     col_param = 'param_{}'.format(param)
-    
 
     palette = [matplotlib.cm.viridis_r(x) for x in np.linspace(0, 1, 5)][1:]
 
@@ -77,7 +77,7 @@ def plot_fig1_paper(kernel='TG', param='baseline', leg=False):
             ax3.legend(
                 custom_lines_T,
                 [r"$10^{%d}$" % np.log10(t) for t in T],
-                title="$T$", loc="center",  ncol=4)
+                title="$T$", loc="center", ncol=4)
             ax3.axis("off")
             fig3.savefig(f"plots/approx/legend_{kernel}_{param}.pdf")
 
@@ -88,7 +88,6 @@ def plot_fig1_paper(kernel='TG', param='baseline', leg=False):
 
     plt.savefig(f"plots/approx/fig1_{kernel}_{param}.png", bbox_inches='tight')
     plt.savefig(f"plots/approx/fig1_{kernel}_{param}.pdf", bbox_inches='tight')
-
 
 
 plt.close('all')
@@ -106,5 +105,3 @@ plot_fig1_paper(kernel='RC', param='sigma')
 plot_fig1_paper(kernel='EXP', param='baseline')
 plot_fig1_paper(kernel='EXP', param='alpha')
 plot_fig1_paper(kernel='EXP', param='decay')
-
-

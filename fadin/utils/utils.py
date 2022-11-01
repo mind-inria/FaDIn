@@ -1,10 +1,10 @@
 import numpy as np
 import torch
-import torch.optim as optim
-# from scipy.sparse import csr_array
 
 
 def kernel_normalization(kernel_values, time_values, delta, lower=0, upper=1):
+    """Normalize the given kernel on the given discrete grid.
+    """
     kernel_norm = kernel_values.clone()
     mask_kernel = (time_values <= lower) | (time_values > upper)
     kernel_norm[:, :, mask_kernel] = 0.
@@ -15,11 +15,15 @@ def kernel_normalization(kernel_values, time_values, delta, lower=0, upper=1):
 
 
 def kernel_normalized(kernel, kernel_params, time_values, delta, lower, upper):
+    """Normalize the given kernel on the given discrete grid.
+    """
     values = kernel(kernel_params, time_values, lower, upper)
     return kernel_normalization(values, time_values, delta, lower, upper)
 
 
 def kernel_deriv_norm(function, grad_function_param, delta):
+    """Normalize the given gradient kernels on the given discrete grid.
+    """
     function[0] = 0.
     grad_function_param[0] = 0.
 
@@ -32,6 +36,9 @@ def kernel_deriv_norm(function, grad_function_param, delta):
 
 def grad_kernel_callable(kernel, grad_kernel, kernel_params,
                          time_values, L, lower, upper, n_dim):
+    """Transform the callables ``kernel and ``grad_kernel`` into
+       gradient list of parameters.
+    """
     delta = 1 / L
     n_param = len(kernel_params)
     function = kernel(kernel_params, time_values, lower, upper)
@@ -51,6 +58,8 @@ def grad_kernel_callable(kernel, grad_kernel, kernel_params,
 
 
 def check_params(list_params, number_params):
+    """Check if the list of parameters is equal to the number of parameters.
+    """
     if len(list_params) != number_params:
         raise Exception("The number of parameters for this kernel\
                          should be equal to {}".format(number_params))
@@ -58,6 +67,8 @@ def check_params(list_params, number_params):
 
 
 def projected_grid(events, grid_step, size_grid):
+    """Project the events on the defined grid.
+    """
     n_dim = len(events)
     size_discret = int(1 / grid_step)
 
@@ -68,50 +79,52 @@ def projected_grid(events, grid_step, size_grid):
         temp2 = torch.round(temp * size_discret).long()
         idx, data = np.unique(temp2, return_counts=True)
         events_grid[i, idx] += torch.tensor(data)
-        #  events_grid_sparse = csr_array((data, idx, [0, len(data)]))
 
-    return events_grid  # , events_grid_sparse
+    return events_grid
 
 
-def optimizer(param, lr, solver='GD'):
-    """
+def optimizer(param, lr, solver='RMSprop'):
+    """Set the Pytorch optimizer.
+
     Parameters
     ----------
     param : XXX
     lr : float
         learning rate
     solver : str
-        solver name, possible values are 'GD', 'RMSProp', 'Adam', 'LBFGS'
+        solver name, possible values are 'GD', 'RMSProp', 'Adam'
         or 'CG'
     Returns
     -------
     XXX
     """
     if solver == 'GD':
-        return optim.SGD(param, lr=lr)
+        return torch.optim.SGD(param, lr=lr)
     elif solver == 'RMSprop':
-        return optim.RMSprop(param, lr=lr)
+        return torch.optim.RMSprop(param, lr=lr)
     elif solver == 'Adam':
-        return optim.Adam(param, lr=lr, betas=(0.5, 0.999))
-    elif solver == 'LBFGS':
-        return optim.LBFGS(param, lr=lr)
-    elif solver == 'CG':
-        # XXX add conjugate gradient (not available in torch)
-        raise ValueError(
-            "Conjugate gradient solver is not yet implemented."
-        )
+        return torch.optim.Adam(param, lr=lr, betas=(0.5, 0.999))
     else:
-        raise ValueError(
-            "solver must be 'GD', 'RMSProp', 'Adam', 'LBFGS' or 'CG',"
-            f"got '{solver}'"
-        )
-
-
-def shift(x, shift):
-    p = np.roll(x, shifts=shift)
-    p[:shift] = 0.
-    return p
+        raise NotImplementedError(
+            "solver must be 'GD', 'RMSProp', 'Adam'," f"got '{solver}'")
 
 
 def l2_error(x, a):
     return torch.sqrt(((x - a)**2).sum()).item()
+
+
+def check_random_state(seed):
+    """Turn seed into a np.random.RandomState instance.
+    If seed is None, return the RandomState singleton used by np.random.
+    If seed is an int, return a new RandomState instance seeded with seed.
+    If seed is already a RandomState instance, return it.
+    Otherwise raise ValueError.
+    """
+    if seed is None or seed is np.random:
+        return np.random.mtrand._rand
+    if isinstance(seed, (int, np.integer)):
+        return np.random.RandomState(seed)
+    if isinstance(seed, np.random.RandomState):
+        return seed
+    raise ValueError('%r cannot be used to seed a numpy.random.RandomState'
+                     ' instance' % seed)

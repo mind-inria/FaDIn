@@ -37,10 +37,9 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0, kernel='RC'):
     discretization = torch.linspace(0, 1, L)
     u = mu - sigma
     if kernel == 'RC':
-        RC = DiscreteKernelFiniteSupport(0, 1, dt, kernel='RaisedCosine')
-        kernel_values = RC.eval(
-            [torch.Tensor(u), torch.Tensor(sigma)], discretization
-        )  # * dt
+        RC = DiscreteKernelFiniteSupport(dt, 1, kernel='raised_cosine')
+        kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
+                                       discretization)  # * dt
         kernel_values = kernel_values * alpha[:, :, None]
         k = kernel_values[0, 0].double().numpy()
     elif kernel == 'SG':
@@ -70,13 +69,13 @@ events, hawkes = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=1, kernel
 @mem.cache
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
     max_iter = 800
-    solver = FaDIn("RaisedCosine",
+    solver = FaDIn("raised_cosine",
                    [torch.tensor(u_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt,
-                   solver="RMSprop",
+                   delta=dt,
+                   optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
@@ -117,10 +116,10 @@ def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0, kernel='RC'):
     sigma_hd = results['param_kernel'][1][-1]
     alpha_hd = results['param_alpha'][-1]
 
-    RC = DiscreteKernelFiniteSupport(0, 1, dt, kernel='RaisedCosine')
-    kernel_values = RC.eval([torch.Tensor(u_hd),
-                            torch.Tensor(sigma_hd)],
-                            discretization).squeeze().numpy()
+    RC = DiscreteKernelFiniteSupport(dt, n_dim=1, kernel='raised_cosine')
+    kernel_values = RC.kernel_eval([torch.Tensor(u_hd),
+                                    torch.Tensor(sigma_hd)],
+                                   discretization).squeeze().numpy()
     kernel_values *= alpha_hd.item()
 
     res_our = dict(kernel=kernel_values, comp_time=time_our,

@@ -32,11 +32,10 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
     discretization = torch.linspace(0, 1, L)
     u = mu - sigma
     n_dim = u.shape[0]
-    RC = DiscreteKernelFiniteSupport(0, 1, dt, kernel='RaisedCosine', n_dim=n_dim)
+    RC = DiscreteKernelFiniteSupport(dt, n_dim, kernel='raised_cosine')
 
-    kernel_values = RC.eval(
-        [torch.Tensor(u), torch.Tensor(sigma)], discretization
-    )
+    kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
+                                   discretization)
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -67,12 +66,12 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = FaDIn("RaisedCosine",
+    solver = FaDIn("raised_cosine",
                    [torch.tensor(u_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt, solver="RMSprop",
+                   delta=dt, optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
@@ -80,7 +79,7 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
                    device="cpu",
                    optimize_kernel=True,
                    precomputations=True,
-                   side_effects=False)
+                   ztzG_approx=True)
 
     print(time.time() - start)
     results = solver.fit(events, T)

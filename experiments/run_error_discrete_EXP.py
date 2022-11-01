@@ -35,10 +35,8 @@ decay = np.array([[5]])
 def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     L = int(1 / dt)
     discretization = torch.linspace(0, 1, L)
-    Exp = DiscreteKernelFiniteSupport(0, 1, dt, kernel='Exponential', n_dim=1)
-    kernel_values = Exp.eval(
-        [torch.Tensor(decay)], discretization
-    )
+    Exp = DiscreteKernelFiniteSupport(dt, 1, kernel='exponential')
+    kernel_values = Exp.kernel_eval([torch.Tensor(decay)], discretization)
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -62,12 +60,12 @@ events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
 def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = FaDIn("Exponential",
+    solver = FaDIn("exponential",
                    [torch.tensor(decay_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt,
-                   solver="RMSprop",
+                   delta=dt,
+                   optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,

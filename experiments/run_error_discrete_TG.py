@@ -37,10 +37,9 @@ sigma = np.array([[0.3]])
 def simulate_data(baseline, alpha, m, sigma, T, dt, seed=0):
     L = int(1 / dt)
     discretization = torch.linspace(0, 1, L)
-    TG = DiscreteKernelFiniteSupport(0, 1, dt, kernel='TruncatedGaussian', n_dim=1)
-    kernel_values = TG.eval(
-        [torch.Tensor(m), torch.Tensor(sigma)], discretization
-    )  # * dt
+    TG = DiscreteKernelFiniteSupport(dt, 1, kernel='truncated_gaussian')
+    kernel_values = TG.kernel_eval([torch.Tensor(m), torch.Tensor(sigma)],
+                                   discretization)  # * dt
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -64,13 +63,13 @@ events = simulate_data(baseline, alpha, m, sigma, T, dt, seed=0)
 def run_solver(events, m_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = FaDIn("TruncatedGaussian",
+    solver = FaDIn("truncated_gaussian",
                    [torch.tensor(m_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
-                   dt,
-                   solver="RMSprop",
+                   delta=dt,
+                   optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
