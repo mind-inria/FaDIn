@@ -45,7 +45,7 @@ def get_zN(events_grid, L):
     return zN
 
 
-# @numba.jit(nopython=True, cache=True)
+@numba.jit(nopython=True, cache=True)
 def _get_ztzG(events_grid, L):
     """
     events_grid.shape = n_dim, n_grid

@@ -1,5 +1,6 @@
 import torch
 import time
+import numpy as np
 
 from fadin.utils.utils import optimizer, projected_grid
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, get_ztzG_approx
@@ -147,13 +148,13 @@ class FaDIn(object):
         if self.precomputations:
             print('number of events is:', n_events)
             start = time.time()
-            zG = get_zG(events_grid.numpy(), self.L)
-            zN = get_zN(events_grid.numpy(), self.L)
+            zG = get_zG(events_grid.double().numpy(), self.L)
+            zN = get_zN(events_grid.double().numpy(), self.L)
 
             if self.ztzG_approx:
-                ztzG = get_ztzG_approx(events_grid.numpy(), self.L)
+                ztzG = get_ztzG_approx(events_grid.double().numpy(), self.L)
             else:
-                ztzG = get_ztzG(events_grid.numpy(), self.L)
+                ztzG = get_ztzG(events_grid.double().numpy(), self.L)
 
             zG = torch.tensor(zG).float()
             zN = torch.tensor(zN).float()
