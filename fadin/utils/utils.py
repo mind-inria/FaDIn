@@ -66,13 +66,12 @@ def check_params(list_params, number_params):
     return 0
 
 
-def projected_grid(events, grid_step, size_grid):
+def projected_grid(events, grid_step, n_grid):
     """Project the events on the defined grid.
     """
     n_dim = len(events)
     size_discret = int(1 / grid_step)
-
-    events_grid = torch.zeros(n_dim, size_grid)
+    events_grid = torch.zeros(n_dim, n_grid)
     for i in range(n_dim):
         ei_torch = torch.tensor(events[i])
         temp = torch.round(ei_torch / grid_step) * grid_step

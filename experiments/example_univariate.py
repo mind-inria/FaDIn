@@ -12,7 +12,8 @@ from fadin.solver import FaDIn
 # Meta parameters
 ################################
 dt = 0.01
-T = 100000
+T = 1_000_000
+kernel_length = 1
 size_grid = int(T / dt) + 1
 
 # mem = Memory(location=".", verbose=2)
@@ -22,12 +23,12 @@ size_grid = int(T / dt) + 1
 
 
 # @mem.cache
-def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
+def simulate_data(baseline, alpha, mu, sigma, kernel_length, T, dt, seed=0):
+    L = int(kernel_length / dt)
+    discretization = torch.linspace(0, kernel_length, L)
     u = mu - sigma
     n_dim = u.shape[0]
-    RC = DiscreteKernelFiniteSupport(dt, n_dim, kernel='raised_cosine')
+    RC = DiscreteKernelFiniteSupport(dt, n_dim, kernel='truncated_gaussian')
     kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
                                    discretization)
     kernel_values = kernel_values * alpha[:, :, None]
@@ -46,20 +47,22 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
     return events
 
 # %% solver
-##
 
 
 # @mem.cache
-def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
+def run_solver(events, u_init, sigma_init, baseline_init,
+               alpha_init, kernel_length, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = FaDIn("raised_cosine",
+    solver = FaDIn(1,
+                   "truncated_gaussian",
                    [torch.tensor(u_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
+                   kernel_length=kernel_length,
                    delta=dt, optim="RMSprop",
-                   step_size=1e-3, max_iter=max_iter
+                   step_size=1e-3, max_iter=max_iter, criterion='l2'
                    )
 
     print(time.time() - start)
@@ -79,13 +82,14 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
 # %% Test
 
 
-baseline = np.array([1.1])
+baseline = np.array([.1])
 alpha = np.array([[0.8]])
-mu = np.array([[0.5]])
-sigma = np.array([[0.3]])
+middle = kernel_length / 2
+mu = np.array([[middle]])
+sigma = np.array([[.3]])
 u = mu - sigma
 
-events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0)
+events = simulate_data(baseline, alpha, mu, sigma, kernel_length, T, dt, seed=0)
 
 v = 0.2
 baseline_init = baseline + v
@@ -94,7 +98,7 @@ mu_init = mu
 sigma_init = sigma + v
 u_init = mu_init - sigma_init
 results = run_solver(events, u_init, sigma_init,
-                     baseline_init, alpha_init,
+                     baseline_init, alpha_init, 1,
                      dt, T, seed=0)
 
 print(np.abs(results['param_baseline'] - baseline))

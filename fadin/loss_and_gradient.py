@@ -19,6 +19,26 @@ def discrete_l2loss_conv(intensity, events_grid, delta):
                  (intensity * events_grid).sum(1)).sum()) / events_grid.sum()
 
 
+def discrete_llloss_conv(intensity, events_grid, delta):
+    """Compute the LL discrete loss using convolutions.
+
+    Parameters
+    ----------
+    intensity : tensor, shape (n_dim, n_grid)
+        Values of the intensity function evaluated  on the grid.
+
+    events_grid : tensor, shape (n_dim, n_grid)
+        Events projected on the pre-defined grid.
+
+    delta : float
+        Step size of the discretization grid.
+    """
+    mask = events_grid > 0
+    intens = torch.log(intensity[mask])
+    return (intensity.sum(1) * delta -
+            intens.sum()).sum() / events_grid.sum()
+
+
 def discrete_l2loss_precomputation(zG, zN, ztzG, baseline, alpha, kernel,
                                    n_events, delta, end_time):
     """Compute the l2 discrete loss using precomputation terms.
@@ -74,6 +94,17 @@ def term1(baseline):
     return torch.linalg.norm(baseline, ord=2)**2
 
 
+def term1_LL(baseline):
+    """Compute the value of the first term of the
+    discrete LL loss using precomputations
+
+    Parameters
+    ----------
+    baseline : tensor, shape (n_dim,)
+    """
+    return torch.linalg.norm(baseline, ord=1)
+
+
 def term2(zG, baseline, alpha, kernel):
     """Compute the value of the second term of the
     discrete l2 loss using precomputations
@@ -99,6 +130,30 @@ def term2(zG, baseline, alpha, kernel):
         for j in range(n_dim):
             temp += alpha[i, j] * (zG[j] @ kernel[i, j])
         res += baseline[i] * temp
+
+    return res
+
+
+def term2_LL(zG, alpha, kernel):
+    """Compute the value of the second term of the
+    discrete LL loss using precomputations
+
+    Parameters
+    ----------
+    zG : tensor, shape (n_dim, L)
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+    """
+    n_dim, _ = zG.shape
+
+    res = 0
+    for i in range(n_dim):
+        for j in range(n_dim):
+            res += alpha[i, j] * (zG[j] @ kernel[i, j])
 
     return res
 
@@ -202,6 +257,49 @@ def get_grad_baseline(zG, baseline, alpha, kernel,
     """
     n_dim, _, _ = kernel.shape
 
+    cst1 = end_time * baseline
+    cst2 = 0.5 * n_events.sum()
+
+    dot_kernel = torch.einsum('kju,ju->kj', kernel, zG)
+    dot_kernel_ = (dot_kernel * alpha).sum(1)
+    
+    grad_baseline = (dot_kernel_ * delta + cst1 - n_events) / cst2
+
+    return grad_baseline 
+
+
+def get_grad_baseline_(zG, baseline, alpha, kernel,
+                      delta, n_events, end_time):
+    """Return the gradient of the discrete l2 loss w.r.t. the baseline.
+
+    Parameters
+    ----------
+    zG : tensor, shape (n_dim, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    end_time : float
+        The end time of the Hawkes process.
+
+    Returns
+    ----------
+    grad_baseline: tensor, shape (dim,)
+    """
+    n_dim, _, _ = kernel.shape
+
     grad_baseline = torch.zeros(n_dim)
     for k in range(n_dim):
         temp = 0
@@ -215,6 +313,54 @@ def get_grad_baseline(zG, baseline, alpha, kernel,
 
 
 def get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
+    """Return the gradient of the discrete l2 loss w.r.t. alpha.
+
+    Parameters
+    ----------
+
+    zG : tensor, shape (n_dim, L)
+
+    zN : tensor, shape (n_dim, L)
+
+    ztzG : tensor, shape (n_dim, n_dim, L, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    Returns
+    ----------
+    grad_alpha : tensor, shape (n_dim, n_dim)
+    """
+    n_dim, _, _ = kernel.shape
+
+    cst1 = delta * baseline.view(n_dim,1)
+
+    dot_kernel = torch.einsum('njuv, knu->njkv', ztzG, kernel)
+    ker_ztzg =  torch.einsum('kju, njku->knj', kernel, dot_kernel)
+
+    term1 = torch.einsum('knj, kj->kn', ker_ztzg, alpha)
+    term2 = torch.einsum('knu, nu->kn', kernel, zG)
+    term3 = torch.einsum('knu, knu->kn', zN, kernel) 
+
+    grad_alpha_ = term1 * delta + cst1 * term2 - term3
+    grad_alpha = 2 * grad_alpha_ / n_events.sum()
+
+    return grad_alpha
+
+
+def get_grad_alpha_(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
     """Return the gradient of the discrete l2 loss w.r.t. alpha.
 
     Parameters
@@ -264,7 +410,8 @@ def get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
     return grad_alpha
 
 
-def get_grad_theta(zG, zN, ztzG, baseline, alpha, kernel, grad_kernel, delta, n_events):
+def get_grad_theta(zG, zN, ztzG, baseline, alpha, kernel, 
+                    grad_kernel, delta, n_events):
     """Return the gradient of the discrete l2 loss w.r.t. one kernel parameters.
 
     Parameters
@@ -272,7 +419,58 @@ def get_grad_theta(zG, zN, ztzG, baseline, alpha, kernel, grad_kernel, delta, n_
 
     zG : tensor, shape (n_dim, L)
 
-    zN : tensor, shape (n_dim, L)
+    zN : tensor, shape (n_dim, n_dim, L)
+
+    ztzG : tensor, shape (n_dim, n_dim, L, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    grad_kernel : list of tensor of shape (n_dim, n_dim, L)
+        Gradient values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    Returns
+    ----------
+    grad_theta : tensor, shape (n_dim, n_dim)
+    """
+    n_dim, _, L = kernel.shape
+
+    grad_theta_ = torch.zeros(n_dim, n_dim)
+    cst1 = 2 * alpha
+    cst2 =  delta * baseline.view(n_dim, 1) * cst1
+    cst3 = torch.einsum('mn, mk->mkn', alpha, alpha)
+    temp1 = torch.einsum('mnk, nk->mn', grad_kernel, zG)
+    temp2 = torch.einsum('mnk, mnk->mn', grad_kernel, zN)
+    temp3 = torch.einsum('nkuv, mnu->nkmv', ztzG, grad_kernel)
+    temp4 =  torch.einsum('mkv, nkmv->mknv', kernel, temp3)
+
+    grad_theta_ = cst2 * temp1 - cst1 * temp2 + 2 * delta * (cst3 * temp4.sum(3)).sum(1)
+    grad_theta = grad_theta_ / n_events.sum()
+
+    return grad_theta 
+
+
+def get_grad_theta_(zG, zN, ztzG, baseline, alpha, kernel, grad_kernel, delta, n_events):
+    """Return the gradient of the discrete l2 loss w.r.t. one kernel parameters.
+
+    Parameters
+    ----------
+
+    zG : tensor, shape (n_dim, L)
+
+    zN : tensor, shape (n_dim, n_dim, L)
 
     ztzG : tensor, shape (n_dim, n_dim, L, L)
 
@@ -312,20 +510,121 @@ def get_grad_theta(zG, zN, ztzG, baseline, alpha, kernel, grad_kernel, delta, n_
                 temp_ = 0
                 temp_ += 2 * (kernel[m, k].view(1, L)
                               * (ztzG[n, k] * grad_kernel[m, n].view(L, 1)).sum(0))
-                # temp_ += (grad_kernel[m, n].view(1, L)
-                #          * (ztzG[k, n] * kernel[m, k].view(L, 1)).sum(0))
-                # for tau in range(L):
-                #   for taup in range(L):
-                #       temp_ += (grad_kernel[m, n, tau]
-                #                 * kernel[m, k, taup]
-                #              * ztzG[n, k, tau, taup])
-                #       temp_ += (grad_kernel[m, n, taup]
-                #                 * kernel[m, k, tau]
-                #              * ztzG[k, n, tau, taup])
+
                 temp += cst2 * temp_.sum()
 
             grad_theta_[m, n] += delta * temp
 
     grad_theta = grad_theta_ / n_events.sum()
+
+    return grad_theta
+
+
+def get_grad_baseline_LL(n_events, end_time):
+    """Return the gradient of the discrete LL loss w.r.t. the baseline.
+
+    Parameters
+    ----------
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    end_time : float
+        The end time of the Hawkes process.
+
+    Returns
+    ----------
+    grad_baseline: tensor, shape (dim,)
+    """
+    n_dim = n_events.shape[0]
+
+    grad_baseline = torch.zeros(n_dim) + end_time
+    for k in range(n_dim):
+        grad_baseline[k] -= n_events[k]
+
+    return grad_baseline / n_events.sum()
+
+
+def get_grad_alpha_LL(zG, zN, kernel, delta, n_events):
+    """Return the gradient of the discrete LL loss w.r.t. alpha.
+
+    Parameters
+    ----------
+
+    zG : tensor, shape (n_dim, L)
+
+    zN : tensor, shape (n_dim, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    Returns
+    ----------
+    grad_alpha : tensor, shape (n_dim, n_dim)
+    """
+    n_dim, _, _ = kernel.shape
+
+    grad_alpha_ = torch.zeros(n_dim, n_dim)
+    for k in range(n_dim):
+        for n in range(n_dim):
+            grad_alpha_[k, n] += delta * (kernel[k, n] @ zG[n])
+            grad_alpha_[k, n] -= zN[k, n] @ kernel[k, n]
+
+    grad_alpha = grad_alpha_ / n_events.sum()
+
+    return grad_alpha
+
+
+def get_grad_theta_LL(zG, zN, alpha, kernel, grad_kernel, delta, n_events):
+    """Return the gradient of the discrete l2 loss w.r.t. one kernel parameters.
+
+    Parameters
+    ----------
+
+    zG : tensor, shape (n_dim, L)
+
+    zN : tensor, shape (n_dim, L)
+
+    ztzG : tensor, shape (n_dim, n_dim, L, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    grad_kernel : list of tensor of shape (n_dim, n_dim, L)
+        Gradient values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    Returns
+    ----------
+    grad_theta : tensor, shape (n_dim, n_dim)
+    """
+    n_dim, _, L = kernel.shape
+
+    grad_theta_ = torch.zeros(n_dim, n_dim)
+    for m in range(n_dim):
+        for n in range(n_dim):
+            grad_theta_[m, n] = alpha[m, n] * (grad_kernel[m, n] @ zG[n])
+            grad_theta_[m, n] -= alpha[m, n] * (grad_kernel[m, n] @ zN[m, n])
+
+    grad_theta = delta * grad_theta_ / n_events.sum()
 
     return grad_theta

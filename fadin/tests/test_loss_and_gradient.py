@@ -3,7 +3,8 @@ import torch
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.loss_and_gradient import discrete_l2loss_precomputation, \
     discrete_l2loss_conv, term1, term2, term3, term4, get_grad_baseline, \
-    get_grad_alpha, get_grad_theta
+    get_grad_alpha, get_grad_theta, get_grad_baseline_, get_grad_alpha_, \
+    get_grad_theta_
 from fadin.utils.utils import check_random_state
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG
 
@@ -22,7 +23,7 @@ def set_data(end_time, n_discrete, random_state):
     d1[idx1] = 1.
     d2[idx2] = 2.
     d1[idx2] = 3.
-    events = torch.stack([d1, d2])
+    events = torch.stack([d1, d2]).float()
     baseline = torch.tensor(rng.randn(n_dim))
     alpha = torch.tensor(rng.randn(n_dim, n_dim))
     decay = torch.tensor(rng.randn(n_dim, n_dim))
@@ -45,7 +46,8 @@ def test_squared_term_l2loss():
     events, baseline, alpha, decay, u, sigma, discrete = set_data(end_time, n_discrete,
                                                                   random_state)
 
-    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='exponential')
+    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                            kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete)
     intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
     squared_conv_EXP = 2 * ((intens_EXP**2).sum(1) * 0.5 * delta).sum()
@@ -90,7 +92,8 @@ def test_right_term_l2loss():
                                                                   random_state)
     n_events = events.sum(1)
 
-    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='exponential')
+    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                            kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete).double()
     intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
     right_term_conv_EXP = 2 * (intens_EXP * events).sum()
@@ -126,7 +129,8 @@ def test_l2loss():
                                                                   random_state)
     n_events = events.sum(1)
 
-    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='exponential')
+    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                            kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete)
     intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
     loss_conv_EXP = discrete_l2loss_conv(intens_EXP, events, delta)
@@ -185,7 +189,8 @@ def test_gradients():
     u_ = u.clone().requires_grad_(True)
     sigma_ = sigma.clone().requires_grad_(True)
 
-    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='exponential')
+    model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                            kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay_], discrete).double()
 
     loss_precomp_EXP = discrete_l2loss_precomputation(torch.tensor(zG),
@@ -211,30 +216,30 @@ def test_gradients():
                                     kernel_EXP, delta,
                                     n_events, end_time)
 
-    assert torch.allclose(baseline_.grad.float(), grad_mu_EXP)
+    assert torch.allclose(baseline_.grad, grad_mu_EXP)
 
     grad_mu_RC = get_grad_baseline(torch.tensor(zG),
                                    baseline, alpha,
                                    kernel_RC, delta,
                                    n_events, end_time)
 
-    assert torch.allclose(baseline__.grad.float(), grad_mu_RC)
+    assert torch.allclose(baseline__.grad, grad_mu_RC)
 
     grad_alpha_EXP = get_grad_alpha(torch.tensor(zG),
                                     torch.tensor(zN),
-                                    ztzG,
+                                    torch.tensor(ztzG),
                                     baseline, alpha,
                                     kernel_EXP.detach(), delta, n_events)
 
-    assert torch.allclose(alpha_.grad.float(), grad_alpha_EXP)
+    assert torch.allclose(alpha_.grad, grad_alpha_EXP)
 
     grad_alpha_RC = get_grad_alpha(torch.tensor(zG),
                                    torch.tensor(zN),
-                                   ztzG,
+                                   torch.tensor(ztzG),
                                    baseline, alpha,
                                    kernel_RC.detach(), delta, n_events)
 
-    assert torch.allclose(alpha__.grad.float(), grad_alpha_RC)
+    assert torch.allclose(alpha__.grad, grad_alpha_RC)
 
     grad_kernel_EXP = model_EXP.grad_eval([decay], discrete)
     grad_theta_EXP = get_grad_theta(torch.tensor(zG),
@@ -244,7 +249,7 @@ def test_gradients():
                                     alpha, kernel_EXP,
                                     grad_kernel_EXP[0], delta, n_events)
 
-    assert torch.allclose(decay_.grad.float(), grad_theta_EXP)
+    assert torch.allclose(decay_.grad, grad_theta_EXP)
 
     grad_kernel_RC = model_RC.grad_eval([u, sigma], discrete)
     grad_theta_RC = get_grad_theta(torch.tensor(zG),
@@ -254,7 +259,7 @@ def test_gradients():
                                    alpha, kernel_RC,
                                    grad_kernel_RC[0].double(), delta, n_events)
 
-    assert torch.allclose(u_.grad.float(), grad_theta_RC)
+    assert torch.allclose(u_.grad, grad_theta_RC)
 
     grad_theta_RC = get_grad_theta(torch.tensor(zG),
                                    torch.tensor(zN),
@@ -263,4 +268,41 @@ def test_gradients():
                                    alpha, kernel_RC,
                                    grad_kernel_RC[1].double(), delta, n_events)
 
-    assert torch.allclose(sigma_.grad.float(), grad_theta_RC)
+    assert torch.allclose(sigma_.grad, grad_theta_RC)
+
+
+def test_optim_grad():
+    delta = 0.01
+    n_dim = 10
+    L = int(1 / delta)
+    end_time = 1000
+    baseline = torch.randn(n_dim)
+    alpha = torch.randn(n_dim, n_dim)
+    zG = torch.randn(n_dim, L)
+    zN = torch.randn(n_dim, n_dim, L)
+    ztzG = torch.randn(n_dim, n_dim, L, L)
+    kernel = torch.randn(n_dim, n_dim, L)
+    grad_kernel = torch.randn(n_dim, n_dim, L)
+    n_events = torch.ones(n_dim) + 10
+
+    g_baseline = get_grad_baseline(zG, baseline, alpha, kernel,
+                                   delta, n_events, end_time)
+
+    g_baseline_ = get_grad_baseline_(zG, baseline, alpha, kernel,
+                                     delta, n_events, end_time)
+
+    assert torch.allclose(g_baseline, g_baseline_)
+
+    g_alpha = get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events)
+
+    g_alpha_ = get_grad_alpha_(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events)
+
+    assert torch.allclose(g_alpha, g_alpha_, atol=10e-4)
+
+    g_theta = get_grad_theta(zG, zN, ztzG, baseline, alpha, kernel, 
+                             grad_kernel, delta, n_events)
+
+    g_theta_ = get_grad_theta_(zG, zN, ztzG, baseline, alpha, kernel, 
+                               grad_kernel, delta, n_events)
+
+    assert torch.allclose(g_theta, g_theta_, atol=10e-4)

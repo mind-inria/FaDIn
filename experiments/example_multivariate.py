@@ -7,13 +7,13 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
-
+from tick.hawkes import HawkesBasisKernels
 ################################
 # Meta parameters
 ################################
 dt = 0.01
 L = int(1 / dt)
-T = 100000
+T = 1_000_000
 size_grid = int(T / dt) + 1
 
 # mem = Memory(location=".", verbose=2)
@@ -60,8 +60,9 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T,
                ztzG_approx, seed=0):
     start = time.time()
-    max_iter = 1000
-    solver = FaDIn("raised_cosine",
+    max_iter = 2000
+    solver = FaDIn(2,
+                   "raised_cosine",
                    [torch.tensor(u_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
@@ -69,7 +70,7 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T,
                    delta=dt, optim="RMSprop",
                    step_size=1e-3, max_iter=max_iter,
                    optimize_kernel=True, precomputations=True,
-                   ztzG_approx=ztzG_approx, device='cpu', log=False
+                   ztzG_approx=ztzG_approx, device='cpu', log=False, tol=10e-6
                    )
 
     print(time.time() - start)
@@ -83,7 +84,6 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T,
     results_["T"] = T
     results_["dt"] = dt
     return results_
-# %% Run experiment
 
 
 baseline = np.array([.1, .2])
@@ -97,6 +97,7 @@ print("events of the first process: ", events[0].shape[0])
 print("events of the second process: ", events[1].shape[0])
 
 
+# %%
 v = 0.2
 baseline_init = baseline + v
 alpha_init = alpha + v
@@ -110,3 +111,25 @@ results = run_solver(events, u_init, sigma_init,
 print(results)
 
 # %%
+
+
+# %%
+non_param = HawkesBasisKernels(1, n_basis=1, kernel_size=int(1 / dt), max_iter=800)
+non_param.fit(events)
+discretization = np.linspace(0, 1, L)
+tick_kernel_values = np.zeros((2, 2, L))
+for i in range(2):
+    for j in range(2):
+        tick_kernel_values[i, j] = non_param.get_kernel_values(i, j, discretization)
+tick_kernel_values *= alpha.reshape(2, 2, 1)
+tick_kernel_values = torch.tensor(tick_kernel_values)
+from fadin.utils.utils import projected_grid
+events_grid = projected_grid(events, dt, L * T)
+intensity_temp= torch.zeros(2, 2, size_grid-1)
+for i in range(2):
+    intensity_temp[i, :, :] = torch.conv_transpose1d(
+        events_grid[i].view(1, size_grid-1),
+        tick_kernel_values[:, i].reshape(1, 2, L).float())[
+            :, :-L + 1]
+intensity_tick = intensity_temp.sum(0) + torch.tensor(baseline).unsqueeze(1)
+

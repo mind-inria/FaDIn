@@ -106,6 +106,24 @@ def get_ztzG_approx(events_grid, L):
     return ztzG
 
 
+def get_ztzG_approx_(events_grid, L):
+    """
+    events_grid.shape = n_dim, n_grid
+    ztzG.shape = n_dim, n_dim, L, L
+    """
+    n_dim, _ = events_grid.shape
+    ztzG = np.zeros(shape=(n_dim, n_dim, L, L))
+
+    diff_tau = np.zeros(shape=(n_dim, n_dim, L))
+    diff_tau[:, :, 0] = events_grid @ events_grid.T
+    for tau in range(1, L):
+        diff_tau[:, :, tau] = events_grid[:, :-tau] @ events_grid[:, tau:].T
+    for i in range(n_dim):
+        for j in range(n_dim):
+            ztzG[i, j] = toeplitz(diff_tau[i, j])
+    return ztzG
+
+
 """
 def get_ztzG2(events_grid, L):
     n_dim, _ = events_grid.shape

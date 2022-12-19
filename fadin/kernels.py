@@ -18,7 +18,10 @@ class DiscreteKernelFiniteSupport(object):
 
     kernel : str or callable
         Either define a kernel in ('raised_cosine', 'truncated_gaussian' and
-        'exponential') or a custom kernel.
+        'truncated_exponential') or a custom kernel.
+
+    kernel_length: int, default=1
+        Length of kernel.
 
     lower : float, default=0
         Left bound of the support of the kernel. It should be between [0, 1].
@@ -28,16 +31,17 @@ class DiscreteKernelFiniteSupport(object):
 
     grad_kernel : None or callable, default=None
         If kernel in ('raised_cosine', 'truncated_gaussian' and
-        'exponential') the gradient function is implemented. If kernel is custom,
-        the custom gradient must be given.
+        'truncated_exponential') the gradient function is implemented.
+        If kernel is custom, the custom gradient must be given.
 
     Attributes
     ----------
     L: int
         Size of the kernel discretization.
     """
-    def __init__(self, delta, n_dim, kernel, lower=0., upper=1., grad_kernel=None):
-        self.L = int(1 / delta)
+    def __init__(self, delta, n_dim, kernel, kernel_length=1,
+                 lower=0., upper=1., grad_kernel=None):
+        self.L = int(kernel_length / delta)
         self.delta = delta
         self.lower = lower
         self.upper = upper
@@ -66,16 +70,17 @@ class DiscreteKernelFiniteSupport(object):
         elif self.kernel == 'truncated_gaussian':
             kernel_values = truncated_gaussian(kernel_params, time_values,
                                                self.delta, self.lower, self.upper)
-        elif self.kernel == 'exponential':
-            kernel_values = exponential(kernel_params, time_values,
-                                        self.delta, self.upper)
+        elif self.kernel == 'truncated_exponential':
+            kernel_values = truncated_exponential(kernel_params, time_values,
+                                                  self.delta, self.upper)
         elif callable(self.kernel):
             kernel_values = kernel_normalized(self.kernel, kernel_params, time_values,
                                               self.delta, self.lower, self.upper)
         else:
             raise NotImplementedError("Not implemented kernel. \
                                        Kernel must be a callable or a str in \
-                                    raised_cosine | truncated_gaussian | exponential")
+                                       raised_cosine | truncated_gaussian |  \
+                                       truncated_exponential")
         return kernel_values
 
     def grad_eval(self, kernel_params, time_values):
@@ -98,8 +103,8 @@ class DiscreteKernelFiniteSupport(object):
             grad_values = grad_raised_cosine(kernel_params, time_values, self.L)
         elif self.kernel == 'truncated_gaussian':
             grad_values = grad_truncated_gaussian(kernel_params, time_values, self.L)
-        elif self.kernel == 'exponential':
-            grad_values = grad_exponential(kernel_params, time_values, self.L)
+        elif self.kernel == 'truncated_exponential':
+            grad_values = grad_truncated_exponential(kernel_params, time_values, self.L)
         elif callable(self.kernel) and callable(self.grad_kernel):
             grad_values = grad_kernel_callable(self.kernel, self.grad_kernel,
                                                kernel_params, time_values, self.L,
@@ -108,7 +113,7 @@ class DiscreteKernelFiniteSupport(object):
             raise NotImplementedError("Not implemented kernel. \
                                        Kernel and grad_kernel must be callables or \
                                        kernel has to be  in raised_cosine | \
-                                       truncated_gaussian | exponential")
+                                       truncated_gaussian | truncated_exponential")
         return grad_values
 
     def intensity_eval(self, baseline, alpha, kernel_params,
@@ -144,7 +149,7 @@ class DiscreteKernelFiniteSupport(object):
         for i in range(self.n_dim):
             intensity_temp[i, :, :] = torch.conv_transpose1d(
                 events_grid[i].view(1, n_grid),
-                kernel_values_alp[:, i].view(1, self.n_dim, self.L))[
+                kernel_values_alp[:, i].view(1, self.n_dim, self.L).float())[
                     :, :-self.L + 1]
         intensity_values = intensity_temp.sum(0) + baseline.unsqueeze(1)
 
@@ -206,9 +211,9 @@ def grad_raised_cosine(kernel_params, time_values, L):
     """
     u, sigma = kernel_params
     n_dim, _ = u.shape
+
     grad_u = torch.zeros(n_dim, n_dim, L)
     grad_sigma = torch.zeros(n_dim, n_dim, L)
-
     for i in range(n_dim):
         for j in range(n_dim):
             temp_1 = ((time_values - u[i, j]) / sigma[i, j])
@@ -309,8 +314,8 @@ def grad_truncated_gaussian(kernel_params, time_values, L):
     return grad_list
 
 
-def exponential(kernel_params, time_values, delta, upper=1.):
-    """Exponential kernel normalized on [0, 1].
+def truncated_exponential(kernel_params, time_values, delta, upper=1.):
+    """truncated_exponential kernel normalized on [0, 1].
 
     Parameters
     ----------
@@ -341,8 +346,8 @@ def exponential(kernel_params, time_values, delta, upper=1.):
     return values
 
 
-def grad_exponential(kernel_params, time_values, L):
-    """Gradients of the Exponential kernel.
+def grad_truncated_exponential(kernel_params, time_values, L):
+    """Gradients of the truncated_exponential kernel.
 
     Parameters
     ----------
