@@ -2,11 +2,10 @@ import torch
 import time
 
 from fadin.utils.utils import optimizer, projected_grid
-from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, get_ztzG_approx, \
-    get_ztzG_approx_
-from fadin.loss_and_gradient import discrete_l2loss_precomputation, \
-    discrete_l2loss_conv, get_grad_baseline, get_grad_alpha, get_grad_theta, \
-    discrete_llloss_conv, get_grad_theta_, get_grad_alpha_, get_grad_baseline_
+from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, get_ztzG_approx
+from fadin.loss_and_gradient import discrete_l2_loss_precomputation, \
+    discrete_l2_loss_conv, get_grad_baseline, get_grad_alpha, get_grad_eta, \
+    discrete_ll_loss_conv
 from fadin.kernels import DiscreteKernelFiniteSupport
 
 
@@ -20,14 +19,33 @@ class FaDIn(object):
     Parametric Kernels
     https://arxiv.org/abs/2210.04635
 
+    FaDIn minimizes the discretized L2 loss of Hawkes processes
+    defined by the intensity  as a convolution between the kernel
+    :math: `\\phi_{ij}` and the sum of Dirac functions
+    :math: `z_i  := \\sum_{t^i_n \\in \\mathscr{F}^i_T} \\delta_{t^i_n}$
+    located at the event occurrences $t^i_n$:
+
+    .. math::
+        \\forall i \\in [1 \\dots D], \\quad
+        \\lambda_i(t) = \\mu_i + \\sum_{j=1}^p \\phi_{ij} * z_j(t),
+        \\quad t \\in [0, T]
+
+    where
+
+    * :math:`p` is the dimension of the process
+    * :math:`\\mu_i` are the baseline intensities
+    * :math:`\\phi_{ij}` are the kernels
+    * :math:`z_j(t)` are the activation vector on the discretized grid,
+    the projection of the timestamps on this grid
+
     Parameters
     ----------
     n_dim: int
         Dimension of the underlying Hawkes process.
 
     kernel : str or callable
-        Either define a kernel in (`raised_cosine`, `truncated_gaussian` and
-        `truncated_exponential`) or a custom kernel.
+        Either define a kernel in ``{'raised_cosine', 'truncated_gaussian' and
+        'truncated_exponential'}`` or a custom kernel.
 
     kernel_params_init : list of tensor of shape (n_dim, n_dim)
         Initial parameters of the kernel.
@@ -44,7 +62,7 @@ class FaDIn(object):
     delta : float, default=0.01
         Step size of the discretization grid.
 
-    optim : str in {`RMSprop` | `Adam` | `GD`}, default=`RMSprop`
+    optim : str in ``{'RMSprop' | 'Adam' | 'GD'}``, default=``'RMSprop'``
         The algorithms used to optimized the parameters of the Hawkes processes.
 
     step_size : float, default=1e-3
@@ -66,28 +84,28 @@ class FaDIn(object):
         is the computational bottleneck of FaDIn. if ztzG_approx is false,
         ztzG is approximated with Toeplitz matrix not taking into account edge effects.
 
-    device : str in `cpu` and `cuda`
+    device : str in ``{'cpu', 'cuda'}
         Computations done on cpu or gpu. Gpu is not implemented yet.
 
     log : booleen, default=False
         Record the loss values during the optimization.
 
     grad_kernel : None or callable, default=None
-        If kernel in (`raised_cosine`, `truncated_gaussian` and
-        `truncated_exponential`) the gradient function is implemented.
+        If kernel in ``{'raised_cosine', 'truncated_gaussian' and
+        'truncated_exponential'}`` the gradient function is implemented.
         If kernel is custom, the custom gradient must be given.
 
-    criterion : str in {`l2` | `ll`}, default=`l2`
+    criterion : str in ``{'l2' | 'll'}``, default=``'l2'``
         The criterion to minimize. if not l2, FaDIn minimize
         the Log-Likelihood loss with AutoDifferentiation.
 
     tol : `float`, default=1e-5
         The tolerance of the solver (iterations stop when the stopping
-        criterion is below it). If not reached the solver does ``max_iter``
+        criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
     random_state : int, RandomState instance or None, default=None
-        Set the torch seed to ``random_state``.
+        Set the torch seed to 'random_state'.
     """
 
     def __init__(self, n_dim, kernel, kernel_params_init=None, baseline_init=None,
@@ -126,7 +144,6 @@ class FaDIn(object):
                 temp2 = torch.rand(self.n_dim, self.n_dim) * temp
                 kernel_params_init.append(temp)
                 kernel_params_init.append(temp2)
-
             elif kernel == 'truncated_gaussian':
                 kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
                 kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
@@ -202,10 +219,7 @@ class FaDIn(object):
             zN = get_zN(events_grid.double().numpy(), self.L)
 
             if self.ztzG_approx:
-                if self.n_dim > 5:
-                    ztzG = get_ztzG_approx_(events_grid.double().numpy(), self.L)
-                else:
-                    ztzG = get_ztzG_approx(events_grid.double().numpy(), self.L)
+                ztzG = get_ztzG_approx(events_grid.double().numpy(), self.L)
             else:
                 ztzG = get_ztzG(events_grid.double().numpy(), self.L)
 
@@ -249,66 +263,39 @@ class FaDIn(object):
                                                            discretization)
 
                 if self.log:
-                    v_loss[i] = discrete_l2loss_precomputation(zG, zN, ztzG,
-                                                               self.params_optim[0],
-                                                               self.params_optim[1],
-                                                               kernel, n_events,
-                                                               self.delta,
-                                                               end_time).detach()
-                if self.n_dim == 1:
-                    self.params_optim[0].grad = get_grad_baseline_(zG,
-                                                                   self.params_optim[0],
-                                                                   self.params_optim[1],
-                                                                   kernel, self.delta,
-                                                                   n_events, end_time)
-
-                    self.params_optim[1].grad = get_grad_alpha_(zG,
-                                                                zN,
-                                                                ztzG,
+                    v_loss[i] = discrete_l2_loss_precomputation(zG, zN, ztzG,
                                                                 self.params_optim[0],
                                                                 self.params_optim[1],
-                                                                kernel,
+                                                                kernel, n_events,
                                                                 self.delta,
-                                                                n_events)
-                    if self.optimize_kernel:
-                        for j in range(self.n_kernel_params):
-                            self.params_optim[2 + j].grad = \
-                                get_grad_theta_(zG,
-                                                zN,
-                                                ztzG,
-                                                self.params_optim[0],
-                                                self.params_optim[1],
-                                                kernel,
-                                                grad_theta[j],
-                                                self.delta,
-                                                n_events)
-                else:
-                    self.params_optim[0].grad = get_grad_baseline(zG,
-                                                                  self.params_optim[0],
-                                                                  self.params_optim[1],
-                                                                  kernel, self.delta,
-                                                                  n_events, end_time)
+                                                                end_time).detach()
 
-                    self.params_optim[1].grad = get_grad_alpha(zG,
-                                                               zN,
-                                                               ztzG,
-                                                               self.params_optim[0],
-                                                               self.params_optim[1],
-                                                               kernel,
-                                                               self.delta,
-                                                               n_events)
-                    if self.optimize_kernel:
-                        for j in range(self.n_kernel_params):
-                            self.params_optim[2 + j].grad = \
-                                get_grad_theta(zG,
-                                               zN,
-                                               ztzG,
-                                               self.params_optim[0],
-                                               self.params_optim[1],
-                                               kernel,
-                                               grad_theta[j],
-                                               self.delta,
-                                               n_events)
+                self.params_optim[0].grad = get_grad_baseline(zG,
+                                                              self.params_optim[0],
+                                                              self.params_optim[1],
+                                                              kernel, self.delta,
+                                                              n_events, end_time)
+
+                self.params_optim[1].grad = get_grad_alpha(zG,
+                                                           zN,
+                                                           ztzG,
+                                                           self.params_optim[0],
+                                                           self.params_optim[1],
+                                                           kernel,
+                                                           self.delta,
+                                                           n_events)
+                if self.optimize_kernel:
+                    for j in range(self.n_kernel_params):
+                        self.params_optim[2 + j].grad = \
+                            get_grad_eta(zG,
+                                         zN,
+                                         ztzG,
+                                         self.params_optim[0],
+                                         self.params_optim[1],
+                                         kernel,
+                                         grad_theta[j],
+                                         self.delta,
+                                         n_events)
 
             else:
                 intens = self.kernel_model.intensity_eval(self.params_optim[0],
@@ -317,9 +304,9 @@ class FaDIn(object):
                                                           events_grid,
                                                           discretization)
                 if self.criterion == 'll':
-                    loss = discrete_llloss_conv(intens, events_grid, self.delta)
+                    loss = discrete_ll_loss_conv(intens, events_grid, self.delta)
                 else:
-                    loss = discrete_l2loss_conv(intens, events_grid, self.delta)
+                    loss = discrete_l2_loss_conv(intens, events_grid, self.delta)
                 loss.backward()
 
             self.opt.step()
