@@ -14,3 +14,4 @@ Class
    :toctree: generated/
 
    FaDIn
+   solver.FaDIn
