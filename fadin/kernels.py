@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+from scipy.stats import norm
+
 from fadin.utils.utils import check_params, kernel_normalization, \
     kernel_deriv_norm, kernel_normalized, grad_kernel_callable
 
@@ -73,6 +75,11 @@ class DiscreteKernelFiniteSupport(object):
         elif self.kernel == 'truncated_exponential':
             kernel_values = truncated_exponential(kernel_params, time_values,
                                                   self.delta, self.upper)
+        elif self.kernel == 'truncated_skewed_gaussian':
+            kernel_values = truncated_skewed_gaussian(kernel_params, time_values,
+                                                      self.delta, self.upper, sigma=0.1)
+        elif self.kernel == 'kumaraswamy':
+            kernel_values = kumaraswamy(kernel_params, time_values)
         elif callable(self.kernel):
             kernel_values = kernel_normalized(self.kernel, kernel_params, time_values,
                                               self.delta, self.lower, self.upper)
@@ -105,6 +112,11 @@ class DiscreteKernelFiniteSupport(object):
             grad_values = grad_truncated_gaussian(kernel_params, time_values, self.L)
         elif self.kernel == 'truncated_exponential':
             grad_values = grad_truncated_exponential(kernel_params, time_values, self.L)
+        elif self.kernel == 'truncated_skewed_gaussian':
+            grad_values = grad_truncated_skewed_gaussian(kernel_params, time_values,
+                                                         self.L, sigma=0.1)
+        elif self.kernel == 'kumaraswamy':
+            grad_values = grad_kumaraswamy(kernel_params, time_values, self.L)
         elif callable(self.kernel) and callable(self.grad_kernel):
             grad_values = grad_kernel_callable(self.kernel, self.grad_kernel,
                                                kernel_params, time_values, self.L,
@@ -154,6 +166,82 @@ class DiscreteKernelFiniteSupport(object):
         intensity_values = intensity_temp.sum(0) + baseline.unsqueeze(1)
 
         return intensity_values
+
+
+def kumaraswamy(kernel_params, time_values):
+    """Kumaraswamy kernel.
+
+    Parameters
+    ----------
+    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+        Parameters of the kernels: u and sigma.
+
+    time_values : tensor, shape (L,)
+        Given discretization.
+
+    Returns
+    ----------
+    values : tensor, shape (n_dim, n_dim, L)
+        Kernels evaluated on ``time_values``.
+    """
+    check_params(kernel_params, 2)
+    a, b = kernel_params
+    n_dim, _ = a.shape
+
+    values = torch.zeros(n_dim, n_dim, len(time_values))
+    for i in range(n_dim):
+        for j in range(n_dim):
+            pa = a[i, j] - 1
+            pb = b[i, j] - 1
+            values[i, j] = (a[i, j] * b[i, j] * (time_values**pa)
+                            * ((1 - time_values**a[i, j]) ** pb))
+            mask_kernel = (time_values <= 0.) | (time_values >= 1.)
+            values[i, j, mask_kernel] = 0.
+
+    return values
+
+
+def grad_kumaraswamy(kernel_params, time_values, L):
+    """Gradients of the Kumaraswamy kernel.
+
+    Parameters
+    ----------
+    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+        Parameters of the kernels: u and sigma.
+
+    time_values : tensor, shape (L,)
+        Given discretization.
+
+    L : int
+        Size of the kernel discretization.
+
+    Returns
+    ----------
+    grad_list : list of two tensor of shape (n_dim, n_dim, L)
+        Kernels evaluated on ``time_values``.
+    """
+    a, b = kernel_params
+    n_dim, _ = a.shape
+    kernel_values = kumaraswamy(kernel_params, time_values)
+    b_minusone = b - 1
+    kernel_params_ = [a, b_minusone]
+    kernel_values_ = kumaraswamy(kernel_params_, time_values)
+
+    grad_a = torch.zeros(n_dim, n_dim, L)
+    grad_b = torch.zeros(n_dim, n_dim, L)
+    for i in range(n_dim):
+        for j in range(n_dim):
+            grad_a[i, j] = kernel_values[i, j] * (1 / a[i, j] + torch.log(time_values))\
+                - kernel_values_[i, j] * torch.log(time_values) * time_values**a[i, j]
+            grad_b[i, j] = kernel_values[i, j] * (1 / b[i, j]
+                                                  + torch.log(1 - time_values**a[i, j]))
+            mask_kernel = (time_values <= 0.) | (time_values >= 1.)
+            grad_a[i, j, mask_kernel] = 0.
+            grad_b[i, j, mask_kernel] = 0.
+
+    grad_list = [grad_a, grad_b]
+
+    return grad_list
 
 
 def raised_cosine(kernel_params, time_values):
@@ -380,5 +468,52 @@ def grad_truncated_exponential(kernel_params, time_values, L):
                   function * grad_function_sum) / (function_sum**2)
 
     grad_list = [grad_decay]
+
+    return grad_list
+
+
+def truncated_skewed_gaussian(kernel_params, time_values, delta,
+                              lower=0., upper=3., sigma=0.1):
+    check_params(kernel_params, 2)
+    beta, xi = kernel_params
+    n_dim, _ = xi.shape
+
+    values_ = torch.zeros(n_dim, n_dim, len(time_values))
+    for i in range(n_dim):
+        for j in range(n_dim):
+            z = (time_values - xi[i, j].item()) / sigma
+            values_[i, j] = torch.tensor(2 * norm.pdf(z) *
+                                         norm.cdf(beta[i, j].item() * z)) / sigma
+
+    values = kernel_normalization(values_, time_values, delta,
+                                  lower=lower, upper=upper)
+    return values
+
+
+def grad_truncated_skewed_gaussian(kernel_params, time_values, L, sigma=0.1):
+    delta = 1 / L
+    beta, xi = kernel_params
+    n_dim, _ = beta.shape
+
+    beta = beta.detach().numpy()
+    xi = xi.detach().numpy()
+    grad_beta = torch.zeros(n_dim, n_dim, L)
+    grad_xi = torch.zeros(n_dim, n_dim, L)
+    for i in range(n_dim):
+        for j in range(n_dim):
+            z = (time_values.numpy() - xi[i, j]) / sigma
+            deriv_gauss = - 2 * z * np.exp(- (z**2) / 2) / np.sqrt(2 * np.pi)
+            f = torch.tensor(2 * norm.pdf(z) * norm.cdf(beta[i, j] * z)) / sigma
+            grad_f_beta = 2 * z * norm.pdf(z) * norm.pdf(beta[i, j] * z) / sigma
+            grad_f_xi = - 2 * (beta[i, j] * norm.pdf(beta[i, j] * z) * norm.pdf(z)
+                               + norm.cdf(beta[i, j] * z) * deriv_gauss) / (sigma**2)
+            f = torch.tensor(f)
+            grad_f_beta = torch.tensor(grad_f_beta)
+            grad_f_xi = torch.tensor(grad_f_xi)
+
+            grad_beta[i, j] = kernel_deriv_norm(f, grad_f_beta, delta)
+            grad_xi[i, j] = kernel_deriv_norm(f, grad_f_xi, delta)
+
+    grad_list = [torch.tensor(grad_beta), torch.tensor(grad_xi)]
 
     return grad_list
