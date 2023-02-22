@@ -49,7 +49,8 @@ def plot_fig1_paper(kernel='TG', leg=True):
         raise ValueError()
 
     palette = [matplotlib.cm.viridis_r(x) for x in np.linspace(0, 1, 5)][1:]
-
+    
+    fig = plt.figure()
     for m, ls, hatch in methods:
         for i, t in enumerate(T):
             this_df = df.query("T == @t and estimates == @m")
@@ -86,22 +87,22 @@ def plot_fig1_paper(kernel='TG', leg=True):
 
     elif is_TG or is_RC or is_EXP:
         custom_lines_T = [
-            Line2D([], [], color=palette[i], lw=3) for i in range(2)
+            Line2D([], [], color=palette[i], lw=3) for i in range(4)
         ]
         if leg:
             plt.legend(
                 custom_lines_T,
-                [r"$10^{%d}$" % np.log10(t) for t in [1000, 10000]],
+                [r"$10^{%d}$" % np.log10(t) for t in [1000, 10000, 100_000, 1_000_000]],
                 title="$T$", loc="lower center",
-                bbox_to_anchor=(0, 1, 1, 0.01), ncol=2
+                bbox_to_anchor=(0, 1, 1, 0.01), ncol=4
             )
 
     plt.xlabel(r'$\Delta$')
     c = 'w' if kernel == 'EM' else 'k'
     plt.ylabel(r'$\ell_2$ error', fontdict={'color': c})
 
-    plt.savefig(f"plots/approx/fig1_{kernel}_all.png", bbox_inches='tight')
-    plt.savefig(f"plots/approx/fig1_{kernel}_all.pdf", bbox_inches='tight')
+    plt.savefig(f"plots/fig1_{kernel}.png", bbox_inches='tight')
+    plt.savefig(f"plots/fig1_{kernel}.pdf", bbox_inches='tight')
 
 
 plt.close('all')
