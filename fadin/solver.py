@@ -161,6 +161,7 @@ class FaDIn(object):
         self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim, kernel,
                                                         self.W, 0, self.W,
                                                         grad_kernel)
+        self.kernel = kernel
         # Set l'optimizer
         self.params_optim = [self.baseline, self.alpha]
 
@@ -320,8 +321,12 @@ class FaDIn(object):
             # If kernel parameters are optimized
             if self.optimize_kernel:
                 for j in range(self.n_kernel_params):
-                    self.params_optim[2 + j].data = \
-                        self.params_optim[2 + j].data.clip(0)
+                    if self.kernel != 'truncated_skewed_gaussian':
+                        self.params_optim[2 + j].data = \
+                            self.params_optim[2 + j].data.clip(0.0001)
+                    else:
+                        self.params_optim[2 + j].data = \
+                            self.params_optim[2 + j].data
                     param_kernel[j, i + 1] = self.params_optim[2 + j].detach()
 
             # Early stopping
