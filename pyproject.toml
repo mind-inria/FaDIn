@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fadin"
+authors = [
+  {name = "Guillaume Staerman"},
+  {name = "Alexandre Gramfort"},
+  {name = "Thomas Moreau"},
+]
+description = "Fast discretized Inference for Hawkes processes with General
+               Parametric Kernels"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["python", "Hawkes", "Inference"]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries",
+]
+dynamic = ["version"]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy>=1.20",
+    "pytorch>=1.12.1",
+    "scipy>=1.8.0",
+    "numba>=0.55.2",
+
+]
+
+[project.optional-dependencies]
+test = [
+    "flake8",
+    "pytest>=7.2",
+
+]
+
+doc = [
+    "furo",
+    "matplotlib",
+    "numpydoc",
+    "sphinx",
+    "sphinx-gallery",
+]
+
+[project.urls]
+homepage = "https://github.com/GuillaumeStaermanML/FaDIn"
+repository = "https://github.com/GuillaumeStaermanML/FaDIn.git"
+
+[tool.setuptools.dynamic]
+version = {attr = "fadin.__version__"}
