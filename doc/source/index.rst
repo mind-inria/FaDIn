@@ -28,10 +28,10 @@ Dependencies
 These are the dependencies to use FaDIn:
 
 * scipy
-* numpy (>=1.8)
-* matplotlib (>=1.3)
-* torch (>= 1.9)
-* numba
+* numpy (>=1.2)
+* matplotlib (>=3)
+* torch (>= 1.12.1)
+* numba (0.55.2)
 
 
 Cite
