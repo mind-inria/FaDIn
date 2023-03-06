@@ -43,7 +43,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'FaDIn'
+project = u'fadin'
 copyright = f'2023-{datetime.datetime.now().year}, Guillaume Staerman'
 author = u'Guillaume Staerman'
 

@@ -12,7 +12,7 @@ from fadin.kernels import DiscreteKernelFiniteSupport
 class FaDIn(object):
     """Define the FaDIn framework for estimated Hawkes processes.
 
-    The framework is detailed in::
+    The framework is detailed in:
 
     Guillaume Staerman, Cédric Allain, Alexandre Gramfort, Thomas Moreau
     FaDIn: Fast Discretized Inference for Hawkes Processes with General
@@ -21,9 +21,9 @@ class FaDIn(object):
 
     FaDIn minimizes the discretized L2 loss of Hawkes processes
     defined by the intensity  as a convolution between the kernel
-    :math: `\\phi_{ij}` and the sum of Dirac functions
-    :math: `z_i  := \\sum_{t^i_n \\in \\mathscr{F}^i_T} \\delta_{t^i_n}$
-    located at the event occurrences $t^i_n$:
+    :math:`\\phi_{ij}` and the sum of Dirac functions
+    :math:`z_i  := \\sum_{t^i_n \\in \\mathscr{F}^i_T} \\delta_{t^i_n}`
+    located at the event occurrences :math:`t^i_n`:
 
     .. math::
         \\forall i \\in [1 \\dots D], \\quad
@@ -36,6 +36,7 @@ class FaDIn(object):
     * :math:`\\mu_i` are the baseline intensities
     * :math:`\\phi_{ij}` are the kernels
     * :math:`z_j(t)` are the activation vector on the discretized grid,
+
     the projection of the timestamps on this grid
 
     Parameters
@@ -84,7 +85,7 @@ class FaDIn(object):
         is the computational bottleneck of FaDIn. if ztzG_approx is false,
         ztzG is approximated with Toeplitz matrix not taking into account edge effects.
 
-    device : str in ``{'cpu', 'cuda'}
+    device : str in ``{'cpu', 'cuda'}``
         Computations done on cpu or gpu. Gpu is not implemented yet.
 
     log : booleen, default=False

@@ -13,5 +13,4 @@ Class
 .. autosummary::
    :toctree: generated/
 
-   FaDIn
    solver.FaDIn
