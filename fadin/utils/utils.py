@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 
-def kernel_normalization(kernel_values, time_values, delta, lower=0, upper=1):
+def kernel_normalization(kernel_values, time_values, delta, lower=0., upper=1.):
     """Normalize the given kernel on the given discrete grid.
     """
     kernel_norm = kernel_values.clone()

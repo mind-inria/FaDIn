@@ -9,8 +9,7 @@ authors = [
   {name = "Alexandre Gramfort"},
   {name = "Thomas Moreau"},
 ]
-description = "Fast discretized Inference for Hawkes processes with General
-               Parametric Kernels"
+description = "Fast discretized Inference for Hawkes processes with General Parametric Kernels"
 readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["python", "Hawkes", "Inference"]
