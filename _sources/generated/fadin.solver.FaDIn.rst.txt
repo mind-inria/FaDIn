@@ -1,0 +1,23 @@
+﻿fadin.solver.FaDIn
+==================
+
+.. currentmodule:: fadin.solver
+
+.. autoclass:: FaDIn
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FaDIn.__init__
+      ~FaDIn.fit
+   
+   
+
+   
+   
+   

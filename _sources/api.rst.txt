@@ -1,0 +1,16 @@
+.. _api_documentation:
+
+=================
+API Documentation
+=================
+
+.. currentmodule:: fadin
+
+
+Class
+============
+
+.. autosummary::
+   :toctree: generated/
+
+   solver.FaDIn
