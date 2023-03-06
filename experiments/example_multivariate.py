@@ -7,6 +7,7 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
+from fadin.utils.utils import projected_grid
 from tick.hawkes import HawkesBasisKernels
 ################################
 # Meta parameters
@@ -123,7 +124,6 @@ for i in range(2):
         tick_kernel_values[i, j] = non_param.get_kernel_values(i, j, discretization)
 tick_kernel_values *= alpha.reshape(2, 2, 1)
 tick_kernel_values = torch.tensor(tick_kernel_values)
-from fadin.utils.utils import projected_grid
 events_grid = projected_grid(events, dt, L * T)
 intensity_temp= torch.zeros(2, 2, size_grid-1)
 for i in range(2):

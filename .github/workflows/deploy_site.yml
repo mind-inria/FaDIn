@@ -15,6 +15,7 @@ jobs:
           pre-build-command: |
             apt-get update
             pip install -U pip
+            pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
             pip install -e .[doc]
       - name:  Upload generated HTML as artifact
         uses: actions/upload-artifact@v2

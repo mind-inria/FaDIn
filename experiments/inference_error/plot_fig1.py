@@ -50,7 +50,7 @@ def plot_fig1_paper(kernel='TG', leg=True):
 
     palette = [matplotlib.cm.viridis_r(x) for x in np.linspace(0, 1, 5)][1:]
     
-    fig = plt.figure()
+    _ = plt.figure()
     for m, ls, hatch in methods:
         for i, t in enumerate(T):
             this_df = df.query("T == @t and estimates == @m")
