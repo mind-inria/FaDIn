@@ -28,17 +28,21 @@ dynamic = ["version"]
 requires-python = ">=3.7"
 dependencies = [
     "numpy>=1.20",
-    "pytorch>=1.12.1",
+    "torch>=1.11",
     "scipy>=1.8.0",
     "numba>=0.55.2",
-
 ]
+
+[tool.setuptools_scm]
+write_to = "fadin/version.py"
+local_scheme = "no-local-version"
+fallback_version = "99.0.dev0"
+
 
 [project.optional-dependencies]
 test = [
     "flake8",
     "pytest>=7.2",
-
 ]
 
 doc = [
@@ -52,6 +56,10 @@ doc = [
 [project.urls]
 homepage = "https://github.com/GuillaumeStaermanML/FaDIn"
 repository = "https://github.com/GuillaumeStaermanML/FaDIn.git"
+
+[tool.setuptools.packages.find]
+include = ["fadin*"]
+namespaces = false
 
 [tool.setuptools.dynamic]
 version = {attr = "fadin.__version__"}

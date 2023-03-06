@@ -52,7 +52,7 @@ author = u'Guillaume Staerman'
 # built documents.
 #
 # The short X.Y version.
-from FaDIn import __version__ as version  # noqa
+from fadin import __version__ as version  # noqa
 print(version)
 # version = u'0.1.dev0'
 # The full version, including alpha/beta/rc tags.
@@ -288,10 +288,10 @@ intersphinx_mapping = {
 
 sphinx_gallery_conf = {
     'backreferences_dir': 'gen_modules/backreferences',
-    'doc_module': ('FaDIn', 'numpy'),
+    'doc_module': ('fadin', 'numpy'),
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
     'reference_url': {
-        'FaDIn': None,
+        'fadin': None,
     }
 }
