@@ -12,7 +12,7 @@ This Package implements FaDIn.
 **To install this package, make sure you have an up-to-date version of** `pip`.
 
 
-### From PyPI
+### From PyPI (coming soon)
 
 In a dedicated Python env, run:
 
