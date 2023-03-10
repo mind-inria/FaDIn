@@ -26,7 +26,7 @@ class FaDIn(object):
     located at the event occurrences :math:`t^i_n`:
 
     .. math::
-        \\forall i \\in [1 \\dots D], \\quad
+        \\forall i \\in [1 \\dots p], \\quad
         \\lambda_i(t) = \\mu_i + \\sum_{j=1}^p \\phi_{ij} * z_j(t),
         \\quad t \\in [0, T]
 
@@ -41,71 +41,71 @@ class FaDIn(object):
 
     Parameters
     ----------
-    n_dim: int
+    n_dim : `int`
         Dimension of the underlying Hawkes process.
 
-    kernel : str or callable
-        Either define a kernel in ``{'raised_cosine', 'truncated_gaussian' and
+    kernel : `str` or `callable`
+        Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
 
-    kernel_params_init : list of tensor of shape (n_dim, n_dim)
+    kernel_params_init : `list` of tensor of shape (n_dim, n_dim)
         Initial parameters of the kernel.
 
-    baseline_init : tensor, shape (n_dim,)
+    baseline_init : `tensor`, shape (n_dim,)
         Initial baseline parameters of the intensity of the Hawkes process.
 
-    alpha_init : tensor, shape (n_dim, n_dim)
+    alpha_init : `tensor`, shape (n_dim, n_dim)
         Initial alpha parameters of the intensity of the Hawkes process.
 
-    kernel_length: int, default=1
+    kernel_length : `int`, `default=1`
         Length of kernels in the Hawkes process.
 
-    delta : float, default=0.01
+    delta : `float`, `default=0.01`
         Step size of the discretization grid.
 
-    optim : str in ``{'RMSprop' | 'Adam' | 'GD'}``, default=``'RMSprop'``
+    optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
         The algorithms used to optimized the parameters of the Hawkes processes.
 
-    step_size : float, default=1e-3
+    step_size : `float`, `default=1e-3`
         Learning rate of the chosen optimization algorithm.
 
-    max_iter : int, default=1000
+    max_iter : `int`, `default=1000`
         Maximum number of iterations during fit.
 
-    optimize_kernel : bool, default=True
+    optimize_kernel : `boolean`, `default=True`
         If optimize_kernel is false, kernel parameters are not optimized
         and only the baseline and alpha are optimized.
 
-    precomputations : bool, default=True
+    precomputations : `boolean`, `default=True`
         If precomputations is false, pytorch autodiff is applied on the loss.
         If precomputations is true, then FaDIn is computed.
 
-    ztzG_approx : bool, default=True
+    ztzG_approx : `boolean`, `default=True`
         If ztzG_approx is false, compute the true ztzG precomputation constant that
         is the computational bottleneck of FaDIn. if ztzG_approx is false,
         ztzG is approximated with Toeplitz matrix not taking into account edge effects.
 
-    device : str in ``{'cpu', 'cuda'}``
+    device : `str` in ``{'cpu' | 'cuda'}``
         Computations done on cpu or gpu. Gpu is not implemented yet.
 
-    log : booleen, default=False
+    log : `boolean`, `default=False`
         Record the loss values during the optimization.
 
-    grad_kernel : None or callable, default=None
-        If kernel in ``{'raised_cosine', 'truncated_gaussian' and
+    grad_kernel : `None` or `callable`, default=None
+        If kernel in ``{'raised_cosine'| 'truncated_gaussian' |
         'truncated_exponential'}`` the gradient function is implemented.
         If kernel is custom, the custom gradient must be given.
 
-    criterion : str in ``{'l2' | 'll'}``, default=``'l2'``
+    criterion : `str` in ``{'l2' | 'll'}``, `default='l2'`
         The criterion to minimize. if not l2, FaDIn minimize
         the Log-Likelihood loss with AutoDifferentiation.
 
-    tol : `float`, default=1e-5
+    tol : `float`, `default=1e-5`
         The tolerance of the solver (iterations stop when the stopping
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
-    random_state : int, RandomState instance or None, default=None
+    random_state : `int`, `RandomState` instance or `None`, `default=None`
         Set the torch seed to 'random_state'.
     """
 
@@ -192,7 +192,7 @@ class FaDIn(object):
             self.device = 'cpu'
 
     def fit(self, events, end_time):
-        """Optimize the parameters of the Hawkes processes on a discrete grid.
+        """Learn the parameters of the Hawkes processes on a discrete grid.
 
         Parameters
         ----------
