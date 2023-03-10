@@ -25,38 +25,38 @@ def set_data(end_time, n_discrete, random_state):
     d2[idx2] = 2.
     d1[idx2] = 3.
     events = torch.stack([d1, d2]).float()
-    baseline = torch.tensor(rng.randn(n_dim))
-    alpha = torch.tensor(rng.randn(n_dim, n_dim))
-    decay = 1 + torch.abs(torch.tensor(rng.randn(n_dim, n_dim)))
-    sigma = torch.tensor(rng.randn(n_dim, n_dim))
+    baseline = torch.tensor(rng.rand(n_dim))
+    alpha = torch.tensor(rng.rand(n_dim, n_dim))
+    decay = 1 + torch.abs(torch.tensor(rng.rand(n_dim, n_dim)))
+    sigma = torch.tensor(rng.rand(n_dim, n_dim))
     u = sigma.clone() + 1
-    discrete = torch.linspace(0, 1, n_discrete)
+    m = torch.tensor(rng.rand(n_dim, n_dim))
+    discrete = torch.linspace(0, 1, n_discrete, dtype=torch.float64)
 
-    return events, baseline, alpha, decay, u, sigma, discrete
+    return events, baseline, alpha, decay, u, sigma, m,  discrete
+
 
 # %%
-
-
 def test_squared_term_l2loss():
     """Check that the quadratic part of the l2loss are the same
     using precomputation and convolution tools
     """
-    end_time = 10000
+    end_time = 10
     delta = 0.01
     n_discrete = 100
     random_state = None
 
-    events, baseline, alpha, decay, u, sigma, discrete = set_data(end_time, n_discrete,
-                                                                  random_state)
+    events, baseline, alpha, decay, u, sigma, m, discrete = set_data(end_time,
+                                                                     n_discrete,
+                                                                     random_state)
+    zG = get_zG(events.numpy(), n_discrete)
+    ztzG = get_ztzG(events.numpy(), n_discrete)
 
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
                                             kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete)
     intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
     squared_conv_EXP = 2 * ((intens_EXP**2).sum(1) * 0.5 * delta).sum()
-
-    zG = get_zG(events.numpy(), n_discrete)
-    ztzG = get_ztzG(events.numpy(), n_discrete)
 
     term_1_EXP = end_time * squared_compensator_1(baseline)
     term_2_EXP = 2 * delta * squared_compensator_2(torch.tensor(zG),
@@ -66,6 +66,20 @@ def test_squared_term_l2loss():
     squared_precomp_EXP = term_1_EXP + term_2_EXP + term_3_EXP
 
     assert torch.isclose(squared_conv_EXP, squared_precomp_EXP)
+
+    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='truncated_gaussian')
+    kernel_TG = model_TG.kernel_eval([m, sigma], discrete).double()
+    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events, discrete)
+    squared_conv_TG = 2 * ((intens_TG**2).sum(1) * 0.5 * delta).sum()
+
+    term_1_TG = end_time * squared_compensator_1(baseline)
+    term_2_TG = 2 * delta * squared_compensator_2(torch.tensor(zG),
+                                                  baseline, alpha, kernel_TG)
+    term_3_TG = delta * squared_compensator_3(torch.tensor(ztzG), alpha, kernel_TG)
+
+    squared_precomp_TG = term_1_TG + term_2_TG + term_3_TG
+
+    assert torch.isclose(squared_conv_TG, squared_precomp_TG)
 
     model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
 
@@ -93,8 +107,9 @@ def test_right_term_l2loss():
     n_discrete = 100
     random_state = None
 
-    events, baseline, alpha, decay, u, sigma, discrete = set_data(end_time, n_discrete,
-                                                                  random_state)
+    events, baseline, alpha, decay, u, sigma, m,  discrete = set_data(end_time,
+                                                                      n_discrete,
+                                                                      random_state)
     n_events = events.sum(1)
 
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
@@ -108,6 +123,17 @@ def test_right_term_l2loss():
                                            kernel_EXP, n_events)
 
     assert torch.isclose(right_term_conv_EXP, 2 * right_term_precomp_EXP)
+
+    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2,  kernel='truncated_gaussian')
+    kernel_TG = model_TG.kernel_eval([m, sigma], discrete).double()
+    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events, discrete)
+    right_term_conv_TG = 2 * (intens_TG * events).sum()
+
+    zN = get_zN(events.numpy(), n_discrete)
+    right_term_precomp_TG = intens_events(torch.tensor(zN), baseline.float(), alpha,
+                                          kernel_TG, n_events)
+
+    assert torch.isclose(right_term_conv_TG, 2 * right_term_precomp_TG)
 
     model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
     kernel_RC = model_RC.kernel_eval([u, sigma], discrete).double()
@@ -129,9 +155,9 @@ def test_l2loss():
     n_discrete = 100
     random_state = None
 
-    events, baseline, alpha, decay, u, sigma, discrete = set_data(end_time,
-                                                                  n_discrete,
-                                                                  random_state)
+    events, baseline, alpha, decay, u, sigma, m,  discrete = set_data(end_time,
+                                                                      n_discrete,
+                                                                      random_state)
     n_events = events.sum(1)
 
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
@@ -177,9 +203,9 @@ def test_gradients():
     n_discrete = 100
     random_state = None
 
-    events, baseline, alpha, decay, u, sigma, discrete = set_data(end_time,
-                                                                  n_discrete,
-                                                                  random_state)
+    events, baseline, alpha, decay, u, sigma, m,  discrete = set_data(end_time,
+                                                                      n_discrete,
+                                                                      random_state)
 
     zG = get_zG(events.numpy(), n_discrete)
     zN = get_zN(events.numpy(), n_discrete)
