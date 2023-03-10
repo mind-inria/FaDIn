@@ -35,9 +35,7 @@ class FaDIn(object):
     * :math:`p` is the dimension of the process
     * :math:`\\mu_i` are the baseline intensities
     * :math:`\\phi_{ij}` are the kernels
-    * :math:`z_j(t)` are the activation vector on the discretized grid,
-
-    the projection of the timestamps on this grid
+    * :math:`z_j(t)` are the activation vector on the discretized grid.
 
     Parameters
     ----------
@@ -57,7 +55,7 @@ class FaDIn(object):
     alpha_init : `tensor`, shape (n_dim, n_dim)
         Initial alpha parameters of the intensity of the Hawkes process.
 
-    kernel_length : `int`, `default=1`
+    kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
 
     delta : `float`, `default=0.01`
@@ -98,7 +96,7 @@ class FaDIn(object):
 
     criterion : `str` in ``{'l2' | 'll'}``, `default='l2'`
         The criterion to minimize. if not l2, FaDIn minimize
-        the Log-Likelihood loss with AutoDifferentiation.
+        the Log-Likelihood loss through AutoDifferentiation.
 
     tol : `float`, `default=1e-5`
         The tolerance of the solver (iterations stop when the stopping
