@@ -104,7 +104,7 @@ where  :math:`F` is the cdf of the Gaussian distribution. The parameters estimat
 * **Truncated Exponential kernel** 
 
 .. math::
-		\phi_{ij} (\cdot)=  \frac{\beta_{ij} \exp(-\beta_{ij}~ \cdot)}{H\left(W\right)-H\left(0\right)} \mathbb{I} \left\{0\leq \cdot \leq W \right\}, \quad (i,j)\in \{1,\ldots, p\}^2
+		\phi_{ij} (\cdot)=  \frac{\beta_{ij} \exp(-\beta_{ij}~ \cdot)}{H\left(W\right)-H\left(0\right)} \mathbb{I} \left\{0\leq \cdot \leq W \right\}, \quad (i,j)\in \{1,\ldots, p\}^2,
 
 where  :math:`H` is the cdf of the exponential distribution. The parameters estimated are then the doublets :math:`\eta_{ij}=\left( \alpha_{ij}, \beta_{ij} \right)`.
 

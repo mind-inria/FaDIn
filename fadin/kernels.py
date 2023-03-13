@@ -18,10 +18,10 @@ class DiscreteKernelFiniteSupport(object):
         Dimension of the Hawkes process associated to this kernel class.
 
     kernel : `str` or `callable`
-        Either define a kernel in {'raised_cosine', 'truncated_gaussian' and
+        Either define a kernel in {'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'} or a custom kernel.
 
-    kernel_length: `float`, `default=1.`
+    kernel_length : `float`, `default=1.`
         Length of kernel.
 
     lower : `float`, `default=0`
@@ -31,7 +31,7 @@ class DiscreteKernelFiniteSupport(object):
         Right bound of the support of the kernel. It should be between [0, W].
 
     grad_kernel : `None` or `callable`, `default=None`
-        If kernel in ('raised_cosine', 'truncated_gaussian' and
+        If kernel in ('raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential') the gradient function is implemented.
         If kernel is custom, the custom gradient must be given.
     """
