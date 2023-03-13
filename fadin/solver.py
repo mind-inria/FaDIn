@@ -105,11 +105,15 @@ class FaDIn(object):
 
     random_state : `int`, `RandomState` instance or `None`, `default=None`
         Set the torch seed to 'random_state'.
+
+    Attributes
+    ----------
+    blabla: int
     """
 
     def __init__(self, n_dim, kernel, kernel_params_init=None, baseline_init=None,
                  alpha_init=None, kernel_length=1, delta=0.01, optim='RMSprop',
-                 step_size=1e-3, max_iter=2000, optimize_kernel=True,
+                 params_optim=dict(), max_iter=2000, optimize_kernel=True,
                  precomputations=True, ztzG_approx=True, device='cpu', log=False,
                  grad_kernel=None, criterion='l2', tol=10e-5, random_state=None):
         # param discretisation
@@ -120,7 +124,6 @@ class FaDIn(object):
 
         # param optim
         self.solver = optim
-        self.step_size = step_size
         self.max_iter = max_iter
         self.log = log
         self.tol = tol
@@ -162,17 +165,22 @@ class FaDIn(object):
                                                         grad_kernel)
         self.kernel = kernel
         # Set l'optimizer
-        self.params_optim = [self.baseline, self.alpha]
+        self.params_intens = [self.baseline, self.alpha]
 
         self.optimize_kernel = optimize_kernel
 
         if self.optimize_kernel:
             for i in range(self.n_kernel_params):
-                self.params_optim.append(
+                self.params_intens.append(
                     kernel_params_init[i].float().requires_grad_(True))
 
         self.precomputations = precomputations
-        self.opt = optimizer(self.params_optim, lr=self.step_size, solver=optim)
+
+        # If the learning rate is not given, fix it to 1e-3
+        if 'lr' in params_optim.keys():
+            params_optim['lr'] = 1e-3
+
+        self.opt = optimizer(self.params_intens, params_optim, solver=optim)
 
         if criterion == 'll':
             self.precomputations = False
@@ -238,13 +246,13 @@ class FaDIn(object):
         param_kernel = torch.zeros(self.n_kernel_params, self.max_iter + 1,
                                    self.n_dim, self.n_dim)
 
-        param_baseline[0] = self.params_optim[0].detach()
-        param_alpha[0] = self.params_optim[1].detach()
+        param_baseline[0] = self.params_intens[0].detach()
+        param_alpha[0] = self.params_intens[1].detach()
 
         # If kernel parameters are optimized
         if self.optimize_kernel:
             for i in range(self.n_kernel_params):
-                param_kernel[i, 0] = self.params_optim[2 + i].detach()
+                param_kernel[i, 0] = self.params_intens[2 + i].detach()
 
         ####################################################
         start = time.time()
@@ -254,9 +262,9 @@ class FaDIn(object):
             self.opt.zero_grad()
             if self.precomputations:
                 if self.optimize_kernel:
-                    kernel = self.kernel_model.kernel_eval(self.params_optim[2:],
+                    kernel = self.kernel_model.kernel_eval(self.params_intens[2:],
                                                            discretization)
-                    grad_theta = self.kernel_model.grad_eval(self.params_optim[2:],
+                    grad_theta = self.kernel_model.grad_eval(self.params_intens[2:],
                                                              discretization)
                 else:
                     kernel = self.kernel_model.kernel_eval(self.kernel_params_fixed,
@@ -264,43 +272,43 @@ class FaDIn(object):
 
                 if self.log:
                     v_loss[i] = discrete_l2_loss_precomputation(zG, zN, ztzG,
-                                                                self.params_optim[0],
-                                                                self.params_optim[1],
+                                                                self.params_intens[0],
+                                                                self.params_intens[1],
                                                                 kernel, n_events,
                                                                 self.delta,
                                                                 end_time).detach()
 
-                self.params_optim[0].grad = get_grad_baseline(zG,
-                                                              self.params_optim[0],
-                                                              self.params_optim[1],
-                                                              kernel, self.delta,
-                                                              n_events, end_time)
+                self.params_intens[0].grad = get_grad_baseline(zG,
+                                                               self.params_intens[0],
+                                                               self.params_intens[1],
+                                                               kernel, self.delta,
+                                                               n_events, end_time)
 
-                self.params_optim[1].grad = get_grad_alpha(zG,
-                                                           zN,
-                                                           ztzG,
-                                                           self.params_optim[0],
-                                                           self.params_optim[1],
-                                                           kernel,
-                                                           self.delta,
-                                                           n_events)
+                self.params_intens[1].grad = get_grad_alpha(zG,
+                                                            zN,
+                                                            ztzG,
+                                                            self.params_intens[0],
+                                                            self.params_intens[1],
+                                                            kernel,
+                                                            self.delta,
+                                                            n_events)
                 if self.optimize_kernel:
                     for j in range(self.n_kernel_params):
-                        self.params_optim[2 + j].grad = \
+                        self.params_intens[2 + j].grad = \
                             get_grad_eta(zG,
                                          zN,
                                          ztzG,
-                                         self.params_optim[0],
-                                         self.params_optim[1],
+                                         self.params_intens[0],
+                                         self.params_intens[1],
                                          kernel,
                                          grad_theta[j],
                                          self.delta,
                                          n_events)
 
             else:
-                intens = self.kernel_model.intensity_eval(self.params_optim[0],
-                                                          self.params_optim[1],
-                                                          self.params_optim[2:],
+                intens = self.kernel_model.intensity_eval(self.params_intens[0],
+                                                          self.params_intens[1],
+                                                          self.params_intens[2:],
                                                           events_grid,
                                                           discretization)
                 if self.criterion == 'll':
@@ -312,21 +320,21 @@ class FaDIn(object):
             self.opt.step()
 
             # Save parameters
-            self.params_optim[0].data = self.params_optim[0].data.clip(0)
-            self.params_optim[1].data = self.params_optim[1].data.clip(0)
-            param_baseline[i + 1] = self.params_optim[0].detach()
-            param_alpha[i + 1] = self.params_optim[1].detach()
+            self.params_intens[0].data = self.params_intens[0].data.clip(0)
+            self.params_intens[1].data = self.params_intens[1].data.clip(0)
+            param_baseline[i + 1] = self.params_intens[0].detach()
+            param_alpha[i + 1] = self.params_intens[1].detach()
 
             # If kernel parameters are optimized
             if self.optimize_kernel:
                 for j in range(self.n_kernel_params):
                     if self.kernel != 'truncated_skewed_gaussian':
-                        self.params_optim[2 + j].data = \
-                            self.params_optim[2 + j].data.clip(0.0001)
+                        self.params_intens[2 + j].data = \
+                            self.params_intens[2 + j].data.clip(0.0001)
                     else:
-                        self.params_optim[2 + j].data = \
-                            self.params_optim[2 + j].data
-                    param_kernel[j, i + 1] = self.params_optim[2 + j].detach()
+                        self.params_intens[2 + j].data = \
+                            self.params_intens[2 + j].data
+                    param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:

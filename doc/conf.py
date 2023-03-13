@@ -291,6 +291,7 @@ sphinx_gallery_conf = {
     'doc_module': ('fadin', 'numpy'),
     'examples_dirs': '../examples',
     'gallery_dirs': 'auto_examples',
+    'filename_pattern': '^((?!sgskip).)*$',
     'reference_url': {
         'fadin': None,
     }

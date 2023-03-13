@@ -82,7 +82,7 @@ def projected_grid(events, grid_step, n_grid):
     return events_grid
 
 
-def optimizer(param, lr, solver='RMSprop'):
+def optimizer(param, params_optim, solver='RMSprop'):
     """Set the Pytorch optimizer.
 
     Parameters
@@ -98,11 +98,11 @@ def optimizer(param, lr, solver='RMSprop'):
     XXX
     """
     if solver == 'GD':
-        return torch.optim.SGD(param, lr=lr)
+        return torch.optim.SGD(param, **params_optim)
     elif solver == 'RMSprop':
-        return torch.optim.RMSprop(param, lr=lr)
+        return torch.optim.RMSprop(param, **params_optim)
     elif solver == 'Adam':
-        return torch.optim.Adam(param, lr=lr, betas=(0.5, 0.999))
+        return torch.optim.Adam(param, **params_optim)
     else:
         raise NotImplementedError(
             "solver must be 'GD', 'RMSProp', 'Adam'," f"got '{solver}'")
