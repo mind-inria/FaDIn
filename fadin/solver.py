@@ -108,7 +108,20 @@ class FaDIn(object):
 
     Attributes
     ----------
-    blabla: int
+    param_baseline: `tensor`, shape (n_dim)
+        Baseline parameter of the Hawkes process.
+
+    param_alpha: `tensor`, shape (n_dim, n_dim)
+        Weight parameter of the Hawkes process.
+
+    param_kernel: `list` of `tensor`
+        list containing tensor array of kernels parameters.
+        The size of the list varies depending the number of
+        parameters. The shape of each tensor is `(n_dim, n_dim)`.
+
+    v_loss: `tensor`, shape (n_iter)
+        If `log=True`, compute the loss accross iterations.
+        If no early stopping, `n_iter` is equal to `max_iter`.
     """
 
     def __init__(self, n_dim, kernel, kernel_params_init=None, baseline_init=None,
@@ -239,20 +252,20 @@ class FaDIn(object):
         ####################################################
         # save results
         ####################################################
-        v_loss = torch.zeros(self.max_iter)
+        self.v_loss = torch.zeros(self.max_iter)
 
-        param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
-        param_alpha = torch.zeros(self.max_iter + 1, self.n_dim, self.n_dim)
-        param_kernel = torch.zeros(self.n_kernel_params, self.max_iter + 1,
-                                   self.n_dim, self.n_dim)
+        self.param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_alpha = torch.zeros(self.max_iter + 1, self.n_dim, self.n_dim)
+        self.param_kernel = torch.zeros(self.n_kernel_params, self.max_iter + 1,
+                                        self.n_dim, self.n_dim)
 
-        param_baseline[0] = self.params_intens[0].detach()
-        param_alpha[0] = self.params_intens[1].detach()
+        self.param_baseline[0] = self.params_intens[0].detach()
+        self.param_alpha[0] = self.params_intens[1].detach()
 
         # If kernel parameters are optimized
         if self.optimize_kernel:
             for i in range(self.n_kernel_params):
-                param_kernel[i, 0] = self.params_intens[2 + i].detach()
+                self.param_kernel[i, 0] = self.params_intens[2 + i].detach()
 
         ####################################################
         start = time.time()
@@ -271,12 +284,13 @@ class FaDIn(object):
                                                            discretization)
 
                 if self.log:
-                    v_loss[i] = discrete_l2_loss_precomputation(zG, zN, ztzG,
-                                                                self.params_intens[0],
-                                                                self.params_intens[1],
-                                                                kernel, n_events,
-                                                                self.delta,
-                                                                end_time).detach()
+                    self.v_loss[i] = \
+                        discrete_l2_loss_precomputation(zG, zN, ztzG,
+                                                        self.params_intens[0],
+                                                        self.params_intens[1],
+                                                        kernel, n_events,
+                                                        self.delta,
+                                                        end_time).detach()
 
                 self.params_intens[0].grad = get_grad_baseline(zG,
                                                                self.params_intens[0],
@@ -322,34 +336,32 @@ class FaDIn(object):
             # Save parameters
             self.params_intens[0].data = self.params_intens[0].data.clip(0)
             self.params_intens[1].data = self.params_intens[1].data.clip(0)
-            param_baseline[i + 1] = self.params_intens[0].detach()
-            param_alpha[i + 1] = self.params_intens[1].detach()
+            self.param_baseline[i + 1] = self.params_intens[0].detach()
+            self.param_alpha[i + 1] = self.params_intens[1].detach()
 
             # If kernel parameters are optimized
             if self.optimize_kernel:
                 for j in range(self.n_kernel_params):
-                    if self.kernel != 'truncated_skewed_gaussian':
-                        self.params_intens[2 + j].data = \
-                            self.params_intens[2 + j].data.clip(0.0001)
-                    else:
-                        self.params_intens[2 + j].data = \
-                            self.params_intens[2 + j].data
-                    param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
+                    self.params_intens[2 + j].data = \
+                        self.params_intens[2 + j].data.clip(0)
+                    self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:
-                error_b = torch.abs(param_baseline[i + 1] - param_baseline[i]).max()
-                error_al = torch.abs(param_alpha[i + 1] - param_alpha[i]).max()
-                error_k = torch.abs(param_kernel[0, i + 1] - param_kernel[0, i]).max()
+                error_b = torch.abs(self.param_baseline[i + 1] -
+                                    self.param_baseline[i]).max()
+                error_al = torch.abs(self.param_alpha[i + 1] -
+                                     self.param_alpha[i]).max()
+                error_k = torch.abs(self.param_kernel[0, i + 1] -
+                                    self.param_kernel[0, i]).max()
 
                 if error_b < self.tol and error_al < self.tol and error_k < self.tol:
                     print('early stopping at iteration:', i)
-                    param_baseline = param_baseline[:i + 1]
-                    param_alpha = param_alpha[:i + 1]
+                    self.param_baseline = self.param_baseline[:i + 1]
+                    self.param_alpha = self.param_alpha[:i + 1]
                     for j in range(self.n_kernel_params):
-                        param_kernel[j] = param_kernel[j, i + 1]
+                        self.param_kernel[j] = self.param_kernel[j, i + 1]
                     break
         print('iterations in ', time.time() - start)
 
-        return dict(v_loss=v_loss, param_baseline=param_baseline,
-                    param_alpha=param_alpha, param_kernel=param_kernel)
+        return self

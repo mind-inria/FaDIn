@@ -21,7 +21,7 @@ import torch
 
 n_dim = 2
 dt = 0.01
-T = 10_000
+T = 1_000_000
 kernel_length = 1
 L = int(1 / dt)
 size_grid = int(T / dt) + 1
@@ -32,8 +32,8 @@ discretization = torch.linspace(0, kernel_length, L)
 
 import numpy as np
 
-baseline = np.array([.1, .2])
-alpha = np.array([[0.8, 0.1], [0.1, 0.8]])
+baseline = np.array([.1, .8])
+alpha = np.array([[0.4, 0.5], [0.5, 0.4]])
 m = np.array([[0.4, 0.6], [0.55, 0.6]])
 sigma = np.array([[0.3, 0.3], [0.25, 0.3]])
 
@@ -91,17 +91,20 @@ solver = FaDIn(n_dim=n_dim,
                kernel="truncated_gaussian",
                kernel_length=kernel_length,
                delta=dt, optim="RMSprop",
-               step_size=1e-3, max_iter=10000, criterion='l2'
+               params_optim={'lr': 1e-3},
+               max_iter=10000, criterion='l2'
                )
-results = solver.fit(events, T)
+solver.fit(events, T)
 
 # We average on the 10 last values of the optimization
-estimated_baseline = results['param_baseline'][-10:].mean(0)
-estimated_alpha = results['param_alpha'][-10:].mean(0)
-param_kernel = [results['param_kernel'][0][-10:].mean(0),
-                results['param_kernel'][1][-10:].mean(0)]
+estimated_baseline = solver.param_baseline[-10:].mean(0)
+estimated_alpha = solver.param_alpha[-10:].mean(0)
+param_kernel = [solver.param_kernel[0][-10:].mean(0),
+                solver.param_kernel[1][-10:].mean(0)]
 
 print('Estimated baseline is:', estimated_baseline)
 print('Estimated baseline is:', estimated_alpha)
 print('Estimated m parameter of the truncated Gaussian kernel is:', param_kernel[0])
 print('Estimated sigma parameter of the truncated Gaussian kernel is:', param_kernel[1])
+
+# %%

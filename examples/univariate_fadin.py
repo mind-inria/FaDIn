@@ -21,7 +21,7 @@ import torch
 
 n_dim = 1
 dt = 0.01
-T = 10_000
+T = 1_000_000
 kernel_length = 1
 L = int(1 / dt)
 size_grid = int(T / dt) + 1
@@ -32,7 +32,7 @@ discretization = torch.linspace(0, kernel_length, L)
 
 import numpy as np
 
-baseline = np.array([.1])
+baseline = np.array([.4])
 alpha = np.array([[0.8]])
 u = np.array([[.2]])
 sigma = np.array([[.3]])
@@ -80,17 +80,20 @@ solver = FaDIn(n_dim=1,
                kernel="raised_cosine",
                kernel_length=kernel_length,
                delta=dt, optim="RMSprop",
-               step_size=1e-3, max_iter=10000, criterion='l2'
+               params_optim={'lr': 1e-3},
+               max_iter=10000, criterion='l2'
                )
-results = solver.fit(events, T)
+solver.fit(events, T)
 
 # We average on the 10 last values of the optimization
-estimated_baseline = results['param_baseline'][-10:].mean().item()
-estimated_alpha = results['param_alpha'][-10:].mean().item()
-param_kernel = [results['param_kernel'][0][-10:].mean().item(),
-                results['param_kernel'][1][-10:].mean().item()]
+estimated_baseline = solver.param_baseline[-10:].mean().item()
+estimated_alpha = solver.param_alpha[-10:].mean().item()
+param_kernel = [solver.param_kernel[0][-10:].mean().item(),
+                solver.param_kernel[1][-10:].mean().item()]
 
 print('Estimated baseline is:', estimated_baseline)
 print('Estimated baseline is:', estimated_alpha)
 print('Estimated u parameter of the raised cosine kernel is:', param_kernel[0])
 print('Estimated sigma parameter of the raised cosine kernel is:', param_kernel[1])
+
+# %%
