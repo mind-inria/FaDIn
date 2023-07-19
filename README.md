@@ -46,10 +46,12 @@ pre-commit install
 If this package was useful to you, please cite it in your work:
 
 ```bibtex
-@article{staerman2022fadin,
-  title={FaDIn: Fast Discretized Inference for Hawkes Processes with General Parametric Kernels},
+@inproceedings{staerman2023fadin,
+  title={Fadin: Fast discretized inference for hawkes processes with general parametric kernels},
   author={Staerman, Guillaume and Allain, C{\'e}dric and Gramfort, Alexandre and Moreau, Thomas},
-  journal={arXiv preprint arXiv:2210.04635},
-  year={2022}
+  booktitle={International Conference on Machine Learning},
+  pages={32575--32597},
+  year={2023},
+  organization={PMLR}
 }
 ```
