@@ -16,13 +16,13 @@ with specific kernels.
 
 ###############################################################################
 # Let us first define the parameters of our model.
-
+# %%
 import torch
 
 n_dim = 1
 dt = 0.01
 T = 1_000_000
-kernel_length = 1
+kernel_length = 5
 L = int(1 / dt)
 size_grid = int(T / dt) + 1
 discretization = torch.linspace(0, kernel_length, L)
@@ -34,42 +34,19 @@ import numpy as np
 
 baseline = np.array([.4])
 alpha = np.array([[0.8]])
-u = np.array([[.2]])
-sigma = np.array([[.3]])
 
 
+# %%
 ###############################################################################
 # Here, we simulate the data
 
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
-from fadin.kernels import DiscreteKernelFiniteSupport
+# standard parameter is beta equal to one
+kernel = 'expon' 
 
-kernel = DiscreteKernelFiniteSupport(dt, n_dim, kernel='raised_cosine')
-kernel_values = kernel.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
-                                   discretization)
-kernel_values = kernel_values * alpha[:, :, None]
+events = simu_hawkes_cluster(T, baseline, alpha, kernel)
 
-discretization_np = discretization.double().numpy()
-kernel_values_np = kernel_values.squeeze().double().numpy()
-
-tf = HawkesKernelTimeFunc(t_values=discretization_np, y_values=kernel_values_np)
-kernels = [[tf]]
-hawkes = SimuHawkes(
-    baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=0
-)
-
-hawkes.simulate()
-events = hawkes.timestamps
-
-###############################################################################
-# Here, we visualize the kernel shape
-
-import matplotlib.pyplot as plt
-
-plt.figure()
-plt.plot(discretization_np, kernel_values_np)
-plt.show()
 
 ###############################################################################
 # Here, we apply FaDIn
@@ -77,7 +54,7 @@ plt.show()
 from fadin.solver import FaDIn
 
 solver = FaDIn(n_dim=1,
-               kernel="raised_cosine",
+               kernel="truncated_exponential",
                kernel_length=kernel_length,
                delta=dt, optim="RMSprop",
                params_optim={'lr': 1e-3},
@@ -88,12 +65,11 @@ solver.fit(events, T)
 # We average on the 10 last values of the optimization
 estimated_baseline = solver.param_baseline[-10:].mean().item()
 estimated_alpha = solver.param_alpha[-10:].mean().item()
-param_kernel = [solver.param_kernel[0][-10:].mean().item(),
-                solver.param_kernel[1][-10:].mean().item()]
+param_kernel = [solver.param_kernel[0][-10:].mean().item()]
 
 print('Estimated baseline is:', estimated_baseline)
-print('Estimated baseline is:', estimated_alpha)
-print('Estimated u parameter of the raised cosine kernel is:', param_kernel[0])
-print('Estimated sigma parameter of the raised cosine kernel is:', param_kernel[1])
+print('Estimated alpha is:', estimated_alpha)
+print('Estimated beta parameter of the exponential kernel is:', param_kernel[0])
+
 
 # %%

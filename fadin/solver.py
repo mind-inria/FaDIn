@@ -234,7 +234,7 @@ class FaDIn(object):
         # Precomputations
         ####################################################
         if self.precomputations:
-            print('number of events is:', n_events)
+            print('number of events is:', int(n_events[0]))
             start = time.time()
             zG = get_zG(events_grid.double().numpy(), self.L)
             zN = get_zN(events_grid.double().numpy(), self.L)
