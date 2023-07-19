@@ -104,22 +104,3 @@ print(np.abs(results['param_baseline'] - baseline))
 print(np.abs(results['param_alpha'] - alpha))
 print(np.abs(results['param_kernel'][0] - a))
 print(np.abs(results['param_kernel'][1] - b))
-
-# %%
-import matplotlib.pyplot as plt
-%matplotlib inline
-kernel_length = 1.5
-n_dim = 1
-L = int(kernel_length / dt)
-discretization = torch.linspace(0, kernel_length, L)
-kuma = DiscreteKernelFiniteSupport(dt, n_dim, kernel='kumaraswamy')
-kernel_values = kuma.kernel_eval([torch.Tensor(a), torch.Tensor(b)],
-                                     discretization)
-
-kuma_ = DiscreteKernelFiniteSupport(dt, n_dim, kernel='kumaraswamy')
-kernel_values_ = kuma_.kernel_eval([torch.Tensor([[results['param_kernel'][0]]]), torch.tensor([[results['param_kernel'][1]]])], discretization)
-
-plt.plot(kernel_values.squeeze(), label='true kernel')
-plt.plot(kernel_values_.squeeze(), label='estimated kernel')
-plt.legend()
-# %%

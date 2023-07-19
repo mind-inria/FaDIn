@@ -40,7 +40,7 @@ class DiscreteKernelFiniteSupport(object):
         self.L = int(kernel_length / delta)
         self.delta = delta
         self.lower = lower
-        self.upper = upper
+        self.upper = kernel_length
         self.n_dim = n_dim
         self.kernel = kernel
         self.grad_kernel = grad_kernel

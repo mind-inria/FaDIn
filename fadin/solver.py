@@ -108,18 +108,18 @@ class FaDIn(object):
 
     Attributes
     ----------
-    param_baseline: `tensor`, shape (n_dim)
+    param_baseline : `tensor`, shape (n_dim)
         Baseline parameter of the Hawkes process.
 
-    param_alpha: `tensor`, shape (n_dim, n_dim)
+    param_alpha : `tensor`, shape (n_dim, n_dim)
         Weight parameter of the Hawkes process.
 
-    param_kernel: `list` of `tensor`
+    param_kernel : `list` of `tensor`
         list containing tensor array of kernels parameters.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
 
-    v_loss: `tensor`, shape (n_iter)
+    v_loss : `tensor`, shape (n_iter)
         If `log=True`, compute the loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
@@ -334,8 +334,8 @@ class FaDIn(object):
             self.opt.step()
 
             # Save parameters
-            self.params_intens[0].data = self.params_intens[0].data.clip(0)
-            self.params_intens[1].data = self.params_intens[1].data.clip(0)
+            self.params_intens[0].data = self.params_intens[0].data.clip(1e-3)
+            self.params_intens[1].data = self.params_intens[1].data.clip(1e-3)
             self.param_baseline[i + 1] = self.params_intens[0].detach()
             self.param_alpha[i + 1] = self.params_intens[1].detach()
 
@@ -343,7 +343,7 @@ class FaDIn(object):
             if self.optimize_kernel:
                 for j in range(self.n_kernel_params):
                     self.params_intens[2 + j].data = \
-                        self.params_intens[2 + j].data.clip(0)
+                        self.params_intens[2 + j].data.clip(1e-3)
                     self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
 
             # Early stopping
