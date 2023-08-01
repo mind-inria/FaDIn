@@ -26,7 +26,6 @@ extensions = [
 ]
 
 
-
 # generate autosummary even if no references
 autosummary_generate = True
 
