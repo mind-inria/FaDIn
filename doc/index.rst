@@ -32,7 +32,7 @@ These are the dependencies to use FaDIn:
 Cite
 ----
 
-   [1] Guillaume Staerman, Cédric Allain, Alexandre Gramfort, Thomas Moreau. FaDIn: Fast Discretized Inference for Hawkes Processes with General Parametric Kernels. Preprint (2022). https://arxiv.org/abs/2210.04635.
+   [1] Guillaume Staerman, Cédric Allain, Alexandre Gramfort, Thomas Moreau. FaDIn: Fast Discretized Inference for Hawkes Processes with General Parametric Kernels. ICML (2023). https://arxiv.org/abs/2210.04635.
 
 
 Contents
