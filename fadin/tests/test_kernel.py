@@ -1,5 +1,7 @@
 import torch
+
 from fadin.kernels import DiscreteKernelFiniteSupport
+from fadin.utils.utils import check_random_state
 
 
 def tg_def(kernel_params, time_values, lower=0, upper=1):
@@ -39,8 +41,11 @@ def test_eval_grad():
     implemented in closed form is equal to the
     generalized implementation with pre defined functions
     """
-    m = torch.randn(2, 2)
-    sigma = torch.randn(2, 2)
+    random_state = 0
+    rng = check_random_state(random_state)
+
+    m = torch.tensor(rng.randn(2, 2))
+    sigma = torch.tensor(rng.randn(2, 2))
     kernel_params = [m, sigma]
 
     kernel = "truncated_gaussian"

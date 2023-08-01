@@ -129,7 +129,7 @@ def squared_compensator_2(zG, baseline, alpha, kernel):
     if n_dim > 1:
         prod_zG_ker = torch.einsum('ju,iju->ij', zG, kernel)
         alpha_prod = alpha * prod_zG_ker
-        res_matrix = baseline.view(1, n_dim) * alpha_prod
+        res_matrix = baseline.view(n_dim, 1) * alpha_prod
         res = res_matrix.sum()
     else:
         res = 0

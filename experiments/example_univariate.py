@@ -13,7 +13,7 @@ from fadin.solver import FaDIn
 ################################
 dt = 0.01
 T = 1_000_000
-kernel_length = 1
+kernel_length = 1.5
 size_grid = int(T / dt) + 1
 
 # mem = Memory(location=".", verbose=2)
@@ -23,14 +23,13 @@ size_grid = int(T / dt) + 1
 
 
 # @mem.cache
-def simulate_data(baseline, alpha, mu, sigma, kernel_length, T, dt, seed=0):
+def simulate_data(baseline, alpha, a, b, kernel_length, T, dt, seed=0):
     L = int(kernel_length / dt)
     discretization = torch.linspace(0, kernel_length, L)
-    u = mu - sigma
-    n_dim = u.shape[0]
-    RC = DiscreteKernelFiniteSupport(dt, n_dim, kernel='truncated_gaussian')
-    kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
-                                   discretization)
+    n_dim = a.shape[0]
+    kuma = DiscreteKernelFiniteSupport(dt, n_dim, kernel='kumaraswamy')
+    kernel_values = kuma.kernel_eval([torch.Tensor(a), torch.Tensor(b)],
+                                     discretization)
     kernel_values = kernel_values * alpha[:, :, None]
 
     t_values = discretization.double().numpy()
@@ -53,24 +52,24 @@ def simulate_data(baseline, alpha, mu, sigma, kernel_length, T, dt, seed=0):
 def run_solver(events, u_init, sigma_init, baseline_init,
                alpha_init, kernel_length, dt, T, seed=0):
     start = time.time()
-    max_iter = 2000
+    max_iter = 10000
     solver = FaDIn(1,
-                   "truncated_gaussian",
+                   "kumaraswamy",
                    [torch.tensor(u_init),
                     torch.tensor(sigma_init)],
                    torch.tensor(baseline_init),
                    torch.tensor(alpha_init),
                    kernel_length=kernel_length,
                    delta=dt, optim="RMSprop",
-                   step_size=1e-3, max_iter=max_iter, criterion='l2'
+                   max_iter=max_iter, criterion='l2'
                    )
 
     print(time.time() - start)
-    results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_alpha=results['param_alpha'][-10:].mean().item(),
-                    param_kernel=[results['param_kernel'][0][-10:].mean().item(),
-                                  results['param_kernel'][1][-10:].mean().item()]
+    solver.fit(events, T)
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean().item(),
+                    param_alpha=solver.param_alpha[-10:].mean().item(),
+                    param_kernel=[solver.param_kernel[0][-10:].mean().item(),
+                                  solver.param_kernel[1][-10:].mean().item()]
                     )
 
     results_["time"] = time.time() - start
@@ -85,25 +84,23 @@ def run_solver(events, u_init, sigma_init, baseline_init,
 baseline = np.array([.1])
 alpha = np.array([[0.8]])
 middle = kernel_length / 2
-mu = np.array([[middle]])
-sigma = np.array([[.3]])
-u = mu - sigma
+a = np.array([[2.]])
+b = np.array([[2.]])
 
-events = simulate_data(baseline, alpha, mu, sigma, kernel_length, T, dt, seed=0)
+
+events = simulate_data(baseline, alpha, a, b, kernel_length, T, dt, seed=0)
 
 v = 0.2
 baseline_init = baseline + v
 alpha_init = alpha + v
-mu_init = mu
-sigma_init = sigma + v
-u_init = mu_init - sigma_init
-results = run_solver(events, u_init, sigma_init,
-                     baseline_init, alpha_init, 1,
+a_init = np.array([[1.]])
+b_init = np.array([[1.]])
+
+results = run_solver(events, a_init, b_init,
+                     baseline_init, alpha_init, 1.5,
                      dt, T, seed=0)
 
 print(np.abs(results['param_baseline'] - baseline))
 print(np.abs(results['param_alpha'] - alpha))
-print(np.abs(results['param_kernel'][0] - u))
-print(np.abs(results['param_kernel'][1] - sigma))
-
-# %%
+print(np.abs(results['param_kernel'][0] - a))
+print(np.abs(results['param_kernel'][1] - b))

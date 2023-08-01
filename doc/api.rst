@@ -7,10 +7,19 @@ API Documentation
 .. currentmodule:: fadin
 
 
-Class
+Solver
 ============
 
 .. autosummary::
    :toctree: generated/
 
    solver.FaDIn
+
+
+Finite-support Kernels
+======================
+
+.. autosummary::
+   :toctree: generated/
+
+   kernels.DiscreteKernelFiniteSupport

@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from scipy.stats import norm
 
 from fadin.utils.utils import check_params, kernel_normalization, \
     kernel_deriv_norm, kernel_normalized, grad_kernel_callable
@@ -12,59 +11,63 @@ class DiscreteKernelFiniteSupport(object):
 
     Parameters
     ----------
-    delta : float
+    delta : `float`
         Step size of the discretization.
 
-    n_dim : int
+    n_dim : `int`
         Dimension of the Hawkes process associated to this kernel class.
 
-    kernel : str or callable
-        Either define a kernel in ('raised_cosine', 'truncated_gaussian' and
-        'truncated_exponential') or a custom kernel.
+    kernel : `str` or `callable`
+        Either define a kernel in {'raised_cosine' | 'truncated_gaussian' |
+        'truncated_exponential'} or a custom kernel.
 
-    kernel_length: int, default=1
+    kernel_length : `float`, `default=1.`
         Length of kernel.
 
-    lower : float, default=0
-        Left bound of the support of the kernel. It should be between [0, 1].
+    lower : `float`, `default=0`
+        Left bound of the support of the kernel. It should be between [0, W].
 
-    upper : float, default=1
-        Right bound of the support of the kernel. It should be between [0, 1].
+    upper : `float`, `default=1`
+        Right bound of the support of the kernel. It should be between [0, W].
 
-    grad_kernel : None or callable, default=None
-        If kernel in ('raised_cosine', 'truncated_gaussian' and
+    grad_kernel : `None` or `callable`, `default=None`
+        If kernel in ('raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential') the gradient function is implemented.
         If kernel is custom, the custom gradient must be given.
-
-    Attributes
-    ----------
-    L: int
-        Size of the kernel discretization.
     """
-    def __init__(self, delta, n_dim, kernel, kernel_length=1,
+    def __init__(self, delta, n_dim, kernel, kernel_length=1.,
                  lower=0., upper=1., grad_kernel=None):
         self.L = int(kernel_length / delta)
         self.delta = delta
         self.lower = lower
-        self.upper = upper
+        self.upper = kernel_length
         self.n_dim = n_dim
         self.kernel = kernel
         self.grad_kernel = grad_kernel
+
+        if self.upper < self.lower:
+            raise AttributeError('Upper bound must be higher than the lower bound')
+
+        if self.upper > kernel_length:
+            raise AttributeError('Upper bound must be lower than the kernel length')
+
+        if self.lower < 0:
+            raise AttributeError('Lower bound must be higher than zero')
 
     def kernel_eval(self, kernel_params, time_values):
         """Return kernel evaluated on the given discretization.
 
         Parameters
         ----------
-        kernel_params : list of tensor of shape (n_dim, n_dim)
+        kernel_params : `list` of tensor of shape (n_dim, n_dim)
             Parameters of the kernel.
 
-        time_values : tensor, shape (L,)
+        time_values : `tensor`, shape (L,)
             Given discretization.
 
         Returns
         -------
-        kernel_values :  tensor, shape (n_dim, n_dim, L)
+        kernel_values :  `tensor`, shape (n_dim, n_dim, L)
             Kernels evaluated on ``time_values``.
         """
         if self.kernel == 'raised_cosine':
@@ -75,9 +78,6 @@ class DiscreteKernelFiniteSupport(object):
         elif self.kernel == 'truncated_exponential':
             kernel_values = truncated_exponential(kernel_params, time_values,
                                                   self.delta, self.upper)
-        elif self.kernel == 'truncated_skewed_gaussian':
-            kernel_values = truncated_skewed_gaussian(kernel_params, time_values,
-                                                      self.delta, self.upper, sigma=0.1)
         elif self.kernel == 'kumaraswamy':
             kernel_values = kumaraswamy(kernel_params, time_values)
         elif callable(self.kernel):
@@ -95,15 +95,15 @@ class DiscreteKernelFiniteSupport(object):
 
         Parameters
         ----------
-        kernel_params : list of tensor of shape (n_dim, n_dim)
+        kernel_params : `list` of tensor of shape (n_dim, n_dim)
             Parameters of the kernel.
 
-        time_values : tensor, shape (L,)
+        time_values : `tensor`, shape (L,)
             Given discretization.
 
         Returns
         ----------
-        grad_values :  tensor, shape (n_dim, n_dim, L)
+        grad_values :  `tensor`, shape (n_dim, n_dim, L)
             Gradients evaluated on ``time_values``.
         """
         if self.kernel == 'raised_cosine':
@@ -112,9 +112,6 @@ class DiscreteKernelFiniteSupport(object):
             grad_values = grad_truncated_gaussian(kernel_params, time_values, self.L)
         elif self.kernel == 'truncated_exponential':
             grad_values = grad_truncated_exponential(kernel_params, time_values, self.L)
-        elif self.kernel == 'truncated_skewed_gaussian':
-            grad_values = grad_truncated_skewed_gaussian(kernel_params, time_values,
-                                                         self.L, sigma=0.1)
         elif self.kernel == 'kumaraswamy':
             grad_values = grad_kumaraswamy(kernel_params, time_values, self.L)
         elif callable(self.kernel) and callable(self.grad_kernel):
@@ -134,24 +131,24 @@ class DiscreteKernelFiniteSupport(object):
 
         Parameters
         ----------
-        baseline : tensor, shape (n_dim,)
+        baseline : `tensor`, shape (n_dim,)
             Baseline parameter of the intensity of the Hawkes process.
 
-        alpha : tensor, shape (n_dim, n_dim)
+        alpha : `tensor`, shape (n_dim, n_dim)
             Alpha parameter of the intensity of the Hawkes process.
 
-        kernel_params : list of tensor of shape (n_dim, n_dim)
+        kernel_params : `list` of tensor of shape (n_dim, n_dim)
             Parameters of the kernel.
 
-        events_grid : tensor, shape (n_dim, n_grid)
+        events_grid : `tensor`, shape (n_dim, n_grid)
             Events projected on the pre-defined grid.
 
-        time_values : tensor, shape (L,)
+        time_values : `tensor`, shape (L,)
             Given discretization.
 
         Returns
         ----------
-        intensity_values : tensor, shape (dim, n_grid)
+        intensity_values : `tensor`, shape (dim, n_grid)
             The intensity function evaluated on the grid.
         """
         kernel_values = self.kernel_eval(kernel_params, time_values)
@@ -173,15 +170,15 @@ def kumaraswamy(kernel_params, time_values):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: u and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
     Returns
     ----------
-    values : tensor, shape (n_dim, n_dim, L)
+    values : `tensor`, shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     check_params(kernel_params, 2)
@@ -206,18 +203,18 @@ def grad_kumaraswamy(kernel_params, time_values, L):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: u and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    L : int
+    L : `int`
         Size of the kernel discretization.
 
     Returns
     ----------
-    grad_list : list of two tensor of shape (n_dim, n_dim, L)
+    grad_list : `list` of two tensor of shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     a, b = kernel_params
@@ -249,15 +246,15 @@ def raised_cosine(kernel_params, time_values):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: u and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
     Returns
     ----------
-    values : tensor, shape (n_dim, n_dim, L)
+    values : `tensor`, shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     # reparam: alpha= alpha' / (2*sigma)
@@ -283,13 +280,13 @@ def grad_raised_cosine(kernel_params, time_values, L):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: u and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    L : int
+    L : `int`
         Size of the kernel discretization.
 
     Returns
@@ -323,23 +320,23 @@ def truncated_gaussian(kernel_params, time_values, delta, lower=0., upper=1.):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: m and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    delta : float
+    delta : `float`
         Step size of the discretization.
 
-    lower : float, default=0
+    lower : `float, default=0`
         Left bound of the support of the kernel. It should be between [0, 1].
 
-    upper : float, default=1
+    upper : `float, default=1`
         Right bound of the support of the kernel. It should be between [0, 1].
     Returns
     ----------
-    values : tensor, shape (n_dim, n_dim, L)
+    values : `tensor`, shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     check_params(kernel_params, 2)
@@ -363,18 +360,18 @@ def grad_truncated_gaussian(kernel_params, time_values, L):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: m and sigma.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    L : int
+    L : `int`
         Size of the kernel discretization.
 
     Returns
     ----------
-    grad_list : list of two tensor of shape (n_dim, n_dim, L)
+    grad_list : `list` of two tensor of shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     delta = 1 / L
@@ -407,20 +404,20 @@ def truncated_exponential(kernel_params, time_values, delta, upper=1.):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernel: decay.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    delta : float
+    delta : `float`
         Step size of the discretization.
 
-    upper : float, default=1
+    upper : `float, default=1`
         Right bound of the support of the kernel. It should be between [0, 1].
     Returns
     ----------
-    values : tensor, shape (n_dim, n_dim, L)
+    values : `tensor`, shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     check_params(kernel_params, 1)
@@ -439,18 +436,18 @@ def grad_truncated_exponential(kernel_params, time_values, L):
 
     Parameters
     ----------
-    kernel_params : list of size 2 of tensor of shape (n_dim, n_dim)
+    kernel_params : `list` of size 2 of tensor of shape (n_dim, n_dim)
         Parameters of the kernels: decay.
 
-    time_values : tensor, shape (L,)
+    time_values : `tensor`, shape (L,)
         Given discretization.
 
-    L : int
+    L : `int`
         Size of the kernel discretization.
 
     Returns
     ----------
-    grad_list : list of two tensor of shape (n_dim, n_dim, L)
+    grad_list : `list` of two tensor of shape (n_dim, n_dim, L)
         Kernels evaluated on ``time_values``.
     """
     delta = 1 / L
@@ -472,48 +469,48 @@ def grad_truncated_exponential(kernel_params, time_values, L):
     return grad_list
 
 
-def truncated_skewed_gaussian(kernel_params, time_values, delta,
-                              lower=0., upper=3., sigma=0.1):
-    check_params(kernel_params, 2)
-    beta, xi = kernel_params
-    n_dim, _ = xi.shape
+# def truncated_skewed_gaussian(kernel_params, time_values, delta,
+#                               lower=0., upper=3., sigma=0.1):
+#     check_params(kernel_params, 2)
+#     beta, xi = kernel_params
+#     n_dim, _ = xi.shape
 
-    values_ = torch.zeros(n_dim, n_dim, len(time_values))
-    for i in range(n_dim):
-        for j in range(n_dim):
-            z = (time_values - xi[i, j].item()) / sigma
-            values_[i, j] = torch.tensor(2 * norm.pdf(z) *
-                                         norm.cdf(beta[i, j].item() * z)) / sigma
+#     values_ = torch.zeros(n_dim, n_dim, len(time_values))
+#     for i in range(n_dim):
+#         for j in range(n_dim):
+#             z = (time_values - xi[i, j].item()) / sigma
+#             values_[i, j] = torch.tensor(2 * norm.pdf(z) *
+#                                          norm.cdf(beta[i, j].item() * z)) / sigma
 
-    values = kernel_normalization(values_, time_values, delta,
-                                  lower=lower, upper=upper)
-    return values
+#     values = kernel_normalization(values_, time_values, delta,
+#                                   lower=lower, upper=upper)
+#     return values
 
 
-def grad_truncated_skewed_gaussian(kernel_params, time_values, L, sigma=0.1):
-    delta = 1 / L
-    beta, xi = kernel_params
-    n_dim, _ = beta.shape
+# def grad_truncated_skewed_gaussian(kernel_params, time_values, L, sigma=0.1):
+#     delta = 1 / L
+#     beta, xi = kernel_params
+#     n_dim, _ = beta.shape
 
-    beta = beta.detach().numpy()
-    xi = xi.detach().numpy()
-    grad_beta = torch.zeros(n_dim, n_dim, L)
-    grad_xi = torch.zeros(n_dim, n_dim, L)
-    for i in range(n_dim):
-        for j in range(n_dim):
-            z = (time_values.numpy() - xi[i, j]) / sigma
-            deriv_gauss = - 2 * z * np.exp(- (z**2) / 2) / np.sqrt(2 * np.pi)
-            f = torch.tensor(2 * norm.pdf(z) * norm.cdf(beta[i, j] * z)) / sigma
-            grad_f_beta = 2 * z * norm.pdf(z) * norm.pdf(beta[i, j] * z) / sigma
-            grad_f_xi = - 2 * (beta[i, j] * norm.pdf(beta[i, j] * z) * norm.pdf(z)
-                               + norm.cdf(beta[i, j] * z) * deriv_gauss) / (sigma**2)
-            f = torch.tensor(f)
-            grad_f_beta = torch.tensor(grad_f_beta)
-            grad_f_xi = torch.tensor(grad_f_xi)
+#     beta = beta.detach().numpy()
+#     xi = xi.detach().numpy()
+#     grad_beta = torch.zeros(n_dim, n_dim, L)
+#     grad_xi = torch.zeros(n_dim, n_dim, L)
+#     for i in range(n_dim):
+#         for j in range(n_dim):
+#             z = (time_values.numpy() - xi[i, j]) / sigma
+#             deriv_gauss = - 2 * z * np.exp(- (z**2) / 2) / np.sqrt(2 * np.pi)
+#             f = torch.tensor(2 * norm.pdf(z) * norm.cdf(beta[i, j] * z)) / sigma
+#             grad_f_beta = 2 * z * norm.pdf(z) * norm.pdf(beta[i, j] * z) / sigma
+#             grad_f_xi = - 2 * (beta[i, j] * norm.pdf(beta[i, j] * z) * norm.pdf(z)
+#                                + norm.cdf(beta[i, j] * z) * deriv_gauss) / (sigma**2)
+#             f = torch.tensor(f)
+#             grad_f_beta = torch.tensor(grad_f_beta)
+#             grad_f_xi = torch.tensor(grad_f_xi)
 
-            grad_beta[i, j] = kernel_deriv_norm(f, grad_f_beta, delta)
-            grad_xi[i, j] = kernel_deriv_norm(f, grad_f_xi, delta)
+#             grad_beta[i, j] = kernel_deriv_norm(f, grad_f_beta, delta)
+#             grad_xi[i, j] = kernel_deriv_norm(f, grad_f_xi, delta)
 
-    grad_list = [torch.tensor(grad_beta), torch.tensor(grad_xi)]
+#     grad_list = [torch.tensor(grad_beta), torch.tensor(grad_xi)]
 
-    return grad_list
+#     return grad_list
