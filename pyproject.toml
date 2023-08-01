@@ -41,7 +41,7 @@ test = [
 ]
 
 [tool.ruff]
-exclude = ['.examples']
+ignore = ["E402"]
 
 doc = [
     "furo",
