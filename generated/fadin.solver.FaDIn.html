@@ -3,18 +3,18 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="API Documentation" href="../api.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="fadin.kernels.DiscreteKernelFiniteSupport" href="fadin.kernels.DiscreteKernelFiniteSupport.html" /><link rel="prev" title="API Documentation" href="../api.html" />
 
-    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
+    <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
         <title>fadin.solver.FaDIn - fadin 0.1.dev0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=79c6a522" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=e5fbc548" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=6302152c" />
     
     
 
@@ -160,8 +160,19 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../model.html">Model description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#hawkes-process">1. Hawkes process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#fadin">3. FaDIn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#kernels">4. Kernels</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../auto_examples/index.html">Examples Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">fadin.solver.FaDIn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fadin.kernels.DiscreteKernelFiniteSupport.html">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
 </ul>
 </li>
 </ul>
@@ -202,7 +213,7 @@
 <h1>fadin.solver.FaDIn<a class="headerlink" href="#fadin-solver-fadin" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="fadin.solver.FaDIn">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fadin.solver.</span></span><span class="sig-name descname"><span class="pre">FaDIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_params_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomputations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fadin.solver.</span></span><span class="sig-name descname"><span class="pre">FaDIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_params_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomputations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn" title="Permalink to this definition">#</a></dt>
 <dd><p>Define the FaDIn framework for estimated Hawkes processes.</p>
 <p>The framework is detailed in:</p>
 <p>Guillaume Staerman, Cédric Allain, Alexandre Gramfort, Thomas Moreau
@@ -216,7 +227,7 @@ defined by the intensity  as a convolution between the kernel
 located at the event occurrences <span class="math notranslate nohighlight">\(t^i_n\)</span>:</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
-\[\forall i \in [1 \dots D], \quad
+\[\forall i \in [1 \dots p], \quad
 \lambda_i(t) = \mu_i + \sum_{j=1}^p \phi_{ij} * z_j(t),
 \quad t \in [0, T]\]</div>
 </div>
@@ -225,59 +236,73 @@ located at the event occurrences <span class="math notranslate nohighlight">\(t^
 <li><p><span class="math notranslate nohighlight">\(p\)</span> is the dimension of the process</p></li>
 <li><p><span class="math notranslate nohighlight">\(\mu_i\)</span> are the baseline intensities</p></li>
 <li><p><span class="math notranslate nohighlight">\(\phi_{ij}\)</span> are the kernels</p></li>
-<li><p><span class="math notranslate nohighlight">\(z_j(t)\)</span> are the activation vector on the discretized grid,</p></li>
+<li><p><span class="math notranslate nohighlight">\(z_j(t)\)</span> are the activation vector on the discretized grid.</p></li>
 </ul>
-<p>the projection of the timestamps on this grid</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
-<dt><strong>n_dim: int</strong></dt><dd><p>Dimension of the underlying Hawkes process.</p>
+<dt><strong>n_dim</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Dimension of the underlying Hawkes process.</p>
 </dd>
-<dt><strong>kernel</strong><span class="classifier">str or callable</span></dt><dd><p>Either define a kernel in <code class="docutils literal notranslate"><span class="pre">{'raised_cosine',</span> <span class="pre">'truncated_gaussian'</span> <span class="pre">and</span>
+<dt><strong>kernel</strong><span class="classifier"><cite>str</cite> or <cite>callable</cite></span></dt><dd><p>Either define a kernel in <code class="docutils literal notranslate"><span class="pre">{'raised_cosine'</span> <span class="pre">|</span> <span class="pre">'truncated_gaussian'</span> <span class="pre">|</span>
 <span class="pre">'truncated_exponential'}</span></code> or a custom kernel.</p>
 </dd>
-<dt><strong>kernel_params_init</strong><span class="classifier">list of tensor of shape (n_dim, n_dim)</span></dt><dd><p>Initial parameters of the kernel.</p>
+<dt><strong>kernel_params_init</strong><span class="classifier"><cite>list</cite> of tensor of shape (n_dim, n_dim)</span></dt><dd><p>Initial parameters of the kernel.</p>
 </dd>
-<dt><strong>baseline_init</strong><span class="classifier">tensor, shape (n_dim,)</span></dt><dd><p>Initial baseline parameters of the intensity of the Hawkes process.</p>
+<dt><strong>baseline_init</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim,)</span></dt><dd><p>Initial baseline parameters of the intensity of the Hawkes process.</p>
 </dd>
-<dt><strong>alpha_init</strong><span class="classifier">tensor, shape (n_dim, n_dim)</span></dt><dd><p>Initial alpha parameters of the intensity of the Hawkes process.</p>
+<dt><strong>alpha_init</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim, n_dim)</span></dt><dd><p>Initial alpha parameters of the intensity of the Hawkes process.</p>
 </dd>
-<dt><strong>kernel_length: int, default=1</strong></dt><dd><p>Length of kernels in the Hawkes process.</p>
+<dt><strong>kernel_length</strong><span class="classifier"><cite>float</cite>, <cite>default=1.</cite></span></dt><dd><p>Length of kernels in the Hawkes process.</p>
 </dd>
-<dt><strong>delta</strong><span class="classifier">float, default=0.01</span></dt><dd><p>Step size of the discretization grid.</p>
+<dt><strong>delta</strong><span class="classifier"><cite>float</cite>, <cite>default=0.01</cite></span></dt><dd><p>Step size of the discretization grid.</p>
 </dd>
-<dt><strong>optim</strong><span class="classifier">str in <code class="docutils literal notranslate"><span class="pre">{'RMSprop'</span> <span class="pre">|</span> <span class="pre">'Adam'</span> <span class="pre">|</span> <span class="pre">'GD'}</span></code>, default=``’RMSprop’``</span></dt><dd><p>The algorithms used to optimized the parameters of the Hawkes processes.</p>
+<dt><strong>optim</strong><span class="classifier"><cite>str</cite> in <code class="docutils literal notranslate"><span class="pre">{'RMSprop'</span> <span class="pre">|</span> <span class="pre">'Adam'</span> <span class="pre">|</span> <span class="pre">'GD'}</span></code>, default=’RMSprop’</span></dt><dd><p>The algorithms used to optimized the parameters of the Hawkes processes.</p>
 </dd>
-<dt><strong>step_size</strong><span class="classifier">float, default=1e-3</span></dt><dd><p>Learning rate of the chosen optimization algorithm.</p>
+<dt><strong>step_size</strong><span class="classifier"><cite>float</cite>, <cite>default=1e-3</cite></span></dt><dd><p>Learning rate of the chosen optimization algorithm.</p>
 </dd>
-<dt><strong>max_iter</strong><span class="classifier">int, default=1000</span></dt><dd><p>Maximum number of iterations during fit.</p>
+<dt><strong>max_iter</strong><span class="classifier"><cite>int</cite>, <cite>default=1000</cite></span></dt><dd><p>Maximum number of iterations during fit.</p>
 </dd>
-<dt><strong>optimize_kernel</strong><span class="classifier">bool, default=True</span></dt><dd><p>If optimize_kernel is false, kernel parameters are not optimized
+<dt><strong>optimize_kernel</strong><span class="classifier"><cite>boolean</cite>, <cite>default=True</cite></span></dt><dd><p>If optimize_kernel is false, kernel parameters are not optimized
 and only the baseline and alpha are optimized.</p>
 </dd>
-<dt><strong>precomputations</strong><span class="classifier">bool, default=True</span></dt><dd><p>If precomputations is false, pytorch autodiff is applied on the loss.
+<dt><strong>precomputations</strong><span class="classifier"><cite>boolean</cite>, <cite>default=True</cite></span></dt><dd><p>If precomputations is false, pytorch autodiff is applied on the loss.
 If precomputations is true, then FaDIn is computed.</p>
 </dd>
-<dt><strong>ztzG_approx</strong><span class="classifier">bool, default=True</span></dt><dd><p>If ztzG_approx is false, compute the true ztzG precomputation constant that
+<dt><strong>ztzG_approx</strong><span class="classifier"><cite>boolean</cite>, <cite>default=True</cite></span></dt><dd><p>If ztzG_approx is false, compute the true ztzG precomputation constant that
 is the computational bottleneck of FaDIn. if ztzG_approx is false,
 ztzG is approximated with Toeplitz matrix not taking into account edge effects.</p>
 </dd>
-<dt><strong>device</strong><span class="classifier">str in <code class="docutils literal notranslate"><span class="pre">{'cpu',</span> <span class="pre">'cuda'}</span></code></span></dt><dd><p>Computations done on cpu or gpu. Gpu is not implemented yet.</p>
+<dt><strong>device</strong><span class="classifier"><cite>str</cite> in <code class="docutils literal notranslate"><span class="pre">{'cpu'</span> <span class="pre">|</span> <span class="pre">'cuda'}</span></code></span></dt><dd><p>Computations done on cpu or gpu. Gpu is not implemented yet.</p>
 </dd>
-<dt><strong>log</strong><span class="classifier">booleen, default=False</span></dt><dd><p>Record the loss values during the optimization.</p>
+<dt><strong>log</strong><span class="classifier"><cite>boolean</cite>, <cite>default=False</cite></span></dt><dd><p>Record the loss values during the optimization.</p>
 </dd>
-<dt><strong>grad_kernel</strong><span class="classifier">None or callable, default=None</span></dt><dd><p>If kernel in <code class="docutils literal notranslate"><span class="pre">{'raised_cosine',</span> <span class="pre">'truncated_gaussian'</span> <span class="pre">and</span>
+<dt><strong>grad_kernel</strong><span class="classifier"><cite>None</cite> or <cite>callable</cite>, default=None</span></dt><dd><p>If kernel in <code class="docutils literal notranslate"><span class="pre">{'raised_cosine'|</span> <span class="pre">'truncated_gaussian'</span> <span class="pre">|</span>
 <span class="pre">'truncated_exponential'}</span></code> the gradient function is implemented.
 If kernel is custom, the custom gradient must be given.</p>
 </dd>
-<dt><strong>criterion</strong><span class="classifier">str in <code class="docutils literal notranslate"><span class="pre">{'l2'</span> <span class="pre">|</span> <span class="pre">'ll'}</span></code>, default=``’l2’``</span></dt><dd><p>The criterion to minimize. if not l2, FaDIn minimize
-the Log-Likelihood loss with AutoDifferentiation.</p>
+<dt><strong>criterion</strong><span class="classifier"><cite>str</cite> in <code class="docutils literal notranslate"><span class="pre">{'l2'</span> <span class="pre">|</span> <span class="pre">'ll'}</span></code>, <cite>default=’l2’</cite></span></dt><dd><p>The criterion to minimize. if not l2, FaDIn minimize
+the Log-Likelihood loss through AutoDifferentiation.</p>
 </dd>
-<dt><strong>tol</strong><span class="classifier"><cite>float</cite>, default=1e-5</span></dt><dd><p>The tolerance of the solver (iterations stop when the stopping
+<dt><strong>tol</strong><span class="classifier"><cite>float</cite>, <cite>default=1e-5</cite></span></dt><dd><p>The tolerance of the solver (iterations stop when the stopping
 criterion is below it). If not reached the solver does ‘max_iter’
 iterations.</p>
 </dd>
-<dt><strong>random_state</strong><span class="classifier">int, RandomState instance or None, default=None</span></dt><dd><p>Set the torch seed to ‘random_state’.</p>
+<dt><strong>random_state</strong><span class="classifier"><cite>int</cite>, <cite>RandomState</cite> instance or <cite>None</cite>, <cite>default=None</cite></span></dt><dd><p>Set the torch seed to ‘random_state’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt><strong>param_baseline</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim)</span></dt><dd><p>Baseline parameter of the Hawkes process.</p>
+</dd>
+<dt><strong>param_alpha</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim, n_dim)</span></dt><dd><p>Weight parameter of the Hawkes process.</p>
+</dd>
+<dt><strong>param_kernel</strong><span class="classifier"><cite>list</cite> of <cite>tensor</cite></span></dt><dd><p>list containing tensor array of kernels parameters.
+The size of the list varies depending the number of
+parameters. The shape of each tensor is <cite>(n_dim, n_dim)</cite>.</p>
+</dd>
+<dt><strong>v_loss</strong><span class="classifier"><cite>tensor</cite>, shape (n_iter)</span></dt><dd><p>If <cite>log=True</cite>, compute the loss accross iterations.
+If no early stopping, <cite>n_iter</cite> is equal to <cite>max_iter</cite>.</p>
 </dd>
 </dl>
 </dd>
@@ -287,14 +312,14 @@ iterations.</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(events, end_time)</p></td>
-<td><p>Optimize the parameters of the Hawkes processes on a discrete grid.</p></td>
+<td><p>Learn the parameters of the Hawkes processes on a discrete grid.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fadin.solver.FaDIn.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_params_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomputations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn.__init__" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_params_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimize_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomputations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'l2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn.__init__" title="Permalink to this definition">#</a></dt>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
@@ -305,7 +330,7 @@ iterations.</p>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code>(events, end_time)</p></td>
-<td><p>Optimize the parameters of the Hawkes processes on a discrete grid.</p></td>
+<td><p>Learn the parameters of the Hawkes processes on a discrete grid.</p></td>
 </tr>
 </tbody>
 </table>
@@ -319,7 +344,15 @@ iterations.</p>
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="fadin.kernels.DiscreteKernelFiniteSupport.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">fadin.kernels.DiscreteKernelFiniteSupport</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="../api.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -377,10 +410,10 @@ iterations.</p>
       
     </aside>
   </div>
-</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/scripts/furo.js"></script>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7adbc44"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

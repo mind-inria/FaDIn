@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="FaDIn on simulated 2-d Hawkes processes" href="multivariate_fadin.html" /><link rel="prev" title="Model description" href="../model.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="fadin.solver.FaDIn" href="fadin.solver.FaDIn.html" />
 
     <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
-        <title>Examples Gallery - fadin 0.1.dev0 documentation</title>
+        <title>fadin.kernels.DiscreteKernelFiniteSupport - fadin 0.1.dev0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=79c6a522" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
@@ -139,7 +139,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -165,14 +165,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../model.html#fadin">3. FaDIn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../model.html#kernels">4. Kernels</a></li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Examples Gallery</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../auto_examples/index.html">Examples Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../generated/fadin.solver.FaDIn.html">fadin.solver.FaDIn</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="fadin.solver.FaDIn.html">fadin.solver.FaDIn</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
 </ul>
 </li>
 </ul>
@@ -203,32 +203,83 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="examples-gallery">
-<span id="general-examples"></span><h1>Examples Gallery<a class="headerlink" href="#examples-gallery" title="Permalink to this heading">#</a></h1>
-<p>Some examples using FaDIn.</p>
-<div class="sphx-glr-thumbnails"><div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on multivariate Hawkes processes simulat..."><img alt="" src="../_images/sphx_glr_multivariate_fadin_thumb.png" />
-<p><a class="reference internal" href="multivariate_fadin.html#sphx-glr-auto-examples-multivariate-fadin-py"><span class="std std-ref">FaDIn on simulated 2-d Hawkes processes</span></a></p>
-  <div class="sphx-glr-thumbnail-title">FaDIn on simulated 2-d Hawkes processes</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on univariate Hawkes processes simulated..."><img alt="" src="../_images/sphx_glr_univariate_fadin_thumb.png" />
-<p><a class="reference internal" href="univariate_fadin.html#sphx-glr-auto-examples-univariate-fadin-py"><span class="std std-ref">FaDIn on simulated univariate Hawkes processes</span></a></p>
-  <div class="sphx-glr-thumbnail-title">FaDIn on simulated univariate Hawkes processes</div>
-</div></div><div class="toctree-wrapper compound">
+          <section id="fadin-kernels-discretekernelfinitesupport">
+<h1>fadin.kernels.DiscreteKernelFiniteSupport<a class="headerlink" href="#fadin-kernels-discretekernelfinitesupport" title="Permalink to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="fadin.kernels.DiscreteKernelFiniteSupport">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fadin.kernels.</span></span><span class="sig-name descname"><span class="pre">DiscreteKernelFiniteSupport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.kernels.DiscreteKernelFiniteSupport" title="Permalink to this definition">#</a></dt>
+<dd><p>A class for general discretized kernels with finite support.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>delta</strong><span class="classifier"><cite>float</cite></span></dt><dd><p>Step size of the discretization.</p>
+</dd>
+<dt><strong>n_dim</strong><span class="classifier"><cite>int</cite></span></dt><dd><p>Dimension of the Hawkes process associated to this kernel class.</p>
+</dd>
+<dt><strong>kernel</strong><span class="classifier"><cite>str</cite> or <cite>callable</cite></span></dt><dd><p>Either define a kernel in {‘raised_cosine’ | ‘truncated_gaussian’ |
+‘truncated_exponential’} or a custom kernel.</p>
+</dd>
+<dt><strong>kernel_length</strong><span class="classifier"><cite>float</cite>, <cite>default=1.</cite></span></dt><dd><p>Length of kernel.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier"><cite>float</cite>, <cite>default=0</cite></span></dt><dd><p>Left bound of the support of the kernel. It should be between [0, W].</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier"><cite>float</cite>, <cite>default=1</cite></span></dt><dd><p>Right bound of the support of the kernel. It should be between [0, W].</p>
+</dd>
+<dt><strong>grad_kernel</strong><span class="classifier"><cite>None</cite> or <cite>callable</cite>, <cite>default=None</cite></span></dt><dd><p>If kernel in (‘raised_cosine’ | ‘truncated_gaussian’ |
+‘truncated_exponential’) the gradient function is implemented.
+If kernel is custom, the custom gradient must be given.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">grad_eval</span></code>(kernel_params, time_values)</p></td>
+<td><p>Return kernel's gradient evaluated on the given discretization.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">intensity_eval</span></code>(baseline, alpha, ...)</p></td>
+<td><p>Return the intensity function evaluated on the entire grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_eval</span></code>(kernel_params, time_values)</p></td>
+<td><p>Return kernel evaluated on the given discretization.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="sphx-glr-footer sphx-glr-footer-gallery docutils container">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/07fcc19ba03226cd3d83d4e40ec44385/auto_examples_python.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">auto_examples_python.zip</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fadin.kernels.DiscreteKernelFiniteSupport.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.kernels.DiscreteKernelFiniteSupport.__init__" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#fadin.kernels.DiscreteKernelFiniteSupport.__init__" title="fadin.kernels.DiscreteKernelFiniteSupport.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(delta, n_dim, kernel[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">grad_eval</span></code>(kernel_params, time_values)</p></td>
+<td><p>Return kernel's gradient evaluated on the given discretization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">intensity_eval</span></code>(baseline, alpha, ...)</p></td>
+<td><p>Return the intensity function evaluated on the entire grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_eval</span></code>(kernel_params, time_values)</p></td>
+<td><p>Return kernel evaluated on the given discretization.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/6f1e7a639e0699d6164445b55e6c116d/auto_examples_jupyter.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">all</span> <span class="pre">examples</span> <span class="pre">in</span> <span class="pre">Jupyter</span> <span class="pre">notebooks:</span> <span class="pre">auto_examples_jupyter.zip</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</dd></dl>
+
 </section>
 
         </article>
@@ -236,23 +287,15 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="multivariate_fadin.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">FaDIn on simulated 2-d Hawkes processes</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
-          <a class="prev-page" href="../model.html">
+          
+          <a class="prev-page" href="fadin.solver.FaDIn.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Model description</div>
+                <div class="title">fadin.solver.FaDIn</div>
                 
               </div>
             </a>
@@ -274,8 +317,30 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">fadin.kernels.DiscreteKernelFiniteSupport</a><ul>
+<li><a class="reference internal" href="#fadin.kernels.DiscreteKernelFiniteSupport"><code class="docutils literal notranslate"><span class="pre">DiscreteKernelFiniteSupport</span></code></a><ul>
+<li><a class="reference internal" href="#fadin.kernels.DiscreteKernelFiniteSupport.__init__"><code class="docutils literal notranslate"><span class="pre">DiscreteKernelFiniteSupport.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

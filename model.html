@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="fadin.solver.FaDIn" href="generated/fadin.solver.FaDIn.html" /><link rel="prev" title="FaDIn on simulated univariate Hawkes processes" href="auto_examples/univariate_fadin.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Examples Gallery" href="auto_examples/index.html" /><link rel="prev" title="FaDIn: Fast Discretized Inference of Hawkes Processes with General Parametric Kernels" href="index.html" />
 
     <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
-        <title>API Documentation - fadin 0.1.dev0 documentation</title>
+        <title>Model description - fadin 0.1.dev0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=79c6a522" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
@@ -139,7 +139,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -160,17 +160,17 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="model.html">Model description</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model.html#hawkes-process">1. Hawkes process</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model.html#fadin">3. FaDIn</a></li>
-<li class="toctree-l1"><a class="reference internal" href="model.html#kernels">4. Kernels</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Model description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#hawkes-process">1. Hawkes process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#fadin">3. FaDIn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#kernels">4. Kernels</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="auto_examples/index.html">Examples Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="auto_examples/univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">API Documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/fadin.solver.FaDIn.html">fadin.solver.FaDIn</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/fadin.kernels.DiscreteKernelFiniteSupport.html">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
 </ul>
@@ -203,38 +203,101 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          <section id="api-documentation">
-<span id="id1"></span><h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this heading">#</a></h1>
-<section id="solver">
-<h2>Solver<a class="headerlink" href="#solver" title="Permalink to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solver.FaDIn</span></code></a>(n_dim, kernel[, ...])</p></td>
-<td><p>Define the FaDIn framework for estimated Hawkes processes.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+          <section id="model-description">
+<h1>Model description<a class="headerlink" href="#model-description" title="Permalink to this heading">#</a></h1>
+<p>FaDIn is a library to perform Multivariate Hawkes Processes Inference.
+It is a general framework that allows to estimate the intensity
+function of Hawkes processes with any parametric kernels having
+finite support. It is based on a gradient-based optimization of
+the discrete <span class="math notranslate nohighlight">\(\ell_2\)</span> loss.</p>
+<p><strong>Contents</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#intro"><span class="std std-ref">1. Hawkes process</span></a></p></li>
+<li><p><a class="reference internal" href="#discrete"><span class="std std-ref">2. Discretization and finite-support kernels</span></a></p></li>
+<li><p><a class="reference internal" href="#fadin"><span class="std std-ref">3. FaDIn</span></a></p></li>
+<li><p><a class="reference internal" href="#kernels"><span class="std std-ref">4. Kernels</span></a></p></li>
+</ul>
 </section>
-<section id="finite-support-kernels">
-<h2>Finite-support Kernels<a class="headerlink" href="#finite-support-kernels" title="Permalink to this heading">#</a></h2>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernels.DiscreteKernelFiniteSupport</span></code></a>(delta, ...)</p></td>
-<td><p>A class for general discretized kernels with finite support.</p></td>
-</tr>
-</tbody>
-</table>
+<section id="hawkes-process">
+<span id="intro"></span><h1>1. Hawkes process<a class="headerlink" href="#hawkes-process" title="Permalink to this heading">#</a></h1>
+<p>A Hawkes process is a <span class="math notranslate nohighlight">\(p\)</span>-dimensional counting process
+<span class="math notranslate nohighlight">\(N(t) = (N_1(t) \cdots N_p(t))\)</span>, where each coordinate is a counting
+process <span class="math notranslate nohighlight">\(N_i(t) = \sum_{n \geq 1} \mathbf 1_{t_{n}^i \leq t}\)</span>, with
+<span class="math notranslate nohighlight">\(t_{1}^i, t_{2}^i, \ldots\)</span> being the ticks or timestamps observed on
+component <span class="math notranslate nohighlight">\(i\)</span>. The intensity function of <span class="math notranslate nohighlight">\(N\)</span> is given by</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\lambda_i(t) = \mu_i + \sum_{j=1}^p \sum_{n \ : \ t_{n}^j &lt; t} \phi_{ij}(t - t_{n}^j)\]</div>
 </div>
+<p>for <span class="math notranslate nohighlight">\(i = 1, \ldots, p\)</span>. Elements <span class="math notranslate nohighlight">\(\mu_i\)</span> are called the baseline parameters. A process <span class="math notranslate nohighlight">\(j\)</span> induces intensity on another
+process <span class="math notranslate nohighlight">\(i\)</span>, with an impact encoded by the <em>kernel</em> function
+<span class="math notranslate nohighlight">\(\phi_{ij}\)</span>. In the the above formula,</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(p\)</span> is the number of processes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mu_i\)</span> are the baseline intensities</p></li>
+<li><p><span class="math notranslate nohighlight">\(\phi_{ij}\)</span> are the kernels.</p></li>
+</ul>
+<p>Note that different choices for the shape of the kernels correspond to different
+models. Usually limited to exponential, neural networks based or non-parametric kernels;
+FaDIn allows the use of any parametric kernels in an efficient way. Some pre-implemented kernels
+are given in <a class="reference internal" href="#kernels"><span class="std std-ref">4. Kernels</span></a>.</p>
 </section>
+<section id="discretization-and-finite-support-kernels">
+<span id="discrete"></span><h1>2. Discretization and finite-support kernels<a class="headerlink" href="#discretization-and-finite-support-kernels" title="Permalink to this heading">#</a></h1>
+<p>Define <span class="math notranslate nohighlight">\(p\)</span> sets of timestamps <span class="math notranslate nohighlight">\(\mathscr{F}_T^i = \left\{t_1^i, \ldots, t_{N_i}^i  \right\}\)</span>  on <span class="math notranslate nohighlight">\([0, T]\)</span>.
+Given a discrete grid <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> of size <span class="math notranslate nohighlight">\(G\)</span> such that <span class="math notranslate nohighlight">\(\mathcal{G}=\left\{0, \Delta, \ldots, G \Delta \right\}\)</span>, we obtain
+the discretized version of <span class="math notranslate nohighlight">\(\mathscr{F}_T^i\)</span> by projecting these sets of timestamps onto the grid <span class="math notranslate nohighlight">\(\mathcal{G}\)</span>. These projected timestamps are denoted by <span class="math notranslate nohighlight">\(\tilde{\mathscr{F}}_T^i = \left\{\tilde{t}_1^i, \ldots, \tilde{t}_{N_i}^i \right\}\)</span>. Therefore, the discrete version of the intensity function defined in <a class="reference internal" href="#intro"><span class="std std-ref">1. Hawkes process</span></a>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\tilde{\lambda}_i[s] = \mu_i + \sum_{j=1}^{p} \underbrace{\sum_{\tau=1}^L \phi_{ij}^\Delta[\tau] z_j[s-\tau]}_{(\phi_{ij}^\Delta * z_j)[s]},
+\quad s\in [|0, G |],\]</div>
+</div>
+<p>where <span class="math notranslate nohighlight">\(\phi_{ij}^\Delta[\tau]=\phi_{ij}(\tau \Delta)\)</span> is the discrete kernel and <span class="math notranslate nohighlight">\(L=\lfloor \frac{W}{\Delta}\rfloor\)</span> is the discrete size of the kernels <span class="math notranslate nohighlight">\(\phi_{ij}\)</span> of length <span class="math notranslate nohighlight">\(W\)</span>.</p>
+</section>
+<section id="fadin">
+<span id="id1"></span><h1>3. FaDIn<a class="headerlink" href="#fadin" title="Permalink to this heading">#</a></h1>
+<p>FaDIn is a <span class="math notranslate nohighlight">\(\ell_2\)</span> loss based solver to infer baseline parameters <span class="math notranslate nohighlight">\(\mu_i\)</span> and parameters <span class="math notranslate nohighlight">\(\eta_{ij}\)</span>  of any parametric kernels <span class="math notranslate nohighlight">\(\phi_{ij}:=\phi_{ij}^{\eta_{ij}}\)</span>. It is based on the discretization and finite-support kernels introduced in <a class="reference internal" href="#discrete"><span class="std std-ref">2. Discretization and finite-support kernels</span></a>. Precisely,
+the discretized <span class="math notranslate nohighlight">\(\ell_2\)</span> loss minimized by FaDIn is:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[    \frac{1}{N_T}\sum_{i=1}^{p}  \left(\Delta\sum_{s\in [|0, G|]}  \left(\tilde{\lambda}_{i}[s]\right)^2
+- 2\sum_{\tilde{t}_{n}^{i} \in \tilde{\mathscr{F}}_{T}^{i}}  \tilde{\lambda}_{i} \left[\frac{\tilde{t}_n^{i}}{\Delta}\right] \right),\]</div>
+</div>
+<p>where kernels involved in <span class="math notranslate nohighlight">\(\tilde{\lambda}_{i}\)</span> are parametric kernels.</p>
+</section>
+<section id="kernels">
+<span id="id2"></span><h1>4. Kernels<a class="headerlink" href="#kernels" title="Permalink to this heading">#</a></h1>
+<p>In this package, the three following kernels are implemented:</p>
+<ul class="simple">
+<li><p><strong>Raised Cosine kernel</strong></p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\phi_{ij}(\cdot) = \alpha_{i,j} \left[{1 + \cos \left(\frac{\cdot - u_{i,j}}{\sigma_{i,j}}\pi - \pi \right)} \right] , \quad (i,j)\in \{1,\ldots, p\}^2.\]</div>
+</div>
+<p>The parameters estimated are then the triplets <span class="math notranslate nohighlight">\(\eta_{ij}=\left(\alpha_{ij}, u_{ij}, \sigma_{ij}\right)\)</span>.</p>
+<ul class="simple">
+<li><p><strong>Truncated Gaussian kernel</strong></p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\phi_{ij} (\cdot)= \frac{ \alpha_{ij}}{\sigma_{ij}} \frac{f\left(\frac{\cdot-m_{ij}}{\sigma_{ij}}\right)}{F\left(\frac{W-m_{ij}}{\sigma_{ij}}\right)-F\left(\frac{-m_{ij}}{\sigma_{ij}}\right)} \mathbb{I} \left\{0\leq \cdot \leq W \right\}, \quad (i,j)\in \{1,\ldots, p\}^2,\]</div>
+</div>
+<p>where  <span class="math notranslate nohighlight">\(F\)</span> is the cdf of the Gaussian distribution. The parameters estimated are then the triplets  <span class="math notranslate nohighlight">\(\eta_{ij}=\left(\alpha_{ij}, m_{ij}, \sigma_{ij}\right)\)</span>.</p>
+<ul class="simple">
+<li><p><strong>Truncated Exponential kernel</strong></p></li>
+</ul>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\phi_{ij} (\cdot)=  \frac{\beta_{ij} \exp(-\beta_{ij}~ \cdot)}{H\left(W\right)-H\left(0\right)} \mathbb{I} \left\{0\leq \cdot \leq W \right\}, \quad (i,j)\in \{1,\ldots, p\}^2,\]</div>
+</div>
+<p>where  <span class="math notranslate nohighlight">\(H\)</span> is the cdf of the exponential distribution. The parameters estimated are then the doublets <span class="math notranslate nohighlight">\(\eta_{ij}=\left( \alpha_{ij}, \beta_{ij} \right)\)</span>.</p>
 </section>
 
         </article>
@@ -242,23 +305,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="generated/fadin.solver.FaDIn.html">
+          <a class="next-page" href="auto_examples/index.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">fadin.solver.FaDIn</div>
+                <div class="title">Examples Gallery</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="auto_examples/univariate_fadin.html">
+          <a class="prev-page" href="index.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">FaDIn on simulated univariate Hawkes processes</div>
+                <div class="title">Home</div>
                 
               </div>
             </a>
@@ -280,28 +343,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">API Documentation</a><ul>
-<li><a class="reference internal" href="#solver">Solver</a></li>
-<li><a class="reference internal" href="#finite-support-kernels">Finite-support Kernels</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
@@ -310,5 +353,6 @@
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/scripts/furo.js?v=32e29ea5"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

@@ -3,18 +3,18 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="API Documentation" href="api.html" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Model description" href="model.html" />
 
-    <!-- Generated with Sphinx 7.0.1 and Furo 2023.05.20 -->
+    <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
         <title>fadin 0.1.dev0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=e6660623a769aa55fea372102b9bf3151b292993" />
-    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=79c6a522" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=e5fbc548" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=6302152c" />
     
     
 
@@ -160,8 +160,19 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#hawkes-process">1. Hawkes process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#fadin">3. FaDIn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#kernels">4. Kernels</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auto_examples/index.html">Examples Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="auto_examples/univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="generated/fadin.solver.FaDIn.html">fadin.solver.FaDIn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generated/fadin.kernels.DiscreteKernelFiniteSupport.html">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
 </ul>
 </li>
 </ul>
@@ -198,10 +209,10 @@
           </label>
         </div>
         <article role="main">
-          <section id="fadin">
-<h1>FaDIn<a class="headerlink" href="#fadin" title="Permalink to this heading">#</a></h1>
+          <section id="fadin-fast-discretized-inference-of-hawkes-processes-with-general-parametric-kernels">
+<h1>FaDIn: Fast Discretized Inference of Hawkes Processes with General Parametric Kernels<a class="headerlink" href="#fadin-fast-discretized-inference-of-hawkes-processes-with-general-parametric-kernels" title="Permalink to this heading">#</a></h1>
 <hr class="docutils" />
-<p>Official library for using FaDIn [1]. While exponential kernels are more data efficient and relevant for certain applications where events immediately trigger more events, they are ill-suited for applications where latencies need to be estimated, such as in neuroscience. This work aims to offer an efficient solution to TPP inference using general parametric kernels with finite support. The developed solution consists of a fast L2 gradient-based solver lever- aging a discretized version of the events.</p>
+<p>Official library for using FaDIn [1]. While exponential kernels are more data efficient and relevant for certain applications where events immediately trigger more events, they are ill-suited for applications where latencies need to be estimated, such as in neuroscience. This work aims to offer an efficient solution to TPP inference using general parametric kernels with finite support. The developed solution consists of a fast L2 gradient-based solver leveraging a discretized version of the events.</p>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">#</a></h2>
 <p>To install <code class="docutils literal notranslate"><span class="pre">FaDIn</span></code>, do:</p>
@@ -232,10 +243,13 @@ with <cite>pip</cite>. To upgrade, use the <code class="docutils literal notrans
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="api.html#class">Class</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#hawkes-process">1. Hawkes process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#fadin">3. FaDIn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html#kernels">4. Kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">Examples Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Documentation</a></li>
 </ul>
 </div>
 </section>
@@ -246,12 +260,12 @@ with <cite>pip</cite>. To upgrade, use the <code class="docutils literal notrans
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="api.html">
+          <a class="next-page" href="model.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">API Documentation</div>
+                <div class="title">Model description</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -286,7 +300,7 @@ with <cite>pip</cite>. To upgrade, use the <code class="docutils literal notrans
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">FaDIn</a><ul>
+<li><a class="reference internal" href="#">FaDIn: Fast Discretized Inference of Hawkes Processes with General Parametric Kernels</a><ul>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li><a class="reference internal" href="#cite">Cite</a></li>
@@ -302,9 +316,9 @@ with <cite>pip</cite>. To upgrade, use the <code class="docutils literal notrans
       
     </aside>
   </div>
-</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
-    <script src="_static/scripts/furo.js"></script>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=d7adbc44"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

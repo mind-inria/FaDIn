@@ -1,9 +1,9 @@
-FaDIn 
-================
-================
+FaDIn: Fast Discretized Inference of Hawkes Processes with General Parametric Kernels 
+=====================================================================================
+=====================================================================================
 
 
-Official library for using FaDIn [1]. While exponential kernels are more data efficient and relevant for certain applications where events immediately trigger more events, they are ill-suited for applications where latencies need to be estimated, such as in neuroscience. This work aims to offer an efficient solution to TPP inference using general parametric kernels with finite support. The developed solution consists of a fast L2 gradient-based solver lever- aging a discretized version of the events.
+Official library for using FaDIn [1]. While exponential kernels are more data efficient and relevant for certain applications where events immediately trigger more events, they are ill-suited for applications where latencies need to be estimated, such as in neuroscience. This work aims to offer an efficient solution to TPP inference using general parametric kernels with finite support. The developed solution consists of a fast L2 gradient-based solver leveraging a discretized version of the events.
 
 
 Installation
@@ -39,8 +39,8 @@ Contents
 --------
 
 .. toctree::
-        :maxdepth: 2
+        :maxdepth: 1
 
         model
-        examples
+        auto_examples/index
         api

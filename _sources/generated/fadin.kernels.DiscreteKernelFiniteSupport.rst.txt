@@ -1,0 +1,25 @@
+﻿fadin.kernels.DiscreteKernelFiniteSupport
+=========================================
+
+.. currentmodule:: fadin.kernels
+
+.. autoclass:: DiscreteKernelFiniteSupport
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DiscreteKernelFiniteSupport.__init__
+      ~DiscreteKernelFiniteSupport.grad_eval
+      ~DiscreteKernelFiniteSupport.intensity_eval
+      ~DiscreteKernelFiniteSupport.kernel_eval
+   
+   
+
+   
+   
+   
