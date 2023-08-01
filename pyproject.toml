@@ -36,12 +36,14 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "ruff",
+    "flake8",
     "pytest>=7.2",
 ]
 
-[tool.ruff]
-ignore = ["E402"]
+[tool.flake8]
+extend-ignore = """
+        E402,
+    """
 
 doc = [
     "furo",
