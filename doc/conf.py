@@ -32,6 +32,12 @@ exclude_patterns = [
     # Add more paths as needed
 ]
 
+# Add the excluded patterns to the `exclude_patterns` configuration option
+if "sphinx" in sys.argv[0]:
+    for pattern in exclude_patterns:
+        if pattern not in exclude_patterns:
+            exclude_patterns.append(pattern)
+
 # generate autosummary even if no references
 autosummary_generate = True
 
