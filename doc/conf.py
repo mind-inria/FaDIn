@@ -25,6 +25,13 @@ extensions = [
     'numpydoc',
 ]
 
+# Exclude specific paths from being checked by the linter
+exclude_patterns = [
+    '../examples/univariate_fadin.py',
+    '../examples/multivariate_fadin.py',
+    # Add more paths as needed
+]
+
 # generate autosummary even if no references
 autosummary_generate = True
 
