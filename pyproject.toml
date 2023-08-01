@@ -40,11 +40,6 @@ test = [
     "pytest>=7.2",
 ]
 
-[tool.flake8]
-extend-ignore = """
-        E402,
-    """
-
 doc = [
     "furo",
     "matplotlib",

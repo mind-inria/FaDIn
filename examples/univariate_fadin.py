@@ -17,7 +17,11 @@ with specific kernels.
 ###############################################################################
 # Let us first define the parameters of our model.
 # %%
+import numpy as np
 import torch
+
+from fadin.utils.utils_simu import simu_hawkes_cluster
+from fadin.solver import FaDIn
 
 n_dim = 1
 dt = 0.01
@@ -30,8 +34,6 @@ discretization = torch.linspace(0, kernel_length, L)
 ###############################################################################
 # Here, we set the parameters of a Hawkes process with a Raised Cosine kernel
 
-import numpy as np
-
 baseline = np.array([.4])
 alpha = np.array([[0.8]])
 
@@ -40,18 +42,13 @@ alpha = np.array([[0.8]])
 ###############################################################################
 # Here, we simulate the data
 
-from fadin.utils.utils_simu import simu_hawkes_cluster
-
 # standard parameter is beta equal to one
 kernel = 'expon' 
 
 events = simu_hawkes_cluster(T, baseline, alpha, kernel)
 
-
 ###############################################################################
 # Here, we apply FaDIn
-
-from fadin.solver import FaDIn
 
 solver = FaDIn(n_dim=1,
                kernel="truncated_exponential",
