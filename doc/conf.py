@@ -12,21 +12,6 @@ import sys
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
-
-# Exclude specific paths from being checked by the linter
-exclude_patterns = [
-    '../examples/univariate_fadin.py',
-    '../examples/multivariate_fadin.py',
-    # Add more paths as needed
-]
-
-# Add the excluded patterns to the `exclude_patterns` configuration option
-if "sphinx" in sys.argv[0]:
-    for pattern in exclude_patterns:
-        if pattern not in exclude_patterns:
-            exclude_patterns.append(pattern)
-
-
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.

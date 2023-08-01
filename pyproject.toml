@@ -40,6 +40,9 @@ test = [
     "pytest>=7.2",
 ]
 
+[tool.ruff]
+exclude = ['.examples']
+
 doc = [
     "furo",
     "matplotlib",
