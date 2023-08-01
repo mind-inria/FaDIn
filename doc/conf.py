@@ -12,18 +12,6 @@ import sys
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.mathjax',
-    'sphinx_gallery.gen_gallery',
-    'numpydoc',
-]
 
 # Exclude specific paths from being checked by the linter
 exclude_patterns = [
@@ -37,6 +25,22 @@ if "sphinx" in sys.argv[0]:
     for pattern in exclude_patterns:
         if pattern not in exclude_patterns:
             exclude_patterns.append(pattern)
+
+
+# Add any Sphinx extension module names here, as strings. They can be
+# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# ones.
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.mathjax',
+    'sphinx_gallery.gen_gallery',
+    'numpydoc',
+]
+
+
 
 # generate autosummary even if no references
 autosummary_generate = True
