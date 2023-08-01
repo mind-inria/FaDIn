@@ -17,35 +17,35 @@ Some examples using FaDIn.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on multivariate Hawkes processes simulat...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on univariate Hawkes processes simulated...">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_multivariate_fadin_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_univariate_fadin_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_multivariate_fadin.py`
+  :ref:`sphx_glr_auto_examples_plot_univariate_fadin.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">FaDIn on simulated 2-d Hawkes processes</div>
+      <div class="sphx-glr-thumbnail-title">FaDIn on simulated univariate Hawkes processes</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on univariate Hawkes processes simulated...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on multivariate Hawkes processes simulat...">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_univariate_fadin_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_multivariate_fadin_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_univariate_fadin.py`
+  :ref:`sphx_glr_auto_examples_plot_multivariate_fadin.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">FaDIn on simulated univariate Hawkes processes</div>
+      <div class="sphx-glr-thumbnail-title">FaDIn on simulated 2-d Hawkes processes</div>
     </div>
 
 
@@ -57,8 +57,8 @@ Some examples using FaDIn.
 .. toctree::
    :hidden:
 
-   /auto_examples/multivariate_fadin
-   /auto_examples/univariate_fadin
+   /auto_examples/plot_univariate_fadin
+   /auto_examples/plot_multivariate_fadin
 
 
 .. only:: html

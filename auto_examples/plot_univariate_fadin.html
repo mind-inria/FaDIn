@@ -1,0 +1,1807 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="FaDIn on simulated 2-d Hawkes processes" href="plot_multivariate_fadin.html" /><link rel="prev" title="Examples Gallery" href="index.html" />
+
+    <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
+        <title>FaDIn on simulated univariate Hawkes processes - fadin 0.1.dev0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=79c6a522" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=e5fbc548" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=6302152c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #ffffff;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #232629;
+  --color-code-foreground: #cccccc;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #232629;
+  --color-code-foreground: #cccccc;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">fadin 0.1.dev0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">fadin 0.1.dev0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../model.html">Model description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#hawkes-process">1. Hawkes process</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#discretization-and-finite-support-kernels">2. Discretization and finite-support kernels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#fadin">3. FaDIn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../model.html#kernels">4. Kernels</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Examples Gallery</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">FaDIn on simulated univariate Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../generated/fadin.solver.FaDIn.html">fadin.solver.FaDIn</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html">fadin.kernels.DiscreteKernelFiniteSupport</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#sphx-glr-download-auto-examples-plot-univariate-fadin-py"><span class="std std-ref">Go to the end</span></a>
+to download the full example code</p>
+</div>
+<section class="sphx-glr-example-title" id="fadin-on-simulated-univariate-hawkes-processes">
+<span id="sphx-glr-auto-examples-plot-univariate-fadin-py"></span><h1>FaDIn on simulated univariate Hawkes processes<a class="headerlink" href="#fadin-on-simulated-univariate-hawkes-processes" title="Permalink to this heading">#</a></h1>
+<p>This example demonstrates inference performed
+by FaDIn on univariate Hawkes processes simulated
+with specific kernels.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Guillaume Staerman &lt;guillaume.staerman@inria.fr&gt;</span>
+<span class="c1">#          Alexandre Gramfort &lt;alexandre.gramfort@inria.fr&gt;</span>
+<span class="c1">#          Thomas Moreau &lt;thomas.moreau@inria.fr&gt;</span>
+<span class="c1">#</span>
+<span class="c1"># License: MIT</span>
+</pre></div>
+</div>
+<p>Let us first define the parameters of our model.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">fadin.utils.utils_simu</span> <span class="kn">import</span> <span class="n">simu_hawkes_cluster</span>
+<span class="kn">from</span> <span class="nn">fadin.solver</span> <span class="kn">import</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a>
+<span class="kn">from</span> <span class="nn">fadin.kernels</span> <span class="kn">import</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a>
+
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a> <span class="o">=</span> <span class="mi">1</span>
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a> <span class="o">=</span> <span class="mf">0.01</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a> <span class="o">=</span> <span class="mi">10_000</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a> <span class="o">=</span> <span class="mi">5</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">L</span></a> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">size_grid</span></a> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a> <span class="o">/</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">discretization</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">L</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we set the parameters of a Hawkes process with an Exponential(1) distribution.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">baseline</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">.4</span><span class="p">])</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">alpha</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([[</span><span class="mf">0.8</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>Here, we simulate the data.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># standard parameter is beta, the parameter of the exponential distribution,</span>
+<span class="c1"># equal to one.</span>
+<a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <span class="s1">&#39;expon&#39;</span>
+
+<a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a> <span class="o">=</span> <span class="n">simu_hawkes_cluster</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">baseline</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">alpha</span></a><span class="p">,</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Simulate generation 0
+Simulate generation 1
+Simulate generation 2
+Simulate generation 3
+Simulate generation 4
+Simulate generation 5
+Simulate generation 6
+Simulate generation 7
+Simulate generation 8
+Simulate generation 9
+Simulate generation 10
+Simulate generation 11
+Simulate generation 12
+Simulate generation 13
+Simulate generation 14
+Simulate generation 15
+Simulate generation 16
+Simulate generation 17
+Simulate generation 18
+Simulate generation 19
+Simulate generation 20
+Simulate generation 21
+Simulate generation 22
+Simulate generation 23
+Simulate generation 24
+Simulate generation 25
+Simulate generation 26
+Simulate generation 27
+Simulate generation 28
+Simulate generation 29
+Simulate generation 30
+</pre></div>
+</div>
+<p>Here, we apply FaDIn.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a> <span class="o">=</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+               <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">=</span><span class="s2">&quot;truncated_exponential&quot;</span><span class="p">,</span>
+               <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">,</span>
+               <span class="n">delta</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <span class="n">optim</span><span class="o">=</span><span class="s2">&quot;RMSprop&quot;</span><span class="p">,</span>
+               <span class="n">params_optim</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">},</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;l2&#39;</span>
+               <span class="p">)</span>
+<a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a><span class="o">.</span><span class="n">fit</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a><span class="p">)</span>
+
+<span class="c1"># We average on the 10 last values of the optimization.</span>
+
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">estimated_baseline</span></a> <span class="o">=</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a><span class="o">.</span><span class="n">param_baseline</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">estimated_alpha</span></a> <span class="o">=</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a><span class="o">.</span><span class="n">param_alpha</span><span class="p">[</span><span class="o">-</span><span class="mi">10</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a> <span class="o">=</span> <span class="p">[</span><a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a><span class="o">.</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">10</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated baseline is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">estimated_baseline</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated alpha is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">estimated_alpha</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated beta parameter of the exponential kernel is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 19854
+precomput: 1.796903371810913
+Fitting model...   0.0%
+Fitting model...   0.1%
+Fitting model...   0.1%
+Fitting model...   0.1%
+Fitting model...   0.2%
+Fitting model...   0.2%
+Fitting model...   0.3%
+Fitting model...   0.4%
+Fitting model...   0.4%
+Fitting model...   0.4%
+Fitting model...   0.5%
+Fitting model...   0.5%
+Fitting model...   0.6%
+Fitting model...   0.7%
+Fitting model...   0.7%
+Fitting model...   0.8%
+Fitting model...   0.8%
+Fitting model...   0.9%
+Fitting model...   0.9%
+Fitting model...   0.9%
+Fitting model...   1.0%
+Fitting model...   1.1%
+Fitting model...   1.1%
+Fitting model...   1.1%
+Fitting model...   1.2%
+Fitting model...   1.2%
+Fitting model...   1.3%
+Fitting model...   1.4%
+Fitting model...   1.4%
+Fitting model...   1.5%
+Fitting model...   1.5%
+Fitting model...   1.6%
+Fitting model...   1.6%
+Fitting model...   1.7%
+Fitting model...   1.7%
+Fitting model...   1.8%
+Fitting model...   1.8%
+Fitting model...   1.8%
+Fitting model...   1.9%
+Fitting model...   1.9%
+Fitting model...   2.0%
+Fitting model...   2.1%
+Fitting model...   2.1%
+Fitting model...   2.1%
+Fitting model...   2.2%
+Fitting model...   2.2%
+Fitting model...   2.3%
+Fitting model...   2.4%
+Fitting model...   2.4%
+Fitting model...   2.5%
+Fitting model...   2.5%
+Fitting model...   2.5%
+Fitting model...   2.6%
+Fitting model...   2.6%
+Fitting model...   2.7%
+Fitting model...   2.8%
+Fitting model...   2.8%
+Fitting model...   2.9%
+Fitting model...   2.9%
+Fitting model...   2.9%
+Fitting model...   3.0%
+Fitting model...   3.0%
+Fitting model...   3.1%
+Fitting model...   3.1%
+Fitting model...   3.2%
+Fitting model...   3.2%
+Fitting model...   3.3%
+Fitting model...   3.4%
+Fitting model...   3.4%
+Fitting model...   3.5%
+Fitting model...   3.5%
+Fitting model...   3.5%
+Fitting model...   3.6%
+Fitting model...   3.6%
+Fitting model...   3.7%
+Fitting model...   3.8%
+Fitting model...   3.8%
+Fitting model...   3.9%
+Fitting model...   3.9%
+Fitting model...   4.0%
+Fitting model...   4.0%
+Fitting model...   4.0%
+Fitting model...   4.1%
+Fitting model...   4.2%
+Fitting model...   4.2%
+Fitting model...   4.2%
+Fitting model...   4.3%
+Fitting model...   4.3%
+Fitting model...   4.4%
+Fitting model...   4.5%
+Fitting model...   4.5%
+Fitting model...   4.5%
+Fitting model...   4.6%
+Fitting model...   4.7%
+Fitting model...   4.7%
+Fitting model...   4.8%
+Fitting model...   4.8%
+Fitting model...   4.9%
+Fitting model...   4.9%
+Fitting model...   5.0%
+Fitting model...   5.0%
+Fitting model...   5.1%
+Fitting model...   5.1%
+Fitting model...   5.1%
+Fitting model...   5.2%
+Fitting model...   5.2%
+Fitting model...   5.3%
+Fitting model...   5.3%
+Fitting model...   5.4%
+Fitting model...   5.5%
+Fitting model...   5.5%
+Fitting model...   5.5%
+Fitting model...   5.6%
+Fitting model...   5.7%
+Fitting model...   5.7%
+Fitting model...   5.8%
+Fitting model...   5.8%
+Fitting model...   5.9%
+Fitting model...   5.9%
+Fitting model...   5.9%
+Fitting model...   6.0%
+Fitting model...   6.0%
+Fitting model...   6.1%
+Fitting model...   6.2%
+Fitting model...   6.2%
+Fitting model...   6.2%
+Fitting model...   6.3%
+Fitting model...   6.3%
+Fitting model...   6.4%
+Fitting model...   6.5%
+Fitting model...   6.5%
+Fitting model...   6.6%
+Fitting model...   6.6%
+Fitting model...   6.7%
+Fitting model...   6.7%
+Fitting model...   6.8%
+Fitting model...   6.8%
+Fitting model...   6.9%
+Fitting model...   6.9%
+Fitting model...   7.0%
+Fitting model...   7.0%
+Fitting model...   7.0%
+Fitting model...   7.1%
+Fitting model...   7.1%
+Fitting model...   7.2%
+Fitting model...   7.2%
+Fitting model...   7.3%
+Fitting model...   7.3%
+Fitting model...   7.4%
+Fitting model...   7.4%
+Fitting model...   7.5%
+Fitting model...   7.5%
+Fitting model...   7.6%
+Fitting model...   7.6%
+Fitting model...   7.7%
+Fitting model...   7.8%
+Fitting model...   7.8%
+Fitting model...   7.8%
+Fitting model...   7.9%
+Fitting model...   8.0%
+Fitting model...   8.0%
+Fitting model...   8.1%
+Fitting model...   8.1%
+Fitting model...   8.2%
+Fitting model...   8.2%
+Fitting model...   8.2%
+Fitting model...   8.3%
+Fitting model...   8.3%
+Fitting model...   8.4%
+Fitting model...   8.5%
+Fitting model...   8.5%
+Fitting model...   8.6%
+Fitting model...   8.6%
+Fitting model...   8.6%
+Fitting model...   8.7%
+Fitting model...   8.8%
+Fitting model...   8.8%
+Fitting model...   8.8%
+Fitting model...   8.9%
+Fitting model...   8.9%
+Fitting model...   9.0%
+Fitting model...   9.0%
+Fitting model...   9.1%
+Fitting model...   9.2%
+Fitting model...   9.2%
+Fitting model...   9.2%
+Fitting model...   9.3%
+Fitting model...   9.3%
+Fitting model...   9.4%
+Fitting model...   9.4%
+Fitting model...   9.5%
+Fitting model...   9.6%
+Fitting model...   9.6%
+Fitting model...   9.7%
+Fitting model...   9.7%
+Fitting model...   9.8%
+Fitting model...   9.8%
+Fitting model...   9.8%
+Fitting model...   9.9%
+Fitting model...  10.0%
+Fitting model...  10.0%
+Fitting model...  10.1%
+Fitting model...  10.1%
+Fitting model...  10.2%
+Fitting model...  10.2%
+Fitting model...  10.2%
+Fitting model...  10.3%
+Fitting model...  10.3%
+Fitting model...  10.4%
+Fitting model...  10.4%
+Fitting model...  10.5%
+Fitting model...  10.5%
+Fitting model...  10.6%
+Fitting model...  10.7%
+Fitting model...  10.7%
+Fitting model...  10.8%
+Fitting model...  10.8%
+Fitting model...  10.8%
+Fitting model...  10.9%
+Fitting model...  10.9%
+Fitting model...  11.0%
+Fitting model...  11.1%
+Fitting model...  11.1%
+Fitting model...  11.2%
+Fitting model...  11.2%
+Fitting model...  11.2%
+Fitting model...  11.3%
+Fitting model...  11.3%
+Fitting model...  11.4%
+Fitting model...  11.5%
+Fitting model...  11.5%
+Fitting model...  11.6%
+Fitting model...  11.6%
+Fitting model...  11.7%
+Fitting model...  11.7%
+Fitting model...  11.8%
+Fitting model...  11.8%
+Fitting model...  11.8%
+Fitting model...  11.9%
+Fitting model...  11.9%
+Fitting model...  12.0%
+Fitting model...  12.0%
+Fitting model...  12.1%
+Fitting model...  12.2%
+Fitting model...  12.2%
+Fitting model...  12.2%
+Fitting model...  12.3%
+Fitting model...  12.3%
+Fitting model...  12.4%
+Fitting model...  12.4%
+Fitting model...  12.5%
+Fitting model...  12.6%
+Fitting model...  12.6%
+Fitting model...  12.7%
+Fitting model...  12.7%
+Fitting model...  12.8%
+Fitting model...  12.8%
+Fitting model...  12.8%
+Fitting model...  12.9%
+Fitting model...  13.0%
+Fitting model...  13.0%
+Fitting model...  13.1%
+Fitting model...  13.1%
+Fitting model...  13.2%
+Fitting model...  13.2%
+Fitting model...  13.2%
+Fitting model...  13.3%
+Fitting model...  13.4%
+Fitting model...  13.4%
+Fitting model...  13.5%
+Fitting model...  13.5%
+Fitting model...  13.6%
+Fitting model...  13.6%
+Fitting model...  13.7%
+Fitting model...  13.7%
+Fitting model...  13.8%
+Fitting model...  13.8%
+Fitting model...  13.9%
+Fitting model...  13.9%
+Fitting model...  14.0%
+Fitting model...  14.0%
+Fitting model...  14.1%
+Fitting model...  14.1%
+Fitting model...  14.1%
+Fitting model...  14.2%
+Fitting model...  14.2%
+Fitting model...  14.3%
+Fitting model...  14.3%
+Fitting model...  14.4%
+Fitting model...  14.4%
+Fitting model...  14.5%
+Fitting model...  14.5%
+Fitting model...  14.6%
+Fitting model...  14.6%
+Fitting model...  14.7%
+Fitting model...  14.8%
+Fitting model...  14.8%
+Fitting model...  14.8%
+Fitting model...  14.9%
+Fitting model...  14.9%
+Fitting model...  15.0%
+Fitting model...  15.0%
+Fitting model...  15.1%
+Fitting model...  15.2%
+Fitting model...  15.2%
+Fitting model...  15.2%
+Fitting model...  15.3%
+Fitting model...  15.3%
+Fitting model...  15.4%
+Fitting model...  15.4%
+Fitting model...  15.5%
+Fitting model...  15.6%
+Fitting model...  15.6%
+Fitting model...  15.7%
+Fitting model...  15.7%
+Fitting model...  15.8%
+Fitting model...  15.8%
+Fitting model...  15.8%
+Fitting model...  15.9%
+Fitting model...  16.0%
+Fitting model...  16.0%
+Fitting model...  16.1%
+Fitting model...  16.1%
+Fitting model...  16.2%
+Fitting model...  16.2%
+Fitting model...  16.2%
+Fitting model...  16.3%
+Fitting model...  16.4%
+Fitting model...  16.4%
+Fitting model...  16.4%
+Fitting model...  16.5%
+Fitting model...  16.6%
+Fitting model...  16.6%
+Fitting model...  16.7%
+Fitting model...  16.7%
+Fitting model...  16.8%
+Fitting model...  16.8%
+Fitting model...  16.9%
+Fitting model...  16.9%
+Fitting model...  17.0%
+Fitting model...  17.0%
+Fitting model...  17.1%
+Fitting model...  17.1%
+Fitting model...  17.2%
+Fitting model...  17.2%
+Fitting model...  17.2%
+Fitting model...  17.3%
+Fitting model...  17.3%
+Fitting model...  17.4%
+Fitting model...  17.4%
+Fitting model...  17.5%
+Fitting model...  17.5%
+Fitting model...  17.6%
+Fitting model...  17.6%
+Fitting model...  17.7%
+Fitting model...  17.8%
+Fitting model...  17.8%
+Fitting model...  17.8%
+Fitting model...  17.9%
+Fitting model...  17.9%
+Fitting model...  18.0%
+Fitting model...  18.1%
+Fitting model...  18.1%
+Fitting model...  18.1%
+Fitting model...  18.2%
+Fitting model...  18.2%
+Fitting model...  18.3%
+Fitting model...  18.4%
+Fitting model...  18.4%
+Fitting model...  18.4%
+Fitting model...  18.5%
+Fitting model...  18.6%
+Fitting model...  18.6%
+Fitting model...  18.6%
+Fitting model...  18.7%
+Fitting model...  18.8%
+Fitting model...  18.8%
+Fitting model...  18.9%
+Fitting model...  18.9%
+Fitting model...  18.9%
+Fitting model...  19.0%
+Fitting model...  19.1%
+Fitting model...  19.1%
+Fitting model...  19.1%
+Fitting model...  19.2%
+Fitting model...  19.2%
+Fitting model...  19.3%
+Fitting model...  19.4%
+Fitting model...  19.4%
+Fitting model...  19.4%
+Fitting model...  19.5%
+Fitting model...  19.6%
+Fitting model...  19.6%
+Fitting model...  19.7%
+Fitting model...  19.7%
+Fitting model...  19.8%
+Fitting model...  19.8%
+Fitting model...  19.9%
+Fitting model...  19.9%
+Fitting model...  20.0%
+Fitting model...  20.0%
+Fitting model...  20.1%
+Fitting model...  20.1%
+Fitting model...  20.2%
+Fitting model...  20.2%
+Fitting model...  20.2%
+Fitting model...  20.3%
+Fitting model...  20.3%
+Fitting model...  20.4%
+Fitting model...  20.4%
+Fitting model...  20.5%
+Fitting model...  20.5%
+Fitting model...  20.6%
+Fitting model...  20.6%
+Fitting model...  20.7%
+Fitting model...  20.8%
+Fitting model...  20.8%
+Fitting model...  20.8%
+Fitting model...  20.9%
+Fitting model...  20.9%
+Fitting model...  21.0%
+Fitting model...  21.1%
+Fitting model...  21.1%
+Fitting model...  21.1%
+Fitting model...  21.2%
+Fitting model...  21.2%
+Fitting model...  21.3%
+Fitting model...  21.3%
+Fitting model...  21.4%
+Fitting model...  21.4%
+Fitting model...  21.5%
+Fitting model...  21.6%
+Fitting model...  21.6%
+Fitting model...  21.6%
+Fitting model...  21.7%
+Fitting model...  21.8%
+Fitting model...  21.8%
+Fitting model...  21.9%
+Fitting model...  21.9%
+Fitting model...  21.9%
+Fitting model...  22.0%
+Fitting model...  22.1%
+Fitting model...  22.1%
+Fitting model...  22.1%
+Fitting model...  22.2%
+Fitting model...  22.2%
+Fitting model...  22.3%
+Fitting model...  22.4%
+Fitting model...  22.4%
+Fitting model...  22.4%
+Fitting model...  22.5%
+Fitting model...  22.6%
+Fitting model...  22.6%
+Fitting model...  22.7%
+Fitting model...  22.7%
+Fitting model...  22.8%
+Fitting model...  22.8%
+Fitting model...  22.9%
+Fitting model...  22.9%
+Fitting model...  22.9%
+Fitting model...  23.0%
+Fitting model...  23.1%
+Fitting model...  23.1%
+Fitting model...  23.2%
+Fitting model...  23.2%
+Fitting model...  23.2%
+Fitting model...  23.3%
+Fitting model...  23.4%
+Fitting model...  23.4%
+Fitting model...  23.4%
+Fitting model...  23.5%
+Fitting model...  23.5%
+Fitting model...  23.6%
+Fitting model...  23.6%
+Fitting model...  23.7%
+Fitting model...  23.8%
+Fitting model...  23.8%
+Fitting model...  23.8%
+Fitting model...  23.9%
+Fitting model...  23.9%
+Fitting model...  24.0%
+Fitting model...  24.1%
+Fitting model...  24.1%
+Fitting model...  24.1%
+Fitting model...  24.2%
+Fitting model...  24.2%
+Fitting model...  24.3%
+Fitting model...  24.3%
+Fitting model...  24.4%
+Fitting model...  24.4%
+Fitting model...  24.5%
+Fitting model...  24.6%
+Fitting model...  24.6%
+Fitting model...  24.6%
+Fitting model...  24.7%
+Fitting model...  24.8%
+Fitting model...  24.8%
+Fitting model...  24.9%
+Fitting model...  24.9%
+Fitting model...  24.9%
+Fitting model...  25.0%
+Fitting model...  25.1%
+Fitting model...  25.1%
+Fitting model...  25.1%
+Fitting model...  25.2%
+Fitting model...  25.2%
+Fitting model...  25.3%
+Fitting model...  25.4%
+Fitting model...  25.4%
+Fitting model...  25.4%
+Fitting model...  25.5%
+Fitting model...  25.6%
+Fitting model...  25.6%
+Fitting model...  25.7%
+Fitting model...  25.7%
+Fitting model...  25.8%
+Fitting model...  25.8%
+Fitting model...  25.9%
+Fitting model...  25.9%
+Fitting model...  25.9%
+Fitting model...  26.0%
+Fitting model...  26.1%
+Fitting model...  26.1%
+Fitting model...  26.2%
+Fitting model...  26.2%
+Fitting model...  26.2%
+Fitting model...  26.3%
+Fitting model...  26.4%
+Fitting model...  26.4%
+Fitting model...  26.5%
+Fitting model...  26.5%
+Fitting model...  26.6%
+Fitting model...  26.6%
+Fitting model...  26.7%
+Fitting model...  26.7%
+Fitting model...  26.8%
+Fitting model...  26.8%
+Fitting model...  26.9%
+Fitting model...  26.9%
+Fitting model...  27.0%
+Fitting model...  27.0%
+Fitting model...  27.1%
+Fitting model...  27.1%
+Fitting model...  27.2%
+Fitting model...  27.2%
+Fitting model...  27.3%
+Fitting model...  27.3%
+Fitting model...  27.4%
+Fitting model...  27.4%
+Fitting model...  27.5%
+Fitting model...  27.5%
+Fitting model...  27.6%
+Fitting model...  27.6%
+Fitting model...  27.7%
+Fitting model...  27.7%
+Fitting model...  27.8%
+Fitting model...  27.8%
+Fitting model...  27.9%
+Fitting model...  27.9%
+Fitting model...  28.0%
+Fitting model...  28.0%
+Fitting model...  28.1%
+Fitting model...  28.1%
+Fitting model...  28.1%
+Fitting model...  28.2%
+Fitting model...  28.2%
+Fitting model...  28.3%
+Fitting model...  28.3%
+Fitting model...  28.4%
+Fitting model...  28.4%
+Fitting model...  28.5%
+Fitting model...  28.5%
+Fitting model...  28.6%
+Fitting model...  28.6%
+Fitting model...  28.7%
+Fitting model...  28.7%
+Fitting model...  28.8%
+Fitting model...  28.8%
+Fitting model...  28.9%
+Fitting model...  28.9%
+Fitting model...  29.0%
+Fitting model...  29.0%
+Fitting model...  29.1%
+Fitting model...  29.1%
+Fitting model...  29.2%
+Fitting model...  29.2%
+Fitting model...  29.3%
+Fitting model...  29.3%
+Fitting model...  29.4%
+Fitting model...  29.4%
+Fitting model...  29.5%
+Fitting model...  29.5%
+Fitting model...  29.6%
+Fitting model...  29.6%
+Fitting model...  29.7%
+Fitting model...  29.8%
+Fitting model...  29.8%
+Fitting model...  29.8%
+Fitting model...  29.9%
+Fitting model...  29.9%
+Fitting model...  30.0%
+Fitting model...  30.0%
+Fitting model...  30.1%
+Fitting model...  30.1%
+Fitting model...  30.2%
+Fitting model...  30.2%
+Fitting model...  30.3%
+Fitting model...  30.3%
+Fitting model...  30.4%
+Fitting model...  30.4%
+Fitting model...  30.5%
+Fitting model...  30.6%
+Fitting model...  30.6%
+Fitting model...  30.6%
+Fitting model...  30.7%
+Fitting model...  30.8%
+Fitting model...  30.8%
+Fitting model...  30.9%
+Fitting model...  30.9%
+Fitting model...  30.9%
+Fitting model...  31.0%
+Fitting model...  31.1%
+Fitting model...  31.1%
+Fitting model...  31.1%
+Fitting model...  31.2%
+Fitting model...  31.2%
+Fitting model...  31.3%
+Fitting model...  31.4%
+Fitting model...  31.4%
+Fitting model...  31.4%
+Fitting model...  31.5%
+Fitting model...  31.6%
+Fitting model...  31.6%
+Fitting model...  31.6%
+Fitting model...  31.7%
+Fitting model...  31.8%
+Fitting model...  31.8%
+Fitting model...  31.9%
+Fitting model...  31.9%
+Fitting model...  31.9%
+Fitting model...  32.0%
+Fitting model...  32.0%
+Fitting model...  32.1%
+Fitting model...  32.1%
+Fitting model...  32.2%
+Fitting model...  32.2%
+Fitting model...  32.3%
+Fitting model...  32.4%
+Fitting model...  32.4%
+Fitting model...  32.5%
+Fitting model...  32.5%
+Fitting model...  32.6%
+Fitting model...  32.6%
+Fitting model...  32.6%
+Fitting model...  32.7%
+Fitting model...  32.8%
+Fitting model...  32.8%
+Fitting model...  32.9%
+Fitting model...  32.9%
+Fitting model...  33.0%
+Fitting model...  33.0%
+Fitting model...  33.1%
+Fitting model...  33.1%
+Fitting model...  33.1%
+Fitting model...  33.2%
+Fitting model...  33.2%
+Fitting model...  33.3%
+Fitting model...  33.4%
+Fitting model...  33.4%
+Fitting model...  33.5%
+Fitting model...  33.5%
+Fitting model...  33.6%
+Fitting model...  33.6%
+Fitting model...  33.7%
+Fitting model...  33.7%
+Fitting model...  33.8%
+Fitting model...  33.8%
+Fitting model...  33.9%
+Fitting model...  33.9%
+Fitting model...  34.0%
+Fitting model...  34.0%
+Fitting model...  34.1%
+Fitting model...  34.1%
+Fitting model...  34.2%
+Fitting model...  34.2%
+Fitting model...  34.2%
+Fitting model...  34.3%
+Fitting model...  34.4%
+Fitting model...  34.4%
+Fitting model...  34.4%
+Fitting model...  34.5%
+Fitting model...  34.5%
+Fitting model...  34.6%
+Fitting model...  34.6%
+Fitting model...  34.7%
+Fitting model...  34.8%
+Fitting model...  34.8%
+Fitting model...  34.8%
+Fitting model...  34.9%
+Fitting model...  34.9%
+Fitting model...  35.0%
+Fitting model...  35.0%
+Fitting model...  35.1%
+Fitting model...  35.1%
+Fitting model...  35.2%
+Fitting model...  35.2%
+Fitting model...  35.3%
+Fitting model...  35.4%
+Fitting model...  35.4%
+Fitting model...  35.4%
+Fitting model...  35.5%
+Fitting model...  35.5%
+Fitting model...  35.6%
+Fitting model...  35.6%
+Fitting model...  35.7%
+Fitting model...  35.8%
+Fitting model...  35.8%
+Fitting model...  35.9%
+Fitting model...  35.9%
+Fitting model...  35.9%
+Fitting model...  36.0%
+Fitting model...  36.0%
+Fitting model...  36.1%
+Fitting model...  36.1%
+Fitting model...  36.2%
+Fitting model...  36.2%
+Fitting model...  36.3%
+Fitting model...  36.4%
+Fitting model...  36.4%
+Fitting model...  36.4%
+Fitting model...  36.5%
+Fitting model...  36.5%
+Fitting model...  36.6%
+Fitting model...  36.6%
+Fitting model...  36.7%
+Fitting model...  36.8%
+Fitting model...  36.8%
+Fitting model...  36.9%
+Fitting model...  36.9%
+Fitting model...  37.0%
+Fitting model...  37.0%
+Fitting model...  37.0%
+Fitting model...  37.1%
+Fitting model...  37.1%
+Fitting model...  37.2%
+Fitting model...  37.2%
+Fitting model...  37.3%
+Fitting model...  37.4%
+Fitting model...  37.4%
+Fitting model...  37.5%
+Fitting model...  37.5%
+Fitting model...  37.5%
+Fitting model...  37.6%
+Fitting model...  37.6%
+Fitting model...  37.7%
+Fitting model...  37.8%
+Fitting model...  37.8%
+Fitting model...  37.9%
+Fitting model...  37.9%
+Fitting model...  38.0%
+Fitting model...  38.0%
+Fitting model...  38.0%
+Fitting model...  38.1%
+Fitting model...  38.1%
+Fitting model...  38.2%
+Fitting model...  38.2%
+Fitting model...  38.3%
+Fitting model...  38.4%
+Fitting model...  38.4%
+Fitting model...  38.5%
+Fitting model...  38.5%
+Fitting model...  38.6%
+Fitting model...  38.6%
+Fitting model...  38.6%
+Fitting model...  38.7%
+Fitting model...  38.8%
+Fitting model...  38.8%
+Fitting model...  38.9%
+Fitting model...  38.9%
+Fitting model...  39.0%
+Fitting model...  39.0%
+Fitting model...  39.1%
+Fitting model...  39.1%
+Fitting model...  39.1%
+Fitting model...  39.2%
+Fitting model...  39.2%
+Fitting model...  39.3%
+Fitting model...  39.4%
+Fitting model...  39.4%
+Fitting model...  39.5%
+Fitting model...  39.5%
+Fitting model...  39.6%
+Fitting model...  39.6%
+Fitting model...  39.6%
+Fitting model...  39.7%
+Fitting model...  39.8%
+Fitting model...  39.8%
+Fitting model...  39.9%
+Fitting model...  39.9%
+Fitting model...  40.0%
+Fitting model...  40.0%
+Fitting model...  40.1%
+Fitting model...  40.1%
+Fitting model...  40.2%
+Fitting model...  40.2%
+Fitting model...  40.2%
+Fitting model...  40.3%
+Fitting model...  40.4%
+Fitting model...  40.4%
+Fitting model...  40.5%
+Fitting model...  40.5%
+Fitting model...  40.6%
+Fitting model...  40.6%
+Fitting model...  40.6%
+Fitting model...  40.7%
+Fitting model...  40.8%
+Fitting model...  40.8%
+Fitting model...  40.8%
+Fitting model...  40.9%
+Fitting model...  40.9%
+Fitting model...  41.0%
+Fitting model...  41.0%
+Fitting model...  41.1%
+Fitting model...  41.1%
+Fitting model...  41.2%
+Fitting model...  41.2%
+Fitting model...  41.3%
+Fitting model...  41.3%
+Fitting model...  41.4%
+Fitting model...  41.4%
+Fitting model...  41.5%
+Fitting model...  41.5%
+Fitting model...  41.6%
+Fitting model...  41.6%
+Fitting model...  41.7%
+Fitting model...  41.8%
+Fitting model...  41.8%
+Fitting model...  41.9%
+Fitting model...  41.9%
+Fitting model...  41.9%
+Fitting model...  42.0%
+Fitting model...  42.0%
+Fitting model...  42.1%
+Fitting model...  42.1%
+Fitting model...  42.2%
+Fitting model...  42.2%
+Fitting model...  42.3%
+Fitting model...  42.4%
+Fitting model...  42.4%
+Fitting model...  42.4%
+Fitting model...  42.5%
+Fitting model...  42.5%
+Fitting model...  42.6%
+Fitting model...  42.6%
+Fitting model...  42.7%
+Fitting model...  42.8%
+Fitting model...  42.8%
+Fitting model...  42.9%
+Fitting model...  42.9%
+Fitting model...  43.0%
+Fitting model...  43.0%
+Fitting model...  43.0%
+Fitting model...  43.1%
+Fitting model...  43.1%
+Fitting model...  43.2%
+Fitting model...  43.2%
+Fitting model...  43.3%
+Fitting model...  43.4%
+Fitting model...  43.4%
+Fitting model...  43.5%
+Fitting model...  43.5%
+Fitting model...  43.5%
+Fitting model...  43.6%
+Fitting model...  43.6%
+Fitting model...  43.7%
+Fitting model...  43.8%
+Fitting model...  43.8%
+Fitting model...  43.9%
+Fitting model...  43.9%
+Fitting model...  44.0%
+Fitting model...  44.0%
+Fitting model...  44.0%
+Fitting model...  44.1%
+Fitting model...  44.1%
+Fitting model...  44.2%
+Fitting model...  44.2%
+Fitting model...  44.3%
+Fitting model...  44.4%
+Fitting model...  44.4%
+Fitting model...  44.5%
+Fitting model...  44.5%
+Fitting model...  44.5%
+Fitting model...  44.6%
+Fitting model...  44.6%
+Fitting model...  44.7%
+Fitting model...  44.8%
+Fitting model...  44.8%
+Fitting model...  44.9%
+Fitting model...  44.9%
+Fitting model...  45.0%
+Fitting model...  45.0%
+Fitting model...  45.1%
+Fitting model...  45.1%
+Fitting model...  45.1%
+Fitting model...  45.2%
+Fitting model...  45.2%
+Fitting model...  45.3%
+Fitting model...  45.4%
+Fitting model...  45.4%
+Fitting model...  45.5%
+Fitting model...  45.5%
+Fitting model...  45.6%
+Fitting model...  45.6%
+Fitting model...  45.6%
+Fitting model...  45.7%
+Fitting model...  45.8%
+Fitting model...  45.8%
+Fitting model...  45.9%
+Fitting model...  45.9%
+Fitting model...  46.0%
+Fitting model...  46.0%
+Fitting model...  46.1%
+Fitting model...  46.1%
+Fitting model...  46.2%
+Fitting model...  46.2%
+Fitting model...  46.2%
+Fitting model...  46.3%
+Fitting model...  46.4%
+Fitting model...  46.4%
+Fitting model...  46.5%
+Fitting model...  46.5%
+Fitting model...  46.6%
+Fitting model...  46.6%
+Fitting model...  46.7%
+Fitting model...  46.7%
+Fitting model...  46.8%
+Fitting model...  46.8%
+Fitting model...  46.9%
+Fitting model...  46.9%
+Fitting model...  46.9%
+Fitting model...  47.0%
+Fitting model...  47.0%
+Fitting model...  47.1%
+Fitting model...  47.1%
+Fitting model...  47.2%
+Fitting model...  47.2%
+Fitting model...  47.3%
+Fitting model...  47.3%
+Fitting model...  47.4%
+Fitting model...  47.4%
+Fitting model...  47.5%
+Fitting model...  47.5%
+Fitting model...  47.6%
+Fitting model...  47.6%
+Fitting model...  47.7%
+Fitting model...  47.8%
+Fitting model...  47.8%
+Fitting model...  47.9%
+Fitting model...  47.9%
+Fitting model...  47.9%
+Fitting model...  48.0%
+Fitting model...  48.0%
+Fitting model...  48.1%
+Fitting model...  48.1%
+Fitting model...  48.2%
+Fitting model...  48.2%
+Fitting model...  48.3%
+Fitting model...  48.4%
+Fitting model...  48.4%
+Fitting model...  48.4%
+Fitting model...  48.5%
+Fitting model...  48.5%
+Fitting model...  48.6%
+Fitting model...  48.6%
+Fitting model...  48.7%
+Fitting model...  48.8%
+Fitting model...  48.8%
+Fitting model...  48.9%
+Fitting model...  48.9%
+Fitting model...  48.9%
+Fitting model...  49.0%
+Fitting model...  49.0%
+Fitting model...  49.1%
+Fitting model...  49.1%
+Fitting model...  49.2%
+Fitting model...  49.2%
+Fitting model...  49.3%
+Fitting model...  49.4%
+Fitting model...  49.4%
+Fitting model...  49.5%
+Fitting model...  49.5%
+Fitting model...  49.5%
+Fitting model...  49.6%
+Fitting model...  49.6%
+Fitting model...  49.7%
+Fitting model...  49.8%
+Fitting model...  49.8%
+Fitting model...  49.9%
+Fitting model...  49.9%
+Fitting model...  50.0%
+Fitting model...  50.0%
+Fitting model...  50.0%
+Fitting model...  50.1%
+Fitting model...  50.1%
+Fitting model...  50.2%
+Fitting model...  50.2%
+Fitting model...  50.3%
+Fitting model...  50.3%
+Fitting model...  50.4%
+Fitting model...  50.4%
+Fitting model...  50.5%
+Fitting model...  50.5%
+Fitting model...  50.6%
+Fitting model...  50.6%
+Fitting model...  50.7%
+Fitting model...  50.7%
+Fitting model...  50.8%
+Fitting model...  50.8%
+Fitting model...  50.9%
+Fitting model...  50.9%
+Fitting model...  51.0%
+Fitting model...  51.0%
+Fitting model...  51.1%
+Fitting model...  51.1%
+Fitting model...  51.2%
+Fitting model...  51.2%
+Fitting model...  51.3%
+Fitting model...  51.3%
+Fitting model...  51.4%
+Fitting model...  51.4%
+Fitting model...  51.5%
+Fitting model...  51.5%
+Fitting model...  51.6%
+Fitting model...  51.6%
+Fitting model...  51.7%
+Fitting model...  51.7%
+Fitting model...  51.8%
+Fitting model...  51.8%
+Fitting model...  51.9%
+Fitting model...  51.9%
+Fitting model...  52.0%
+Fitting model...  52.0%
+Fitting model...  52.1%
+Fitting model...  52.1%
+Fitting model...  52.2%
+Fitting model...  52.2%
+Fitting model...  52.3%
+Fitting model...  52.3%
+Fitting model...  52.4%
+Fitting model...  52.4%
+Fitting model...  52.5%
+Fitting model...  52.5%
+Fitting model...  52.6%
+Fitting model...  52.6%
+Fitting model...  52.7%
+Fitting model...  52.8%
+Fitting model...  52.8%
+Fitting model...  52.8%
+Fitting model...  52.9%
+Fitting model...  52.9%
+Fitting model...  53.0%
+Fitting model...  53.0%
+Fitting model...  53.1%
+Fitting model...  53.1%
+Fitting model...  53.2%
+Fitting model...  53.2%
+Fitting model...  53.3%
+Fitting model...  53.3%
+Fitting model...  53.4%
+Fitting model...  53.4%
+Fitting model...  53.5%
+Fitting model...  53.5%
+Fitting model...  53.6%
+Fitting model...  53.6%
+Fitting model...  53.7%
+Fitting model...  53.8%
+Fitting model...  53.8%
+Fitting model...  53.8%
+Fitting model...  53.9%
+Fitting model...  53.9%
+Fitting model...  54.0%
+Fitting model...  54.0%
+Fitting model...  54.1%
+Fitting model...  54.1%
+Fitting model...  54.2%
+Fitting model...  54.2%
+Fitting model...  54.3%
+Fitting model...  54.4%
+Fitting model...  54.4%
+Fitting model...  54.4%
+Fitting model...  54.5%
+Fitting model...  54.5%
+Fitting model...  54.6%
+Fitting model...  54.6%
+Fitting model...  54.7%
+Fitting model...  54.8%
+Fitting model...  54.8%
+Fitting model...  54.9%
+Fitting model...  54.9%
+Fitting model...  54.9%
+Fitting model...  55.0%
+Fitting model...  55.0%
+Fitting model...  55.1%
+Fitting model...  55.1%
+Fitting model...  55.2%
+Fitting model...  55.2%
+Fitting model...  55.3%
+Fitting model...  55.4%
+Fitting model...  55.4%
+Fitting model...  55.5%
+Fitting model...  55.5%
+Fitting model...  55.5%
+Fitting model...  55.6%
+Fitting model...  55.6%
+Fitting model...  55.7%
+Fitting model...  55.8%
+Fitting model...  55.8%
+Fitting model...  55.9%
+Fitting model...  55.9%
+Fitting model...  56.0%
+Fitting model...  56.0%
+Fitting model...  56.0%
+Fitting model...  56.1%
+Fitting model...  56.1%
+Fitting model...  56.2%
+Fitting model...  56.2%
+Fitting model...  56.3%
+Fitting model...  56.4%
+Fitting model...  56.4%
+Fitting model...  56.5%
+Fitting model...  56.5%
+Fitting model...  56.5%
+Fitting model...  56.6%
+Fitting model...  56.6%
+Fitting model...  56.7%
+Fitting model...  56.8%
+Fitting model...  56.8%
+Fitting model...  56.9%
+Fitting model...  56.9%
+Fitting model...  57.0%
+Fitting model...  57.0%
+Fitting model...  57.0%
+Fitting model...  57.1%
+Fitting model...  57.1%
+Fitting model...  57.2%
+Fitting model...  57.2%
+Fitting model...  57.3%
+Fitting model...  57.4%
+Fitting model...  57.4%
+Fitting model...  57.5%
+Fitting model...  57.5%
+Fitting model...  57.6%
+Fitting model...  57.6%
+Fitting model...  57.6%
+Fitting model...  57.7%
+Fitting model...  57.8%
+Fitting model...  57.8%
+Fitting model...  57.9%
+Fitting model...  57.9%
+Fitting model...  58.0%
+Fitting model...  58.0%
+Fitting model...  58.1%
+Fitting model...  58.1%
+Fitting model...  58.1%
+Fitting model...  58.2%
+Fitting model...  58.2%
+Fitting model...  58.3%
+Fitting model...  58.4%
+Fitting model...  58.4%
+Fitting model...  58.5%
+Fitting model...  58.5%
+Fitting model...  58.6%
+Fitting model...  58.6%
+Fitting model...  58.7%
+Fitting model...  58.7%
+Fitting model...  58.8%
+Fitting model...  58.8%
+Fitting model...  58.9%
+Fitting model...  58.9%
+Fitting model...  59.0%
+Fitting model...  59.0%
+Fitting model...  59.1%
+Fitting model...  59.1%
+Fitting model...  59.2%
+Fitting model...  59.2%
+Fitting model...  59.2%
+Fitting model...  59.3%
+Fitting model...  59.4%
+Fitting model...  59.4%
+Fitting model...  59.5%
+Fitting model...  59.5%
+Fitting model...  59.6%
+Fitting model...  59.6%
+Fitting model...  59.7%
+Fitting model...  59.7%
+Fitting model...  59.8%
+Fitting model...  59.8%
+Fitting model...  59.9%
+Fitting model...  59.9%
+Fitting model...  60.0%
+Fitting model...  60.0%
+Fitting model...  60.1%
+Fitting model...  60.1%
+Fitting model...  60.2%
+Fitting model...  60.2%
+Fitting model...  60.2%
+Fitting model...  60.3%
+Fitting model...  60.4%
+Fitting model...  60.4%
+Fitting model...  60.5%
+Fitting model...  60.5%
+Fitting model...  60.6%
+Fitting model...  60.6%
+Fitting model...  60.7%
+Fitting model...  60.7%
+Fitting model...  60.8%
+Fitting model...  60.8%
+Fitting model...  60.9%
+Fitting model...  60.9%
+Fitting model...  61.0%
+Fitting model...  61.0%
+Fitting model...  61.1%
+Fitting model...  61.1%
+Fitting model...  61.2%
+Fitting model...  61.2%
+Fitting model...  61.3%
+Fitting model...  61.3%
+Fitting model...  61.4%
+Fitting model...  61.4%
+Fitting model...  61.5%
+Fitting model...  61.5%
+Fitting model...  61.6%
+Fitting model...  61.6%
+Fitting model...  61.7%
+Fitting model...  61.7%
+Fitting model...  61.8%
+Fitting model...  61.8%
+Fitting model...  61.9%
+Fitting model...  61.9%
+Fitting model...  62.0%
+Fitting model...  62.0%
+Fitting model...  62.1%
+Fitting model...  62.1%
+Fitting model...  62.2%
+Fitting model...  62.2%
+Fitting model...  62.3%
+Fitting model...  62.3%
+Fitting model...  62.4%
+Fitting model...  62.4%
+Fitting model...  62.5%
+Fitting model...  62.5%
+Fitting model...  62.5%
+Fitting model...  62.6%
+Fitting model...  62.6%
+Fitting model...  62.7%
+Fitting model...  62.7%
+Fitting model...  62.8%
+Fitting model...  62.8%
+Fitting model...  62.9%
+Fitting model...  62.9%
+Fitting model...  63.0%
+Fitting model...  63.0%
+Fitting model...  63.1%
+Fitting model...  63.1%
+Fitting model...  63.2%
+Fitting model...  63.2%
+Fitting model...  63.3%
+Fitting model...  63.3%
+Fitting model...  63.4%
+Fitting model...  63.4%
+Fitting model...  63.5%
+Fitting model...  63.5%
+Fitting model...  63.6%
+Fitting model...  63.6%
+Fitting model...  63.7%
+Fitting model...  63.7%
+Fitting model...  63.8%
+Fitting model...  63.8%
+Fitting model...  63.9%
+Fitting model...  63.9%
+Fitting model...  64.0%
+Fitting model...  64.0%
+Fitting model...  64.1%
+Fitting model...  64.1%
+Fitting model...  64.2%
+Fitting model...  64.2%
+Fitting model...  64.3%
+Fitting model...  64.3%
+Fitting model...  64.4%
+Fitting model...  64.5%
+Fitting model...  64.5%
+Fitting model...  64.5%
+Fitting model...  64.6%
+Fitting model...  64.6%
+Fitting model...  64.7%
+Fitting model...  64.8%
+Fitting model...  64.8%
+Fitting model...  64.8%
+Fitting model...  64.9%
+Fitting model...  65.0%
+Fitting model...  65.0%
+Fitting model...  65.0%
+Fitting model...  65.1%
+Fitting model...  65.1%
+Fitting model...  65.2%
+Fitting model...  65.2%
+Fitting model...  65.3%
+Fitting model...  65.3%
+Fitting model...  65.4%
+Fitting model...  65.5%
+Fitting model...  65.5%
+Fitting model...  65.5%
+Fitting model...  65.6%
+Fitting model...  65.6%
+Fitting model...  65.7%
+Fitting model...  65.8%
+Fitting model...  65.8%
+Fitting model...  65.8%
+Fitting model...  65.9%
+Fitting model...  66.0%
+Fitting model...  66.0%
+Fitting model...  66.0%
+Fitting model...  66.1%
+Fitting model...  66.1%
+Fitting model...  66.2%
+Fitting model...  66.2%
+Fitting model...  66.3%
+Fitting model...  66.3%
+Fitting model...  66.4%
+Fitting model...  66.5%
+Fitting model...  66.5%
+Fitting model...  66.5%
+Fitting model...  66.6%
+Fitting model...  66.6%
+Fitting model...  66.7%
+Fitting model...  66.8%
+Fitting model...  66.8%
+Fitting model...  66.8%
+Fitting model...  66.9%
+Fitting model...  67.0%
+Fitting model...  67.0%
+Fitting model...  67.0%
+Fitting model...  67.1%
+Fitting model...  67.2%
+Fitting model...  67.2%
+Fitting model...  67.2%
+Fitting model...  67.3%
+Fitting model...  67.3%
+Fitting model...  67.4%
+Fitting model...  67.5%
+Fitting model...  67.5%
+Fitting model...  67.5%
+Fitting model...  67.6%
+Fitting model...  67.7%
+Fitting model...  67.7%
+Fitting model...  67.8%
+Fitting model...  67.8%
+Fitting model...  67.8%
+Fitting model...  67.9%
+Fitting model...  68.0%
+Fitting model...  68.0%
+Fitting model...  68.0%
+Fitting model...  68.1%
+Fitting model...  68.2%
+Fitting model...  68.2%
+Fitting model...  68.2%
+Fitting model...  68.3%
+Fitting model...  68.3%
+Fitting model...  68.4%
+Fitting model...  68.5%
+Fitting model...  68.5%
+Fitting model...  68.5%
+Fitting model...  68.6%
+Fitting model...  68.7%
+Fitting model...  68.7%
+Fitting model...  68.8%
+Fitting model...  68.8%
+Fitting model...  68.8%
+Fitting model...  68.9%
+Fitting model...  69.0%
+Fitting model...  69.0%
+Fitting model...  69.0%
+Fitting model...  69.1%
+Fitting model...  69.2%
+Fitting model...  69.2%
+Fitting model...  69.2%
+Fitting model...  69.3%
+Fitting model...  69.3%
+Fitting model...  69.4%
+Fitting model...  69.5%
+Fitting model...  69.5%
+Fitting model...  69.5%
+Fitting model...  69.6%
+Fitting model...  69.7%
+Fitting model...  69.7%
+Fitting model...  69.8%
+Fitting model...  69.8%
+Fitting model...  69.8%
+Fitting model...  69.9%
+Fitting model...  70.0%
+Fitting model...  70.0%
+early stopping at iteration: 1400
+iterations in  3.31634521484375
+Estimated baseline is: 0.40742406249046326
+Estimated alpha is: 0.7959662079811096
+Estimated beta parameter of the exponential kernel is: 0.9649611711502075
+</pre></div>
+</div>
+<p>Here, we plot the values of the estimated kernel with FaDIn.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="p">,</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">=</span><span class="s1">&#39;truncated_exponential&#39;</span><span class="p">,</span>
+                                     <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">)</span>
+<span class="n">kernel_values</span> <span class="o">=</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">.</span><span class="n">kernel_eval</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">])],</span>
+                                   <span class="n">discretization</span><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">discretization</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">kernel_values</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span><span class="o">/</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">,</span>
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;FaDIn</span><span class="se">\&#39;</span><span class="s1"> estimated kernel&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">discretization</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">discretization</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+         <span class="n">label</span><span class="o">=</span><span class="s1">&#39;True kernel&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.title.html#matplotlib.pyplot.title" title="matplotlib.pyplot.title" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Hawkes influence kernel&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.ylabel.html#matplotlib.pyplot.ylabel" title="matplotlib.pyplot.ylabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\phi(t)$&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;x-large&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../_images/sphx_glr_plot_univariate_fadin_001.png" srcset="../_images/sphx_glr_plot_univariate_fadin_001.png" alt="Hawkes influence kernel" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.523 seconds)</p>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-univariate-fadin-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/25f9018d86375d7894bb79acc78a8375/plot_univariate_fadin.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_univariate_fadin.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/4d9d8248607d7dfd1a6a1d91905ecec9/plot_univariate_fadin.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_univariate_fadin.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="plot_multivariate_fadin.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">FaDIn on simulated 2-d Hawkes processes</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Examples Gallery</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023-2023, Guillaume Staerman
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7adbc44"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
+    </body>
+</html>
