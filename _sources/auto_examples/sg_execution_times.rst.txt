@@ -6,10 +6,10 @@
 
 Computation times
 =================
-**04:04.355** total execution time for **auto_examples** files:
+**05:44.930** total execution time for **auto_examples** files:
 
 +-------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_multivariate_fadin.py` (``plot_multivariate_fadin.py``) | 03:57.960 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_multivariate_fadin.py` (``plot_multivariate_fadin.py``) | 05:39.726 | 0.0 MB |
 +-------------------------------------------------------------------------------------------+-----------+--------+
-| :ref:`sphx_glr_auto_examples_plot_univariate_fadin.py` (``plot_univariate_fadin.py``)     | 00:06.395 | 0.0 MB |
+| :ref:`sphx_glr_auto_examples_plot_univariate_fadin.py` (``plot_univariate_fadin.py``)     | 00:05.204 | 0.0 MB |
 +-------------------------------------------------------------------------------------------+-----------+--------+
