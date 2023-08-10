@@ -23,7 +23,7 @@ pip install FaDIn
 ### From source
 
 ```bash
-git clone https://github.com/GuillaumeStaermanML/FaDIn.git
+git clone https://github.com/mind-inria/FaDIn.git
 cd FaDIn
 ```
 
