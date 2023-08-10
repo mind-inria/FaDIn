@@ -37,7 +37,7 @@ jobs:
           path: doc/_build/html/
       - name: Commit to documentation branch
         run: |
-          git clone --no-checkout --depth 1 https://github.com/GuillaumeStaermanML/mind-inria/FaDIn.git --branch gh-pages --single-branch gh-pages
+          git clone --no-checkout --depth 1 https://github.com/mind-inria/FaDIn.git --branch gh-pages --single-branch gh-pages
           cp -r doc/_build/html/* gh-pages/
           cd gh-pages
           touch .nojekyll
