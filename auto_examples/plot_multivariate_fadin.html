@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="API Documentation" href="../api.html" /><link rel="prev" title="FaDIn on simulated univariate Hawkes processes" href="plot_univariate_fadin.html" />
 
-    <!-- Generated with Sphinx 7.1.1 and Furo 2023.07.26 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2023.07.26 -->
         <title>FaDIn on simulated 2-d Hawkes processes - fadin 0.1.dev0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=79c6a522" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=045299b1" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
@@ -408,6 +408,11 @@ Simulate generation 148
 Simulate generation 149
 Simulate generation 150
 Simulate generation 151
+Simulate generation 152
+Simulate generation 153
+Simulate generation 154
+Simulate generation 155
+Simulate generation 156
 </pre></div>
 </div>
 <p>Here, we apply FaDIn.</p>
@@ -431,8 +436,8 @@ Simulate generation 151
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated parameters of the truncated Exponential kernel is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 4003259
-precomput: 256.38190627098083
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 3999630
+precomput: 199.56968688964844
 Fitting model...   0.0%
 Fitting model...   0.0%
 Fitting model...   0.0%
@@ -10433,12 +10438,12 @@ Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
-iterations in  35.70216727256775
-Estimated baseline is: tensor([0.1330, 0.5217])
-Estimated alpha is: tensor([[0.6344, 0.2663],
-        [0.2948, 0.6594]])
-Estimated parameters of the truncated Exponential kernel is: tensor([[1.0172, 0.8739],
-        [1.1550, 0.9903]])
+iterations in  32.23450493812561
+Estimated baseline is: tensor([0.1335, 0.5210])
+Estimated alpha is: tensor([[0.6343, 0.2662],
+        [0.2928, 0.6611]])
+Estimated parameters of the truncated Exponential kernel is: tensor([[1.0154, 0.8573],
+        [1.1590, 0.9851]])
 </pre></div>
 </div>
 <p>Here, we plot the values of the estimated kernels with FaDIn.</p>
@@ -10470,7 +10475,7 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0172, 0.
 Text(0.5, 0.98, &#39;Hawkes influence kernels&#39;)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  57.730 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 3 minutes  57.960 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-multivariate-fadin-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/249f41bcacce2f11424e25d9f61ef920/plot_multivariate_fadin.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_multivariate_fadin.py</span></code></a></p>
