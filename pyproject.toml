@@ -49,8 +49,8 @@ doc = [
 ]
 
 [project.urls]
-homepage = "https://github.com/GuillaumeStaermanML/mind-inria/FaDIn"
-repository = "https://github.com/GuillaumeStaermanML/mind-inria/FaDIn.git"
+homepage = "https://github.com/mind-inria/FaDIn"
+repository = "https://github.com/mind-inria/FaDIn.git"
 
 [tool.setuptools.packages.find]
 include = ["fadin*"]
