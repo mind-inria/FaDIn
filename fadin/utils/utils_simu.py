@@ -1,6 +1,8 @@
 import numpy as np
-import scipy.stats
 from scipy.optimize import minimize_scalar
+from scipy.interpolate import interp1d
+from scipy.integrate import simps
+import scipy.stats as stats
 
 
 def find_max(intensity_function, duration):
@@ -33,7 +35,7 @@ def kernel_norm(x, kernel, kernel_length, params_kernel=dict()):
     return kernel.pdf(x, **params_kernel) / cdf_normalization
 
 
-def compute_intensity(events, s, baseline, alpha, kernel, 
+def compute_intensity(events, s, baseline, alpha, kernel,
                       kernel_length, params_kernel=dict()):
     "Compute the intensity function at events s giving the history of events"
     diff = []
@@ -47,16 +49,78 @@ def compute_intensity(events, s, baseline, alpha, kernel,
         for j in range(n_dim):
             # param du kernel ij to extend
             contrib_dims[i] += alpha[i, j] *\
-                kernel_norm(diff[j], kernel, kernel_length, **params_kernel).sum() 
+                kernel_norm(diff[j], kernel, kernel_length, **params_kernel).sum()
     intens = baseline + contrib_dims
     return np.array(intens)
+
+
+def custom_density(density, params=dict(), size=1, kernel_length=None):
+    """Sample elements from custom or scipy-defined distributions"""
+    if callable(density):
+        if kernel_length is None:
+            kernel_length = 1
+        distrib = custom_distribution(custom_density=density,
+                                      params=params,
+                                      kernel_length=kernel_length)
+    elif isinstance(density, str):
+        distrib = getattr(stats, density)
+    else:
+        raise TypeError('density has to be a str or a callable')
+
+    return distrib.rvs(size=size)
+
+
+class custom_distribution(stats.rv_continuous):
+    """Construct finite support density and allows efficient scipy sampling"""
+    def __init__(self, custom_density, params=dict(), kernel_length=10):
+        super().__init__()
+        # init our variance divergence
+        self.custom_density = custom_density
+        self.params = params
+        self.kernel_length = kernel_length
+        # init our cdf and ppf functions
+        self.cdf_func, self.ppf_func = self.create_cdf_ppf()
+
+    # function to normalise the pdf over chosen domain
+
+    def normalisation(self, x):
+        return simps(self.pdf(x), x)
+
+    def create_cdf_ppf(self):
+        # define normalization support with the given kernel length
+        discrete_time = np.linspace(0, self.kernel_length, 1001)
+        # normalise our pdf to sum to 1 so it satisfies a distribution
+        norm_constant_time = self.normalisation(discrete_time)
+        # compute pdfs to be summed to form cdf
+        my_pdfs = self.pdf(discrete_time) / norm_constant_time
+        # cumsum to form cdf
+        my_cdf = np.cumsum(my_pdfs)
+        # make sure cdf bounded on [0,1]
+        my_cdf = my_cdf / my_cdf[-1]
+        # create cdf and ppf
+        func_cdf = interp1d(discrete_time, my_cdf)
+        func_ppf = interp1d(my_cdf, discrete_time, fill_value='extrapolate')
+        return func_cdf, func_ppf
+
+    # pdf function for averaged normals
+    def _pdf(self, x):
+        # custom * pdf_kernel
+        return self.custom_density(x, **self.params)
+
+    # cdf function
+    def _cdf(self, x):
+        return self.cdf_func(x)
+
+    # inverse cdf function
+    def _ppf(self, x):
+        return self.ppf_func(x)
 
 
 def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
     """ Simulate univariate Poisson processes on [0, end_time] with
     the Ogata's modified thinning algorithm.
     If the intensity is a numerical value, simulate a Homegenous Poisson Process,
-    If the intensity is a function, simulate an Inhomogenous Poisson Process. 
+    If the intensity is a function, simulate an Inhomogenous Poisson Process.
 
     Parameters
     ----------
@@ -92,7 +156,7 @@ def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
     if upper_bound is None:
         upper_bound = find_max(intensity, end_time)
 
-    #  Simulate a homogenous Poisson process on [0, end_time] x [0, M]
+    #  Simulate a homogenous Poisson process on [0, end_time]
     n_events = rng.poisson(lam=upper_bound*end_time, size=1)
     ev_x = rng.uniform(low=0.0, high=end_time, size=n_events)
     ev_y = rng.uniform(low=0.0, high=upper_bound, size=n_events)
@@ -107,7 +171,7 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
     """Simulate multivariate Poisson processes on [0, end_time] with
     the Ogata's modified thinning algorithm by superposition of univariate processes.
     If the intensity is a numerical value, simulate a Homegenous Poisson Process,
-    If the intensity is a function, simulate an Inhomogenous Poisson Process. 
+    If the intensity is a function, simulate an Inhomogenous Poisson Process.
 
     Parameters
     ----------
@@ -145,6 +209,7 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
         return events
 
     if upper_bound is None:
+        upper_bound = np.zeros(n_dim)
         for i in range(n_dim):
             upper_bound[i] = find_max(intensity[i], end_time)
 
@@ -159,9 +224,9 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
     return events
 
 
-def simu_hawkes_cluster(end_time, baseline, alpha, kernel, 
-                        params_kernel=dict(), upper_bound=None, 
-                        random_state=None):
+def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
+                        params_kernel=dict(), kernel_length=None,
+                        upper_bound=None, random_state=None):
     """ Simulate a multivariate Hawkes process following an immigration-birth procedure.
         Edge effects may be reduced according to the second references below.
 
@@ -184,13 +249,19 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     alpha : array of float of size (n_dim, n_dim)
         Weight parameter associated to the kernel function.
 
-    kernel: str
+    kernel: str or callable
         The choice of the kernel for the simulation.
-        Kernel available are probability distribution from scipy.stats module.
-    
+        String kernel available are probability distribution from scipy.stats module.
+        A custom kernel can be implemented with the form kernel(x, **params).
+
     params_kernel: dict
         Parameters of the kernel used to simulate the process.
         It must follow parameters associated to scipy.stats distributions.
+
+    kernel_length: float or None, default=None
+        If the custom kernel has finite support, fixe the limit of the support.
+        The support need to be high enough such that probability mass between
+        zero and kernel_length is strictly higher than zero.
 
     upper_bound : int, float or None, default=None
         Upper bound of the baseline function. If None,
@@ -207,12 +278,11 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     rng = check_random_state(random_state)
 
     n_dim = baseline.shape[0]
-    immigrants = simu_multi_poisson(end_time, baseline, 
+    immigrants = simu_multi_poisson(end_time, baseline,
                                     upper_bound=upper_bound,
                                     random_state=random_state)
     gen = dict(gen0=immigrants)
-    events = immigrants
-    sample_from_kernel = getattr(scipy.stats, kernel)
+    events = immigrants.copy()
 
     it = 0
     while len(gen[f'gen{it}']):
@@ -228,8 +298,9 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
                 Dk[i][j] = rng.poisson(lam=alpha[i, j], size=len(Ck[j]))
                 nij = Dk[i][j].sum()
                 C[i][j] = np.repeat(Ck[j], repeats=Dk[i][j])
-                Eij = sample_from_kernel.rvs(**params_kernel, size=nij)
-                Fij = C[i][j] + Eij 
+                Eij = custom_density(
+                    kernel, params_kernel, size=nij, kernel_length=kernel_length)
+                Fij = C[i][j] + Eij
                 Fi.append(Fij)
                 s += Fij.shape[0]
             F.append(np.hstack(Fi))
@@ -249,7 +320,7 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     return events
 
 
-def simu_hawkes_thinning(end_time, baseline, alpha, kernel, 
+def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
                          kernel_length, params_kernel=dict(),
                          random_state=None):
     """ Simulate a multivariate Hawkes process with finite support kernels
@@ -258,7 +329,7 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
 
     References:
 
-    Ogata, Y. (1981). On Lewis' simulation method for point processes. 
+    Ogata, Y. (1981). On Lewis' simulation method for point processes.
     IEEE transactions on information theory, 27(1), 23-31.
 
     Parameters
@@ -280,7 +351,7 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
 
     kernel_length: int
         Length of kernels in the Hawkes process.
-  
+
     params_kernel: dict
         Parameters of the kernel used to simulate the process.
         It must follow parameters associated to scipy.stats distributions.
@@ -296,7 +367,7 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
     rng = check_random_state(random_state)
 
     n_dim, _ = alpha.shape
-    kernel = getattr(scipy.stats, kernel)
+    kernel = getattr(stats, kernel)
     # Initialise history
     events = []
     for i in range(n_dim):
@@ -307,25 +378,25 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
 
         # upper bound for thinning sampling
         # assuming that kernels are alpha times a density function
-        bound_contrib = alpha.max(1).sum() 
+        bound_contrib = alpha.max(1).sum()
         n_events = 0
         for i in range(n_dim):
             n_events += np.sum(np.array(events[i]) > (t - kernel_length))
 
         intensity_sup = baseline.sum() + n_events * bound_contrib
 
-        r = scipy.stats.expon.rvs(scale=1 / intensity_sup)
-        t += r 
+        r = stats.expon.rvs(scale=1 / intensity_sup)
+        t += r
 
-        lambda_t = compute_intensity(events, t, baseline, alpha, 
-                                     kernel, kernel_length, **params_kernel) 
+        lambda_t = compute_intensity(events, t, baseline, alpha,
+                                     kernel, kernel_length, **params_kernel)
         sum_intensity = lambda_t.sum()
 
         if np.random.rand() * intensity_sup <= sum_intensity:
             k = list(rng.multinomial(1, list(lambda_t / sum_intensity))).index(1)
             events[k].append(t)
 
-    # Delete points outside of [0, end_time] 
+    # Delete points outside of [0, end_time]
     for i in range(n_dim):
         if (len(events[i]) > 0) and (events[i][-1] > end_time):
             del events[i][-1]
@@ -334,9 +405,7 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
     return events
 
 
-
-
-# def simu_hawkes(end_time, baseline, alpha, kernel, upper_bound=None, 
+# def simu_hawkes(end_time, baseline, alpha, kernel, upper_bound=None,
 #                 random_state=None):
 #     """ Simulate a Hawkes process following an immigration-birth procedure.
 #         Edge effects may be reduced according to the second references below.
@@ -380,7 +449,7 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
 #         np.random.seed(0)
 #     else:
 #         np.random.seed(random_state)
-    
+
 #     # Simulate events from baseline
 #     immigrants = simu_poisson(end_time, intensity=baseline, upper_bound=upper_bound)
 
