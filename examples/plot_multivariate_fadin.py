@@ -92,3 +92,4 @@ colors = [blue_patch, black_patch]
 plt.legend(handles=colors, labels=labels, loc="center right",
            borderaxespad=0.1, fontsize='x-large')
 plt.suptitle('Hawkes influence kernels', size=20)
+plt.show()
