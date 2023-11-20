@@ -187,8 +187,8 @@ class FaDIn(object):
         if kernel_params_init is None:
             kernel_params_init = []
             if kernel == 'raised_cosine':
-                temp = torch.rand(self.n_dim, self.n_dim)
-                temp2 = torch.rand(self.n_dim, self.n_dim) * temp
+                temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
+                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
                 kernel_params_init.append(temp)
                 kernel_params_init.append(temp2)
             elif kernel == 'truncated_gaussian':
