@@ -70,13 +70,13 @@ def projected_grid(events, grid_step, n_grid):
     """Project the events on the defined grid.
     """
     n_dim = len(events)
-    size_discret = int(1 / grid_step)
+    # size_discret = int(1 / grid_step)
     events_grid = torch.zeros(n_dim, n_grid)
     for i in range(n_dim):
         ei_torch = torch.tensor(events[i])
-        temp = torch.round(ei_torch / grid_step) * grid_step
-        temp2 = torch.round(temp * size_discret).long()
-        idx, data = np.unique(temp2, return_counts=True)
+        temp = torch.round(ei_torch / grid_step).long() # * grid_step
+        # temp2 = torch.round(temp * size_discret)
+        idx, data = np.unique(temp, return_counts=True)
         events_grid[i, idx] += torch.tensor(data)
 
     return events_grid
