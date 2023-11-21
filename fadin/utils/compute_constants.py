@@ -51,7 +51,7 @@ def _get_ztzG(events_grid, L):
     events_grid.shape = n_dim, n_grid
     ztzG.shape = n_dim, n_dim, L, L
     """
-    n_dim, _ = events_grid.shape
+    n_dim, n_grid = events_grid.shape
     ztzG = np.zeros(shape=(n_dim, n_dim, L, L))
 
     for i in range(n_dim):
@@ -60,14 +60,14 @@ def _get_ztzG(events_grid, L):
             ej = events_grid[j]
             for tau in range(L):
                 for tau_p in range(tau + 1):
-                    if tau_p == 0:
-                        if tau == 0:
-                            ztzG[i, j, tau, tau_p] = ei @ ej
-                        else:
-                            ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
-                    else:
-                        diff = tau - tau_p
-                        ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[diff:-tau_p]
+                    # if tau_p == 0:
+                    #     if tau == 0:
+                    #         ztzG[i, j, tau, tau_p] = ei @ ej
+                    #     else:
+                    #         ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
+                    # else:
+                    diff = tau - tau_p
+                    ztzG[i, j, tau, tau_p] = ei[:n_grid-tau] @ ej[diff:n_grid-tau_p]
     return ztzG
 
 
