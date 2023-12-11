@@ -219,7 +219,7 @@ to download the full example code</p>
 <p>This example demonstrates inference performed
 by FaDIn on multivariate Hawkes processes simulated
 with specific kernels.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Guillaume Staerman &lt;guillaume.staerman@inria.fr&gt;</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Guillaume Staerman &lt;guillaume.staerman@inria.fr&gt;</span>
 <span class="c1">#          Alexandre Gramfort &lt;alexandre.gramfort@inria.fr&gt;</span>
 <span class="c1">#          Thomas Moreau &lt;thomas.moreau@inria.fr&gt;</span>
 <span class="c1">#</span>
@@ -227,7 +227,7 @@ with specific kernels.</p>
 </pre></div>
 </div>
 <p>Let us first define the parameters of our model.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">mpatches</span>
@@ -246,12 +246,12 @@ with specific kernels.</p>
 </pre></div>
 </div>
 <p>Here, we set the parameters of a Hawkes process with a Exponential(1) distributions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">baseline</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.5</span><span class="p">])</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">baseline</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.5</span><span class="p">])</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">alpha</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">]])</span>
 </pre></div>
 </div>
 <p>Here, we simulate the data</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <span class="s1">&#39;expon&#39;</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <span class="s1">&#39;expon&#39;</span>
 
 <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a> <span class="o">=</span> <span class="n">simu_hawkes_cluster</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">baseline</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">alpha</span></a><span class="p">,</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="p">)</span>
 </pre></div>
@@ -399,10 +399,13 @@ Simulate generation 139
 Simulate generation 140
 Simulate generation 141
 Simulate generation 142
+Simulate generation 143
+Simulate generation 144
+Simulate generation 145
 </pre></div>
 </div>
 <p>Here, we apply FaDIn.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a> <span class="o">=</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="p">,</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a> <span class="o">=</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="p">,</span>
                <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">=</span><span class="s2">&quot;truncated_exponential&quot;</span><span class="p">,</span>
                <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">,</span>
                <span class="n">delta</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <span class="n">optim</span><span class="o">=</span><span class="s2">&quot;RMSprop&quot;</span><span class="p">,</span>
@@ -422,8 +425,8 @@ Simulate generation 142
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated parameters of the truncated Exponential kernel is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 3987434
-precomput: 282.08531665802
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 3978345
+precomput: 110.80798625946045
 Fitting model...   0.0%
 Fitting model...   0.0%
 Fitting model...   0.0%
@@ -10424,16 +10427,16 @@ Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
-iterations in  40.843302488327026
-Estimated baseline is: tensor([0.1326, 0.5171])
-Estimated alpha is: tensor([[0.6335, 0.2668],
-        [0.2957, 0.6594]])
-Estimated parameters of the truncated Exponential kernel is: tensor([[1.0171, 0.8646],
-        [1.1493, 0.9905]])
+iterations in  21.19599199295044
+Estimated baseline is: tensor([0.1328, 0.5183])
+Estimated alpha is: tensor([[0.6330, 0.2662],
+        [0.2951, 0.6606]])
+Estimated parameters of the truncated Exponential kernel is: tensor([[1.0124, 0.8672],
+        [1.1679, 0.9891]])
 </pre></div>
 </div>
 <p>Here, we plot the values of the estimated kernels with FaDIn.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="p">,</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">=</span><span class="s1">&#39;truncated_exponential&#39;</span><span class="p">,</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a> <span class="o">=</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a><span class="p">,</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">=</span><span class="s1">&#39;truncated_exponential&#39;</span><span class="p">,</span>
                                      <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">)</span>
 <span class="n">kernel_values</span> <span class="o">=</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel</span></a><span class="o">.</span><span class="n">kernel_eval</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">,</span>
                                    <span class="n">discretization</span><span class="p">)</span>
@@ -10460,13 +10463,13 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0171, 0.
   plt.subplot(n_dim, n_dim, i*n_dim + j + 1)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (5 minutes 29.167 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 15.223 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-multivariate-fadin-py">
-<div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../_downloads/249f41bcacce2f11424e25d9f61ef920/plot_multivariate_fadin.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_multivariate_fadin.py</span></code></a></p>
-</div>
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/c2c3793a8a8967a373b4b8286a57e617/plot_multivariate_fadin.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_multivariate_fadin.ipynb</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/249f41bcacce2f11424e25d9f61ef920/plot_multivariate_fadin.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_multivariate_fadin.py</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
