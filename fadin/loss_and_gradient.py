@@ -326,7 +326,7 @@ def get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
     """
     n_dim, _, _ = kernel.shape
 
-    if n_dim > 1:
+    if n_dim > 2:
         cst1 = delta * baseline.view(n_dim, 1)
 
         dot_kernel = torch.einsum('njuv,knu->njkv', ztzG, kernel)
@@ -400,7 +400,7 @@ def get_grad_eta(zG, zN, ztzG, baseline, alpha, kernel,
     n_dim, _, L = kernel.shape
     grad_theta_ = torch.zeros(n_dim, n_dim)
 
-    if n_dim > 1:
+    if n_dim > 2:
 
         cst1 = 2 * alpha
         cst2 = delta * baseline.view(n_dim, 1) * cst1
@@ -427,7 +427,7 @@ def get_grad_eta(zG, zN, ztzG, baseline, alpha, kernel,
 
                     temp += cst2 * temp_.sum()
 
-            grad_theta_[m, n] += delta * temp
+                grad_theta_[m, n] += delta * temp
 
     grad_theta = grad_theta_ / n_events.sum()
 
