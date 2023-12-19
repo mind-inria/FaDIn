@@ -56,33 +56,39 @@ def test_squared_term_l2loss():
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
                                             kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete)
-    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
+    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events,
+                                          discrete)
     squared_conv_EXP = 2 * ((intens_EXP**2).sum(1) * 0.5 * delta).sum()
 
     term_1_EXP = end_time * squared_compensator_1(baseline)
     term_2_EXP = 2 * delta * squared_compensator_2(torch.tensor(zG),
                                                    baseline, alpha, kernel_EXP)
-    term_3_EXP = delta * squared_compensator_3(torch.tensor(ztzG), alpha, kernel_EXP)
+    term_3_EXP = delta * squared_compensator_3(torch.tensor(ztzG), alpha,
+                                               kernel_EXP)
 
     squared_precomp_EXP = term_1_EXP + term_2_EXP + term_3_EXP
 
     assert torch.isclose(squared_conv_EXP, squared_precomp_EXP)
 
-    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='truncated_gaussian')
+    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='truncated_gaussian')
     kernel_TG = model_TG.kernel_eval([m, sigma], discrete).double()
-    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events, discrete)
+    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events,
+                                        discrete)
     squared_conv_TG = 2 * ((intens_TG**2).sum(1) * 0.5 * delta).sum()
 
     term_1_TG = end_time * squared_compensator_1(baseline)
     term_2_TG = 2 * delta * squared_compensator_2(torch.tensor(zG),
                                                   baseline, alpha, kernel_TG)
-    term_3_TG = delta * squared_compensator_3(torch.tensor(ztzG), alpha, kernel_TG)
+    term_3_TG = delta * squared_compensator_3(torch.tensor(ztzG), alpha,
+                                              kernel_TG)
 
     squared_precomp_TG = term_1_TG + term_2_TG + term_3_TG
 
     assert torch.isclose(squared_conv_TG, squared_precomp_TG)
 
-    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
+    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='raised_cosine')
 
     kernel_RC = model_RC.kernel_eval([u, sigma], discrete).double()
     intens_RC = model_RC.intensity_eval(baseline, alpha.double(), [u, sigma],
@@ -92,7 +98,8 @@ def test_squared_term_l2loss():
     term_1_RC = end_time * squared_compensator_1(baseline)
     term_2_RC = 2 * delta * squared_compensator_2(torch.tensor(zG),
                                                   baseline, alpha, kernel_RC)
-    term_3_RC = delta * squared_compensator_3(torch.tensor(ztzG), alpha, kernel_RC)
+    term_3_RC = delta * squared_compensator_3(torch.tensor(ztzG), alpha,
+                                              kernel_RC)
 
     squared_precomp_RC = term_1_RC + term_2_RC + term_3_RC
 
@@ -116,33 +123,38 @@ def test_right_term_l2loss():
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
                                             kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete).double()
-    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
+    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events,
+                                          discrete)
     right_term_conv_EXP = 2 * (intens_EXP * events).sum()
 
     zN = get_zN(events.numpy(), n_discrete)
-    right_term_precomp_EXP = intens_events(torch.tensor(zN), baseline.float(), alpha,
-                                           kernel_EXP, n_events)
+    right_term_precomp_EXP = intens_events(torch.tensor(zN), baseline.float(),
+                                           alpha, kernel_EXP, n_events)
 
     assert torch.isclose(right_term_conv_EXP, 2 * right_term_precomp_EXP)
 
-    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2,  kernel='truncated_gaussian')
+    model_TG = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='truncated_gaussian')
     kernel_TG = model_TG.kernel_eval([m, sigma], discrete).double()
-    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events, discrete)
+    intens_TG = model_TG.intensity_eval(baseline, alpha, [m, sigma], events,
+                                        discrete)
     right_term_conv_TG = 2 * (intens_TG * events).sum()
 
     zN = get_zN(events.numpy(), n_discrete)
-    right_term_precomp_TG = intens_events(torch.tensor(zN), baseline.float(), alpha,
-                                          kernel_TG, n_events)
+    right_term_precomp_TG = intens_events(torch.tensor(zN), baseline.float(),
+                                          alpha, kernel_TG, n_events)
 
     assert torch.isclose(right_term_conv_TG, 2 * right_term_precomp_TG)
 
-    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
+    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='raised_cosine')
     kernel_RC = model_RC.kernel_eval([u, sigma], discrete).double()
-    intens_RC = model_RC.intensity_eval(baseline, alpha, [u, sigma], events, discrete)
+    intens_RC = model_RC.intensity_eval(baseline, alpha, [u, sigma], events,
+                                        discrete)
     right_term_conv_RC = 2 * (intens_RC * events).sum()
 
-    right_term_precomp_RC = intens_events(torch.tensor(zN), baseline.float(), alpha,
-                                          kernel_RC, n_events)
+    right_term_precomp_RC = intens_events(torch.tensor(zN), baseline.float(),
+                                          alpha, kernel_RC, n_events)
 
     assert torch.isclose(right_term_conv_RC, 2 * right_term_precomp_RC)
 
@@ -164,7 +176,8 @@ def test_l2loss():
     model_EXP = DiscreteKernelFiniteSupport(delta, n_dim=2,
                                             kernel='truncated_exponential')
     kernel_EXP = model_EXP.kernel_eval([decay], discrete)
-    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events, discrete)
+    intens_EXP = model_EXP.intensity_eval(baseline, alpha, [decay], events,
+                                          discrete)
     loss_conv_EXP = discrete_l2_loss_conv(intens_EXP, events, delta)
 
     zG = get_zG(events.numpy(), n_discrete)
@@ -180,9 +193,11 @@ def test_l2loss():
 
     assert torch.isclose(loss_conv_EXP, loss_precomp_EXP)
 
-    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
+    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='raised_cosine')
     kernel_RC = model_RC.kernel_eval([u, sigma], discrete).double()
-    intens_RC = model_RC.intensity_eval(baseline, alpha, [u, sigma], events, discrete)
+    intens_RC = model_RC.intensity_eval(baseline, alpha, [u, sigma], events,
+                                        discrete)
     loss_conv_RC = discrete_l2_loss_conv(intens_RC, events, delta)
 
     loss_precomp_RC = discrete_l2_loss_precomputation(torch.tensor(zG),
@@ -228,17 +243,20 @@ def test_gradients():
     loss_precomp_EXP = discrete_l2_loss_precomputation(torch.tensor(zG),
                                                        torch.tensor(zN),
                                                        torch.tensor(ztzG),
-                                                       baseline_.float(), alpha_,
+                                                       baseline_.float(),
+                                                       alpha_,
                                                        kernel_EXP, n_events,
                                                        delta, end_time)
     loss_precomp_EXP.backward()
 
-    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2, kernel='raised_cosine')
+    model_RC = DiscreteKernelFiniteSupport(delta, n_dim=2,
+                                           kernel='raised_cosine')
     kernel_RC = model_RC.kernel_eval([u_, sigma_], discrete).double()
     loss_precomp_RC = discrete_l2_loss_precomputation(torch.tensor(zG),
                                                       torch.tensor(zN),
                                                       torch.tensor(ztzG),
-                                                      baseline__.float(), alpha__,
+                                                      baseline__.float(),
+                                                      alpha__,
                                                       kernel_RC, n_events,
                                                       delta, end_time)
     loss_precomp_RC.backward()
@@ -301,8 +319,6 @@ def test_gradients():
 
     assert torch.allclose(sigma_.grad.float(), grad_eta_RC.float())
 
-
-test_gradients()
 
 """
 def test_optim_grad():
