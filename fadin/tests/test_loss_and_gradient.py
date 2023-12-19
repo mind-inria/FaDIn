@@ -262,8 +262,7 @@ def test_gradients():
                                     torch.tensor(ztzG),
                                     baseline, alpha,
                                     kernel_EXP.detach(), delta, n_events)
-
-    assert torch.allclose(alpha_.grad, grad_alpha_EXP)
+    assert torch.allclose(alpha_.grad.float(), grad_alpha_EXP.float())
 
     grad_alpha_RC = get_grad_alpha(torch.tensor(zG),
                                    torch.tensor(zN),
@@ -271,7 +270,7 @@ def test_gradients():
                                    baseline, alpha,
                                    kernel_RC.detach(), delta, n_events)
 
-    assert torch.allclose(alpha__.grad, grad_alpha_RC)
+    assert torch.allclose(alpha__.grad.float(), grad_alpha_RC.float())
 
     grad_kernel_EXP = model_EXP.grad_eval([decay], discrete)
     grad_eta_EXP = get_grad_eta(torch.tensor(zG),
@@ -281,7 +280,7 @@ def test_gradients():
                                 alpha, kernel_EXP,
                                 grad_kernel_EXP[0], delta, n_events)
 
-    assert torch.allclose(decay_.grad, grad_eta_EXP)
+    assert torch.allclose(decay_.grad.float(), grad_eta_EXP.float())
 
     grad_kernel_RC = model_RC.grad_eval([u, sigma], discrete)
     grad_eta_RC = get_grad_eta(torch.tensor(zG),
@@ -291,7 +290,7 @@ def test_gradients():
                                alpha, kernel_RC,
                                grad_kernel_RC[0].double(), delta, n_events)
 
-    assert torch.allclose(u_.grad, grad_eta_RC)
+    assert torch.allclose(u_.grad.float(), grad_eta_RC.float())
 
     grad_eta_RC = get_grad_eta(torch.tensor(zG),
                                torch.tensor(zN),
@@ -300,8 +299,10 @@ def test_gradients():
                                alpha, kernel_RC,
                                grad_kernel_RC[1].double(), delta, n_events)
 
-    assert torch.allclose(sigma_.grad, grad_eta_RC)
+    assert torch.allclose(sigma_.grad.float(), grad_eta_RC.float())
 
+
+test_gradients()
 
 """
 def test_optim_grad():
