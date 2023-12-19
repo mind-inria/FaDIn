@@ -489,7 +489,7 @@ def plot(solver, plotfig=True, title=None, ch_names=None, savefig=None):
     fig.suptitle(fig_title, size=25)
     fig.tight_layout()
     # Save figure
-    if savefig is not None: 
+    if savefig is not None:
         fig.savefig(savefig)
     # Plot figure
     if plotfig:
