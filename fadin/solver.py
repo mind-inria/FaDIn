@@ -1,5 +1,7 @@
 import torch
 import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 from fadin.utils.utils import optimizer, projected_grid
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
@@ -192,8 +194,10 @@ class FaDIn(object):
                 kernel_params_init.append(temp)
                 kernel_params_init.append(temp2)
             elif kernel == 'truncated_gaussian':
-                kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
-                kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
+                temp = 0.25 * self.W * torch.rand(self.n_dim, self.n_dim)
+                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
+                kernel_params_init.append(temp)
+                kernel_params_init.append(temp2)
             elif kernel == 'truncated_exponential':
                 kernel_params_init.append(2 * torch.rand(self.n_dim,
                                                          self.n_dim))
@@ -218,7 +222,7 @@ class FaDIn(object):
         if self.optimize_kernel:
             for i in range(self.n_kernel_params):
                 self.params_intens.append(
-                    kernel_params_init[i].float().requires_grad_(True))
+                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
 
         self.precomputations = precomputations
 
@@ -396,7 +400,8 @@ class FaDIn(object):
                 error_k = torch.abs(self.param_kernel[0, i + 1] -
                                     self.param_kernel[0, i]).max()
 
-                if error_b < self.tol and error_al < self.tol and error_k < self.tol:
+                if error_b < self.tol and error_al < self.tol \
+                   and error_k < self.tol:
                     print('early stopping at iteration:', i)
                     self.param_baseline = self.param_baseline[:i + 1]
                     self.param_alpha = self.param_alpha[:i + 1]
@@ -406,3 +411,88 @@ class FaDIn(object):
         print('iterations in ', time.time() - start)
 
         return self
+
+
+def plot(solver, plotfig=True, title=None, ch_names=None, savefig=None):
+    """
+    Plots estimated kernels and baselines of solver.
+    Should be called after calling the `fit` method on solver.
+
+    Parameters
+    ----------
+    solver: |`MarkedFaDin` or `FaDIn` solver.
+        `fit` method should be called on the solver before calling `plot`.
+
+    plotfig: bool (default `True`)
+    If set to `True`, the figure is plotted.
+
+    title: `str` or `None`, default=`None`
+        Title of the plot. If set to `None`, the title text is generic.
+
+    ch_names: list of `str` (default `None`)
+        Channel names for subplots. If set to `None`, will be set to
+        `np.arange(solver.n_dim).astype('str')`.
+    savefig: str or `None`, default=`None`
+        Path for saving the figure. If set to `None`, the figure is not saved.
+
+    Returns
+    -------
+    fig, ax : matplotlib.pyplot Figure
+        n_dim x n_dim subplots, where subplot of coordinates (i, j) shows the
+        kernel component $\alpha_{i, j}\phi_{i, j}$ and the baseline $\mu_i$
+        of the intensity function $\lambda_i$.
+
+    """
+    # Recover kernel time values and y values for kernel plot
+    discretization = torch.linspace(0, solver.W, 100)
+    kernel = DiscreteKernelFiniteSupport(solver.delta,
+                                         solver.n_dim,
+                                         kernel=solver.kernel,
+                                         kernel_length=solver.W)
+    kappa_values = kernel.kernel_eval(solver.params_intens[2:],
+                                      discretization).detach()
+    # Plot
+    if ch_names is None:
+        ch_names = np.arange(solver.n_dim).astype('str')
+        print('ch_names', ch_names)
+    fig, axs = plt.subplots(nrows=solver.n_dim,
+                            ncols=solver.n_dim,
+                            figsize=(4 * solver.n_dim, 4 * solver.n_dim),
+                            sharey=True,
+                            sharex=True,
+                            squeeze=False)
+    for i in range(solver.n_dim):
+        for j in range(solver.n_dim):
+            # Plot baseline
+            label = f'baseline {ch_names[i]} = {round(solver.baseline[i].item(), 2)}'
+            axs[i, j].hlines(y=solver.baseline[i].item(),
+                             xmin=0,
+                             xmax=solver.W,
+                             label=label,
+                             color='orange',
+                             linewidth=4)
+            # Plot kernel (i, j)
+            axs[i, j].plot(discretization[1:],
+                           solver.alpha[i, j].item() * kappa_values[i, j, 1:],
+                           label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
+                           linewidth=4)
+            # Handle text
+            axs[i, j].set_xlabel('Time', size=15)
+            axs[i, j].tick_params(axis='both', which='major', labelsize=15)
+            axs[i, j].set_title(f'{ch_names[j]}-> {ch_names[i]}', size=17)
+            axs[i, j].legend(fontsize='large')
+    # Plot title
+    if title is None:
+        fig_title = 'Hawkes influence ' + solver.kernel + ' kernel'
+    else:
+        fig_title = title
+    fig.suptitle(fig_title, size=25)
+    fig.tight_layout()
+    # Save figure
+    if savefig is not None: 
+        fig.savefig(savefig)
+    # Plot figure
+    if plotfig:
+        fig.show()
+
+    return fig, axs

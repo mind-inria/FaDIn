@@ -1,12 +1,12 @@
 import numpy as np
 
-
 ###############################################################################
 # General
 ###############################################################################
 
+
 def block_process_1d(a, blocksize):
-    """For a given array a, returns an array of same size b, 
+    """For a given array a, returns an array of same size b,
     constructed by keeping maximum values of a within blocks of given size.
 
     Parameters
@@ -137,7 +137,7 @@ def get_atoms_timestamps(acti, sfreq=None, info=None, threshold=0,
         or globally. Defaults to False.
 
     per_atom : bool
-        If True, the threshold as a percentage will be applied per atom, e.g., 
+        If True, the threshold as a percentage will be applied per atom, e.g.,
         threshold = 5 will remove 5% of the activation of each atom. If false,
         the thresholding will be applied to all the activations. Defaults to
         True.
