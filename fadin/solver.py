@@ -439,8 +439,8 @@ def plot(solver, plotfig=True, title=None, ch_names=None, savefig=None):
     -------
     fig, ax : matplotlib.pyplot Figure
         n_dim x n_dim subplots, where subplot of coordinates (i, j) shows the
-        kernel component $\alpha_{i, j}\phi_{i, j}$ and the baseline $\mu_i$
-        of the intensity function $\lambda_i$.
+        kernel component $\\alpha_{i, j}\\phi_{i, j}$ and the baseline $\\mu_i$
+        of the intensity function $\\lambda_i$.
 
     """
     # Recover kernel time values and y values for kernel plot
