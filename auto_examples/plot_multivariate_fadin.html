@@ -412,6 +412,69 @@ Simulate generation 152
 Simulate generation 153
 Simulate generation 154
 Simulate generation 155
+Simulate generation 156
+Simulate generation 157
+Simulate generation 158
+Simulate generation 159
+Simulate generation 160
+Simulate generation 161
+Simulate generation 162
+Simulate generation 163
+Simulate generation 164
+Simulate generation 165
+Simulate generation 166
+Simulate generation 167
+Simulate generation 168
+Simulate generation 169
+Simulate generation 170
+Simulate generation 171
+Simulate generation 172
+Simulate generation 173
+Simulate generation 174
+Simulate generation 175
+Simulate generation 176
+Simulate generation 177
+Simulate generation 178
+Simulate generation 179
+Simulate generation 180
+Simulate generation 181
+Simulate generation 182
+Simulate generation 183
+Simulate generation 184
+Simulate generation 185
+Simulate generation 186
+Simulate generation 187
+Simulate generation 188
+Simulate generation 189
+Simulate generation 190
+Simulate generation 191
+Simulate generation 192
+Simulate generation 193
+Simulate generation 194
+Simulate generation 195
+Simulate generation 196
+Simulate generation 197
+Simulate generation 198
+Simulate generation 199
+Simulate generation 200
+Simulate generation 201
+Simulate generation 202
+Simulate generation 203
+Simulate generation 204
+Simulate generation 205
+Simulate generation 206
+Simulate generation 207
+Simulate generation 208
+Simulate generation 209
+Simulate generation 210
+Simulate generation 211
+Simulate generation 212
+Simulate generation 213
+Simulate generation 214
+Simulate generation 215
+Simulate generation 216
+Simulate generation 217
+Simulate generation 218
 </pre></div>
 </div>
 <p>Here, we apply FaDIn.</p>
@@ -432,11 +495,12 @@ Simulate generation 155
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated baseline is:&#39;</span><span class="p">,</span> <span class="n">estimated_baseline</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated alpha is:&#39;</span><span class="p">,</span> <span class="n">estimated_alpha</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated parameters of the truncated Exponential kernel is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated parameters of the truncated Exponential kernel is:&#39;</span><span class="p">,</span>
+      <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 4007952
-precomput: 120.0796000957489
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 4023232
+precomput: 114.07208752632141
 Fitting model...   0.0%
 Fitting model...   0.0%
 Fitting model...   0.0%
@@ -10437,12 +10501,12 @@ Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
-iterations in  32.01005244255066
-Estimated baseline is: tensor([0.1268, 0.5219])
-Estimated alpha is: tensor([[0.6359, 0.2662],
-        [0.2959, 0.6588]])
-Estimated parameters of the truncated Exponential kernel is: tensor([[1.0099, 0.8725],
-        [1.1579, 0.9893]])
+iterations in  31.142353534698486
+Estimated baseline is: tensor([0.1319, 0.5154])
+Estimated alpha is: tensor([[0.6361, 0.2653],
+        [0.2946, 0.6613]])
+Estimated parameters of the truncated Exponential kernel is: tensor([[1.0112, 0.8780],
+        [1.1604, 0.9905]])
 </pre></div>
 </div>
 <p>Here, we plot the values of the estimated kernels with FaDIn.</p>
@@ -10469,11 +10533,11 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0099, 0.
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_plot_multivariate_fadin_001.png" srcset="../_images/sphx_glr_plot_multivariate_fadin_001.png" alt="Hawkes influence kernels" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/github/workspace/examples/plot_multivariate_fadin.py:83: MatplotlibDeprecationWarning: Auto-removal of overlapping axes is deprecated since 3.6 and will be removed two minor releases later; explicitly call ax.remove() as needed.
+<img src="../_images/sphx_glr_plot_multivariate_fadin_001.png" srcset="../_images/sphx_glr_plot_multivariate_fadin_001.png" alt="Hawkes influence kernels" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/github/workspace/examples/plot_multivariate_fadin.py:84: MatplotlibDeprecationWarning: Auto-removal of overlapping axes is deprecated since 3.6 and will be removed two minor releases later; explicitly call ax.remove() as needed.
   plt.subplot(n_dim, n_dim, i*n_dim + j + 1)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 35.368 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 28.988 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-multivariate-fadin-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/c2c3793a8a8967a373b4b8286a57e617/plot_multivariate_fadin.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_multivariate_fadin.ipynb</span></code></a></p>
@@ -10514,7 +10578,7 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0099, 0.
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2023-2023, Guillaume Staerman
+                Copyright &#169; 2023-2024, Guillaume Staerman
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             

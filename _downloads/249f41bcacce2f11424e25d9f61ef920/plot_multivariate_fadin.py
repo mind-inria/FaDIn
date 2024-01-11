@@ -67,7 +67,8 @@ param_kernel = [solver.param_kernel[0][-10:].mean(0)]
 
 print('Estimated baseline is:', estimated_baseline)
 print('Estimated alpha is:', estimated_alpha)
-print('Estimated parameters of the truncated Exponential kernel is:', param_kernel[0])
+print('Estimated parameters of the truncated Exponential kernel is:',
+      param_kernel[0])
 
 ###############################################################################
 # Here, we plot the values of the estimated kernels with FaDIn.
