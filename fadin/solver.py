@@ -1,8 +1,11 @@
 import torch
 import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 from fadin.utils.utils import optimizer, projected_grid
-from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, get_ztzG_approx
+from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
+    get_ztzG_approx
 from fadin.loss_and_gradient import discrete_l2_loss_precomputation, \
     discrete_l2_loss_conv, get_grad_baseline, get_grad_alpha, get_grad_eta, \
     discrete_ll_loss_conv
@@ -52,8 +55,21 @@ class FaDIn(object):
     baseline_init : `tensor`, shape (n_dim,)
         Initial baseline parameters of the intensity of the Hawkes process.
 
+    baseline_mask : `tensor` of shape (n_dim,), or `None`
+        Tensor of same shape as the baseline vector, with values in (0, 1).
+        `baseline` coordinates where `baseline_mask` is equal to 0
+        will stay constant equal to zero and not be optimized.
+        If set to `None`, all coordinates of baseline will be optimized.
+
     alpha_init : `tensor`, shape (n_dim, n_dim)
         Initial alpha parameters of the intensity of the Hawkes process.
+
+    alpha_mask : `tensor` of shape (n_dim, n_dim), or `None`
+        Tensor of same shape as the `alpha` tensor, with values in (0, 1).
+        `alpha` coordinates and kernel parameters where `alpha_mask` = 0
+        will not be optimized.
+        If set to `None`, all coordinates of alpha will be optimized,
+        and all kernel parameters will be optimized if optimize_kernel=`True`.
 
     kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
@@ -62,7 +78,7 @@ class FaDIn(object):
         Step size of the discretization grid.
 
     optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
-        The algorithms used to optimized the parameters of the Hawkes processes.
+        The algorithms used to optimize the Hawkes processes parameters.
 
     step_size : `float`, `default=1e-3`
         Learning rate of the chosen optimization algorithm.
@@ -79,9 +95,10 @@ class FaDIn(object):
         If precomputations is true, then FaDIn is computed.
 
     ztzG_approx : `boolean`, `default=True`
-        If ztzG_approx is false, compute the true ztzG precomputation constant that
-        is the computational bottleneck of FaDIn. if ztzG_approx is false,
-        ztzG is approximated with Toeplitz matrix not taking into account edge effects.
+        If ztzG_approx is false, compute the true ztzG precomputation constant
+        that is the computational bottleneck of FaDIn. if ztzG_approx is true,
+        ztzG is approximated with Toeplitz matrix not taking into account
+        edge effects.
 
     device : `str` in ``{'cpu' | 'cuda'}``
         Computations done on cpu or gpu. Gpu is not implemented yet.
@@ -124,11 +141,14 @@ class FaDIn(object):
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
 
-    def __init__(self, n_dim, kernel, kernel_params_init=None, baseline_init=None,
-                 alpha_init=None, kernel_length=1, delta=0.01, optim='RMSprop',
+    def __init__(self, n_dim, kernel, kernel_params_init=None,
+                 baseline_init=None, baseline_mask=None,
+                 alpha_init=None, alpha_mask=None,
+                 kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, optimize_kernel=True,
-                 precomputations=True, ztzG_approx=True, device='cpu', log=False,
-                 grad_kernel=None, criterion='l2', tol=10e-5, random_state=None):
+                 precomputations=True, ztzG_approx=True,
+                 device='cpu', log=False, grad_kernel=None, criterion='l2',
+                 tol=10e-5, random_state=None):
         # param discretisation
         self.delta = delta
         self.W = kernel_length
@@ -144,24 +164,40 @@ class FaDIn(object):
         # params model
         self.n_dim = n_dim
         if baseline_init is None:
-            self.baseline = torch.rand(self.n_dim).requires_grad_(True)
+            self.baseline = torch.rand(self.n_dim)
         else:
-            self.baseline = baseline_init.float().requires_grad_(True)
+            self.baseline = baseline_init.float()
+        if baseline_mask is None:
+            self.baseline_mask = torch.ones([n_dim])
+        else:
+            assert baseline_mask.shape == self.baseline.shape, \
+                "Invalid baseline_mask shape, must be (n_dim,)"
+            self.baseline_mask = baseline_mask
+        self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
         if alpha_init is None:
-            self.alpha = torch.rand(self.n_dim, self.n_dim).requires_grad_(True)
+            self.alpha = torch.rand(self.n_dim, self.n_dim)
         else:
-            self.alpha = alpha_init.float().requires_grad_(True)
+            self.alpha = alpha_init.float()
+        if alpha_mask is None:
+            self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
+        else:
+            assert alpha_mask.shape == self.alpha.shape, \
+                "Invalid alpha_mask shape, must be (n_dim, n_dim)"
+            self.alpha_mask = alpha_mask
+        self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
         if kernel_params_init is None:
             kernel_params_init = []
             if kernel == 'raised_cosine':
-                temp = torch.rand(self.n_dim, self.n_dim)
-                temp2 = torch.rand(self.n_dim, self.n_dim) * temp
+                temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
+                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
                 kernel_params_init.append(temp)
                 kernel_params_init.append(temp2)
             elif kernel == 'truncated_gaussian':
-                kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
-                kernel_params_init.append(torch.rand(self.n_dim, self.n_dim))
+                temp = 0.25 * self.W * torch.rand(self.n_dim, self.n_dim)
+                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
+                kernel_params_init.append(temp)
+                kernel_params_init.append(temp2)
             elif kernel == 'truncated_exponential':
                 kernel_params_init.append(2 * torch.rand(self.n_dim,
                                                          self.n_dim))
@@ -173,11 +209,12 @@ class FaDIn(object):
 
         self.n_kernel_params = len(kernel_params_init)
 
-        self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim, kernel,
+        self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
+                                                        kernel,
                                                         self.W, 0, self.W,
                                                         grad_kernel)
         self.kernel = kernel
-        # Set l'optimizer
+        # Set optimizer
         self.params_intens = [self.baseline, self.alpha]
 
         self.optimize_kernel = optimize_kernel
@@ -185,7 +222,7 @@ class FaDIn(object):
         if self.optimize_kernel:
             for i in range(self.n_kernel_params):
                 self.params_intens.append(
-                    kernel_params_init[i].float().requires_grad_(True))
+                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
 
         self.precomputations = precomputations
 
@@ -215,9 +252,10 @@ class FaDIn(object):
 
         Parameters
         ----------
-        events : list of array of size number of timestamps, size of the list is dim
+        events : list of array of size number of timestamps,
+        list size is self.n_dim.
 
-        end_time : float
+        end_time : int
             The end time of the Hawkes process.
 
         Returns
@@ -255,10 +293,12 @@ class FaDIn(object):
         self.v_loss = torch.zeros(self.max_iter)
 
         self.param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
-        self.param_alpha = torch.zeros(self.max_iter + 1, self.n_dim, self.n_dim)
-        self.param_kernel = torch.zeros(self.n_kernel_params, self.max_iter + 1,
+        self.param_alpha = torch.zeros(self.max_iter + 1,
+                                       self.n_dim,
+                                       self.n_dim)
+        self.param_kernel = torch.zeros(self.n_kernel_params,
+                                        self.max_iter + 1,
                                         self.n_dim, self.n_dim)
-
         self.param_baseline[0] = self.params_intens[0].detach()
         self.param_alpha[0] = self.params_intens[1].detach()
 
@@ -270,13 +310,16 @@ class FaDIn(object):
         ####################################################
         start = time.time()
         for i in range(self.max_iter):
-            print(f"Fitting model... {i/self.max_iter:6.1%}\r", end='', flush=True)
+            print(f"Fitting model... {i/self.max_iter:6.1%}\r", end='',
+                  flush=True)
 
             self.opt.zero_grad()
             if self.precomputations:
                 if self.optimize_kernel:
+                    # Update kernel
                     kernel = self.kernel_model.kernel_eval(self.params_intens[2:],
                                                            discretization)
+                    # print('kernel', kernel)
                     grad_theta = self.kernel_model.grad_eval(self.params_intens[2:],
                                                              discretization)
                 else:
@@ -291,13 +334,13 @@ class FaDIn(object):
                                                         kernel, n_events,
                                                         self.delta,
                                                         end_time).detach()
-
+                # Update baseline
                 self.params_intens[0].grad = get_grad_baseline(zG,
                                                                self.params_intens[0],
                                                                self.params_intens[1],
                                                                kernel, self.delta,
                                                                n_events, end_time)
-
+                # Update alpha
                 self.params_intens[1].grad = get_grad_alpha(zG,
                                                             zN,
                                                             ztzG,
@@ -334,8 +377,10 @@ class FaDIn(object):
             self.opt.step()
 
             # Save parameters
-            self.params_intens[0].data = self.params_intens[0].data.clip(1e-3)
-            self.params_intens[1].data = self.params_intens[1].data.clip(1e-3)
+            self.params_intens[0].data = self.params_intens[0].data.clip(0) * \
+                self.baseline_mask
+            self.params_intens[1].data = self.params_intens[1].data.clip(0) * \
+                self.alpha_mask
             self.param_baseline[i + 1] = self.params_intens[0].detach()
             self.param_alpha[i + 1] = self.params_intens[1].detach()
 
@@ -343,7 +388,7 @@ class FaDIn(object):
             if self.optimize_kernel:
                 for j in range(self.n_kernel_params):
                     self.params_intens[2 + j].data = \
-                        self.params_intens[2 + j].data.clip(1e-3)
+                        self.params_intens[2 + j].data.clip(0)
                     self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
 
             # Early stopping
@@ -355,7 +400,8 @@ class FaDIn(object):
                 error_k = torch.abs(self.param_kernel[0, i + 1] -
                                     self.param_kernel[0, i]).max()
 
-                if error_b < self.tol and error_al < self.tol and error_k < self.tol:
+                if error_b < self.tol and error_al < self.tol \
+                   and error_k < self.tol:
                     print('early stopping at iteration:', i)
                     self.param_baseline = self.param_baseline[:i + 1]
                     self.param_alpha = self.param_alpha[:i + 1]
@@ -365,3 +411,88 @@ class FaDIn(object):
         print('iterations in ', time.time() - start)
 
         return self
+
+
+def plot(solver, plotfig=True, title=None, ch_names=None, savefig=None):
+    """
+    Plots estimated kernels and baselines of solver.
+    Should be called after calling the `fit` method on solver.
+
+    Parameters
+    ----------
+    solver: |`MarkedFaDin` or `FaDIn` solver.
+        `fit` method should be called on the solver before calling `plot`.
+
+    plotfig: bool (default `True`)
+    If set to `True`, the figure is plotted.
+
+    title: `str` or `None`, default=`None`
+        Title of the plot. If set to `None`, the title text is generic.
+
+    ch_names: list of `str` (default `None`)
+        Channel names for subplots. If set to `None`, will be set to
+        `np.arange(solver.n_dim).astype('str')`.
+    savefig: str or `None`, default=`None`
+        Path for saving the figure. If set to `None`, the figure is not saved.
+
+    Returns
+    -------
+    fig, ax : matplotlib.pyplot Figure
+        n_dim x n_dim subplots, where subplot of coordinates (i, j) shows the
+        kernel component $\\alpha_{i, j}\\phi_{i, j}$ and the baseline $\\mu_i$
+        of the intensity function $\\lambda_i$.
+
+    """
+    # Recover kernel time values and y values for kernel plot
+    discretization = torch.linspace(0, solver.W, 100)
+    kernel = DiscreteKernelFiniteSupport(solver.delta,
+                                         solver.n_dim,
+                                         kernel=solver.kernel,
+                                         kernel_length=solver.W)
+    kappa_values = kernel.kernel_eval(solver.params_intens[2:],
+                                      discretization).detach()
+    # Plot
+    if ch_names is None:
+        ch_names = np.arange(solver.n_dim).astype('str')
+        print('ch_names', ch_names)
+    fig, axs = plt.subplots(nrows=solver.n_dim,
+                            ncols=solver.n_dim,
+                            figsize=(4 * solver.n_dim, 4 * solver.n_dim),
+                            sharey=True,
+                            sharex=True,
+                            squeeze=False)
+    for i in range(solver.n_dim):
+        for j in range(solver.n_dim):
+            # Plot baseline
+            label = f'baseline {ch_names[i]} = {round(solver.baseline[i].item(), 2)}'
+            axs[i, j].hlines(y=solver.baseline[i].item(),
+                             xmin=0,
+                             xmax=solver.W,
+                             label=label,
+                             color='orange',
+                             linewidth=4)
+            # Plot kernel (i, j)
+            axs[i, j].plot(discretization[1:],
+                           solver.alpha[i, j].item() * kappa_values[i, j, 1:],
+                           label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
+                           linewidth=4)
+            # Handle text
+            axs[i, j].set_xlabel('Time', size=15)
+            axs[i, j].tick_params(axis='both', which='major', labelsize=15)
+            axs[i, j].set_title(f'{ch_names[j]}-> {ch_names[i]}', size=17)
+            axs[i, j].legend(fontsize='large')
+    # Plot title
+    if title is None:
+        fig_title = 'Hawkes influence ' + solver.kernel + ' kernel'
+    else:
+        fig_title = title
+    fig.suptitle(fig_title, size=25)
+    fig.tight_layout()
+    # Save figure
+    if savefig is not None:
+        fig.savefig(savefig)
+    # Plot figure
+    if plotfig:
+        fig.show()
+
+    return fig, axs

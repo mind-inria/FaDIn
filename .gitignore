@@ -8,6 +8,7 @@ __pycache__/
 *.csv
 *.pdf
 *.png
+*.svg
 fadin/version.py
 
 # C extensions
