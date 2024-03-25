@@ -38,15 +38,15 @@ discretization = torch.linspace(0, kernel_length, L)
 
 baseline = np.array([.4])
 alpha = np.array([[0.8]])
-
+beta = 2.
 ###############################################################################
 # Here, we simulate the data.
 
 # standard parameter is beta, the parameter of the exponential distribution,
 # equal to one.
 kernel = 'expon'
-
-events = simu_hawkes_cluster(T, baseline, alpha, kernel)
+events = simu_hawkes_cluster(T, baseline, alpha, kernel,
+                             params_kernel={'scale': 1 / beta})
 
 ###############################################################################
 # Here, we apply FaDIn.
@@ -81,7 +81,7 @@ kernel_values = kernel.kernel_eval([torch.Tensor([param_kernel])],
 
 plt.plot(discretization[1:], kernel_values.squeeze()[1:]/kernel_length,
          label='FaDIn\' estimated kernel')
-plt.plot(discretization[1:], torch.exp(-discretization[1:]),
+plt.plot(discretization[1:], beta * torch.exp(-discretization[1:]*beta),
          label='True kernel', c='k')
 plt.title('Hawkes influence kernel', size=20)
 plt.xlabel('Time', size=20)
