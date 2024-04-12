@@ -458,7 +458,6 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None, savef
     # Plot
     if ch_names is None:
         ch_names = np.arange(solver.n_dim).astype('str')
-        print('ch_names', ch_names)
     fig, axs = plt.subplots(nrows=solver.n_dim,
                             ncols=solver.n_dim,
                             figsize=(4 * solver.n_dim, 4 * solver.n_dim),
@@ -469,27 +468,46 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None, savef
         for j in range(solver.n_dim):
             # Plot baseline
             label = rf'$\mu_{{{ch_names[i]}}}$={round(solver.baseline[i].item(), 2)}'
-            axs[i, j].hlines(y=solver.baseline[i].item(),
-                             xmin=0,
-                             xmax=solver.W,
-                             label=label,
-                             color='orange',
-                             linewidth=4
-                             )
+            axs[i, j].hlines(
+                y=solver.baseline[i].item(),
+                xmin=0,
+                xmax=solver.W,
+                label=label,
+                color='orange',
+                linewidth=4
+            )
             if bl_noise:
-                label = rf'$\tilde{{\mu}}_{{{ch_names[i]}}}$={round(solver.baseline_noise[i].item(), 2)}'
-                axs[i, j].hlines(y=solver.baseline_noise[i].item(),
-                                 xmin=0,
-                                 xmax=solver.W,
-                                 label=label,
-                                 color='green',
-                                 linewidth=4
-                                 )
+                # Plot noise baseline
+                mutilde = round(solver.baseline_noise[i].item(), 2)
+                label = rf'$\tilde{{\mu}}_{{{ch_names[i]}}}$={mutilde}'
+                axs[i, j].hlines(
+                    y=solver.baseline_noise[i].item(),
+                    xmin=0,
+                    xmax=solver.W,
+                    label=label,
+                    color='green',
+                    linewidth=4
+                )
             # Plot kernel (i, j)
-            axs[i, j].plot(discretization[1:],
-                           solver.alpha[i, j].item() * kappa_values[i, j, 1:],
-                           label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
-                           linewidth=4)
+            phi_values = solver.alpha[i, j].item() * kappa_values[i, j, 1:]
+            axs[i, j].plot(
+                discretization[1:],
+                phi_values,
+                label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
+                linewidth=4
+            )
+            if solver.kernel == 'truncated_gaussian':
+                # Plot mean of gaussian kernel
+                mean = round(solver.params_intens[-2][i, j].item(), 2)
+                axs[i, j].vlines(
+                    x=mean,
+                    ymin=0,
+                    ymax=torch.max(phi_values).item(),
+                    label=rf'mean={mean}',
+                    color='pink',
+                    linestyles='dashed',
+                    linewidth=3,
+                )
             # Handle text
             axs[i, j].set_xlabel('Time', size='x-large')
             axs[i, j].tick_params(
@@ -501,7 +519,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None, savef
                 f'{ch_names[j]}-> {ch_names[i]}',
                 size='x-large'
             )
-            axs[i, j].legend(fontsize='large')
+            axs[i, j].legend(fontsize='large', loc='best')
     # Plot title
     if title is None:
         fig_title = 'Hawkes influence ' + solver.kernel + ' kernel'
