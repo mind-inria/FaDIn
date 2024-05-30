@@ -96,7 +96,7 @@ def projected_grid(events, grid_step, n_grid):
     if 'mark' in events.columns:
         events = events.groupby(['type', 'time_g'])['mark'].sum()
     else:
-        events = events.groupby(['type', 'time_g']).count()
+        events = events.groupby(['type', 'time_g']).size()
 
     # Make sure the resulting DataFrame has the right columns
     events.name = "mark_sum"
