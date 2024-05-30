@@ -17,12 +17,18 @@ def to_pandas(events):
 
     return pd.DataFrame({
         'time': np.concatenate(events),
-        'type': np.concatenate([[i] * len(events[i]) for i in range(n_dim)])
+        'type': np.concatenate([
+            [i] * len(evi) for i, evi in enumerate(events)
+        ])
     })
 
 
 def from_pandas(events):
-    return [events.query("type == @i") for i in events['type'].unique()]
+    assert 'mark' not in events.columns
+    return [
+        events.query("type == @i")['time'].values
+        for i in events['type'].unique()
+    ]
 
 
 def check_random_state(seed):
@@ -297,8 +303,9 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     immigrants = simu_multi_poisson(end_time, baseline,
                                     upper_bound=upper_bound,
                                     random_state=random_state)
+    immigrants = from_pandas(immigrants)
     gen = dict(gen0=immigrants)
-    events = from_pandas(immigrants)
+    events = immigrants.copy()
 
     it = 0
     while len(gen[f'gen{it}']):
@@ -333,7 +340,6 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
 
         it += 1
 
-
     return to_pandas(events)
 
 
@@ -363,8 +369,8 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
     kernel: str
         The choice of the kernel for the simulation.
         Kernel available are probability distribution from scipy.stats module.
-        Note that this function will automatically convert the scipy kernel to a
-        finite support kernel of size 'kernel_length'.
+        Note that this function will automatically convert the scipy kernel to
+        a finite support kernel of size 'kernel_length'.
 
     kernel_length: int
         Length of kernels in the Hawkes process.
