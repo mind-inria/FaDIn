@@ -9,22 +9,22 @@ from fadin.kernels import DiscreteKernelFiniteSupport
 
 # %% Function
 def maskedsolver(events, T, kernel, max_iter=1000, ztzG_approx=False,
-                 baseline_mask=None, baseline_init=None,
-                 alpha_mask=None, alpha_init=None,
+                 baseline_mask=None, init='random', alpha_mask=None,
                  random_state=0):
-    solver = FaDIn(n_dim=n_dim,
-                   kernel=kernel,
-                   baseline_mask=baseline_mask,
-                   baseline_init=baseline_init,
-                   alpha_init=alpha_init,
-                   alpha_mask=alpha_mask,
-                   kernel_length=kernel_length,
-                   delta=dt, optim="RMSprop",
-                   params_optim=params_optim,
-                   max_iter=max_iter, criterion='l2',
-                   ztzG_approx=ztzG_approx,
-                   random_state=random_state
-                   )
+    solver = FaDIn(
+        n_dim=n_dim,
+        kernel=kernel,
+        baseline_mask=baseline_mask,
+        init=init,
+        alpha_mask=alpha_mask,
+        kernel_length=kernel_length,
+        delta=dt, optim="RMSprop",
+        params_optim=params_optim,
+        max_iter=max_iter,
+        criterion='l2',
+        ztzG_approx=ztzG_approx,
+        random_state=random_state
+    )
     solver.fit(events, T)
     estimated_baseline = solver.params_intens[0]
     estimated_alpha = solver.params_intens[1]
@@ -57,8 +57,12 @@ size_grid = int(T / dt) + 1
 discretization = torch.linspace(0, kernel_length, L)
 baseline_mask = torch.Tensor([0, 0])
 alpha_mask = torch.Tensor([[0, 0], [1, 0]])
-alpha_init = torch.Tensor([[0.2, 0.4], [0.7, 0.9]])
-baseline_init = torch.Tensor([0.7, 0.4])
+init1 = {
+    'alpha': torch.Tensor([[0.2, 0.4], [0.7, 0.9]]),
+    'baseline': torch.Tensor([0.7, 0.4]),
+    'kernel': None
+}
+init2 = 'random'
 max_iter = 5000
 ztzG_approx = True
 params_optim = {'lr': 1e-3}
@@ -75,14 +79,16 @@ def test_exp_mask():
                                  random_state=simu_random_state)
 
     # Fit Hawkes process to exponential simulation
-    exp_bl, exp_alpha = maskedsolver(kernel='truncated_exponential',
-                                     events=events, T=T,
-                                     baseline_mask=baseline_mask,
-                                     alpha_mask=alpha_mask,
-                                     baseline_init=baseline_init,
-                                     alpha_init=alpha_init,
-                                     ztzG_approx=ztzG_approx,
-                                     random_state=simu_random_state)
+    for init in [init1, init2]:
+        exp_bl, exp_alpha = maskedsolver(
+            kernel='truncated_exponential',
+            events=events, T=T,
+            baseline_mask=baseline_mask,
+            alpha_mask=alpha_mask,
+            init=init,
+            ztzG_approx=ztzG_approx,
+            random_state=simu_random_state
+        )
     assert torch.allclose(exp_bl, torch.Tensor([0., 0.]))
     assert torch.allclose(exp_alpha * torch.Tensor([[1., 1.], [0., 1.]]),
                           torch.zeros(2, 2))
@@ -105,14 +111,17 @@ def test_rc_mask():
                                     random_state=simu_random_state)
 
     # %% Fit Hawkes process to raised_cosine simulation
-    rc_bl, rc_alpha = maskedsolver(kernel='raised_cosine', events=events_rc,
-                                   T=T,
-                                   baseline_mask=baseline_mask,
-                                   alpha_mask=alpha_mask,
-                                   baseline_init=baseline_init,
-                                   alpha_init=alpha_init,
-                                   ztzG_approx=ztzG_approx,
-                                   random_state=simu_random_state)
+    for init in [init1, init2]:
+        rc_bl, rc_alpha = maskedsolver(
+            kernel='raised_cosine',
+            events=events_rc,
+            T=T,
+            baseline_mask=baseline_mask,
+            alpha_mask=alpha_mask,
+            init=init,
+            ztzG_approx=ztzG_approx,
+            random_state=simu_random_state
+        )
     assert torch.allclose(rc_bl, torch.Tensor([0., 0.]))
     assert torch.allclose(rc_alpha * torch.Tensor([[1., 1.], [0., 1.]]),
                           torch.zeros(2, 2))

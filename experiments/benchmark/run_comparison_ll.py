@@ -56,14 +56,17 @@ def simulate_data(baseline, alpha, kernel_params,
 
 
 def run_solver(criterion, events, kernel_params_init,
-               baseline_init, alpha_init, T, dt, seed=0, kernel='raised_cosine'):
-    k_params_init = [torch.tensor(a) for a in kernel_params_init]
+               baseline_init, alpha_init, T, dt, seed=0,
+               kernel='raised_cosine'):
     max_iter = 2000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(a) for a in kernel_params_init]
+    }
     solver = FaDIn(1,
                    kernel,
-                   k_params_init,
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    delta=dt,
                    optim="RMSprop",
                    step_size=1e-3,

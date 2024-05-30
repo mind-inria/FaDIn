@@ -35,7 +35,8 @@ size_grid = int(T / dt) + 1
 discretization = torch.linspace(0, kernel_length, L)
 
 ###############################################################################
-# Here, we set the parameters of a Hawkes process with a Exponential(1) distributions.
+# Here, we set the parameters of a Hawkes process with a Exponential(1)
+# distribution.
 
 baseline = np.array([.1, .5])
 alpha = np.array([[0.6, 0.3], [0.25, 0.7]])

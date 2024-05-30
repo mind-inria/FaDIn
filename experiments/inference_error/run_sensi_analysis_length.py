@@ -69,11 +69,14 @@ def run_solver(events, decay_init, baseline_init,
                alpha_init, kernel_length, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(decay_init)]
+    }
     solver = FaDIn(1,
                    "truncated_exponential",
-                   [torch.tensor(decay_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    kernel_length=kernel_length,
                    delta=dt, optim="RMSprop",
                    step_size=1e-3, max_iter=max_iter

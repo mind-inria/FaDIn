@@ -48,13 +48,14 @@ class FaDIn(object):
     kernel : `str` or `callable`
         Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
-    TODO: ADD MOMENT MATCHING TO FADIN
-    init: dict default={'strategy': 'random'}
+
+    init: `str` or `dict`, default='random'
         Initialization strategy of the parameters of the Hawkes process.
-        Must contain key 'strategy' in
-        ``{'random' | 'moment_matching', 'given'}``.
-        If 'strategy' is set to 'custom', the dictionary must contain the
-        following keys:
+        If set to 'random', the parameters are initialized randomly.
+        If set to 'moment_matching', the parameters are initialized
+        using the moment matching method.
+        Otherwise, the parameters are initialized using the given dictionary,
+        , which must contain the following keys:
         - 'baseline': `tensor` or `None`, shape (n_dim,): Initial baseline
         - 'alpha': `tensor` or `None`, shape (n_dim, n_dim): Initial alpha
         - 'kernel': `list` of tensor or `None`: Initial kernel parameters
@@ -140,7 +141,7 @@ class FaDIn(object):
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
 
-    def __init__(self, n_dim, kernel, init={'strategy': 'random'},
+    def __init__(self, n_dim, kernel, init='random',
                  baseline_mask=None,
                  alpha_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
@@ -163,9 +164,9 @@ class FaDIn(object):
         # params model
         self.n_dim = n_dim
 
-        if init['strategy'] in ['random', 'moment_matching']:
+        if init in ['random', 'moment_matching'] or init['baseline'] is None:
             self.baseline = torch.rand(self.n_dim)
-        elif init['strategy'] == 'given':
+        else:
             self.baseline = init['baseline'].float()
         if baseline_mask is None:
             self.baseline_mask = torch.ones([n_dim])
@@ -175,9 +176,9 @@ class FaDIn(object):
             self.baseline_mask = baseline_mask
         self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
 
-        if init['strategy'] in ['random', 'moment_matching']:
+        if init in ['random', 'moment_matching'] or init['alpha'] is None:
             self.alpha = torch.rand(self.n_dim, self.n_dim)
-        elif init['strategy'] == 'given':
+        else:
             self.alpha = init['alpha'].float()
         if alpha_mask is None:
             self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
@@ -187,10 +188,7 @@ class FaDIn(object):
             self.alpha_mask = alpha_mask
         self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
-        if init['strategy'] == 'given':
-            kernel_params_init = init['kernel']
-
-        elif init['strategy'] in ['random', 'custom']:
+        if init in ['random', 'moment_matching'] or init['kernel'] is None:
             kernel_params_init = []
             if kernel == 'raised_cosine':
                 temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
@@ -208,6 +206,8 @@ class FaDIn(object):
             else:
                 raise NotImplementedError('kernel initial parameters of not \
                                            implemented kernel have to be given')
+        elif init['kernel'] is None:
+            kernel_params_init = init['kernel']
 
         self.kernel_params_fixed = kernel_params_init
 

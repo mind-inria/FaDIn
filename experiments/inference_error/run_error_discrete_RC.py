@@ -62,12 +62,14 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
+    }
     solver = FaDIn(2,
                    "raised_cosine",
-                   [torch.tensor(u_init),
-                    torch.tensor(sigma_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    delta=dt,
                    optim="RMSprop",
                    step_size=1e-3,

@@ -58,27 +58,29 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 
 @mem.cache
 def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
-
     max_iter = 800
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
+    }
     solver_autodiff = FaDIn(1,
                             "raised_cosine",
-                            [torch.tensor(u_init),
-                             torch.tensor(sigma_init)],
-                            torch.tensor(baseline_init),
-                            torch.tensor(alpha_init),
+                            init=init,
                             delta=dt, optim="RMSprop",
                             step_size=1e-3, max_iter=max_iter,
                             precomputations=False, random_state=0)
     start_autodiff = time.time()
     solver_autodiff.fit(events, T)
     time_autodiff = time.time() - start_autodiff
-
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
+    }
     solver_FaDIn = FaDIn(1,
                          "raised_cosine",
-                         [torch.tensor(u_init),
-                          torch.tensor(sigma_init)],
-                         torch.tensor(baseline_init),
-                         torch.tensor(alpha_init),
+                         init=init,
                          delta=dt, optim="RMSprop",
                          step_size=1e-3, max_iter=max_iter,
                          precomputations=True, random_state=0)

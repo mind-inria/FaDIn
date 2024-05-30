@@ -53,15 +53,17 @@ def run_solver(events, u_init, sigma_init, baseline_init,
                alpha_init, kernel_length, dt, T, seed=0):
     start = time.time()
     max_iter = 10000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
+    }
     solver = FaDIn(1,
                    "kumaraswamy",
-                   [torch.tensor(u_init),
-                    torch.tensor(sigma_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    kernel_length=kernel_length,
                    delta=dt, optim="RMSprop",
-                   max_iter=max_iter, criterion='l2'
+                   max_iter=max_iter, criterion='l2',
                    )
 
     print(time.time() - start)
