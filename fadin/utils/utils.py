@@ -68,16 +68,46 @@ def check_params(list_params, number_params):
 
 def projected_grid(events, grid_step, n_grid):
     """Project the events on the defined grid.
+
+    Parameters
+    ----------
+    events : pd.DataFrame
+        The events to infer the Hawkes Process's parameters.
+        The event should be formatted as a pd.DataFrame, with columns:
+            - `'time'` or index: to represent the time of the event.
+            - `'type'`: to annotate which event type the event belongs to.
+            - `'mark'` (optional): to represent the mark of the event.
+
+    grid_step : float
+        The step of the grid.
+
+    n_grid : int
+        The number of grid points.
+
+    Returns
+    -------
+    events_grid : torch.Tensor
+        The events projected on the grid.
     """
-    n_dim = len(events)
-    # size_discret = int(1 / grid_step)
+    # compute time of the event on the grid
+    events['time_g'] = (events['time'] / grid_step).round().astype(int)
+
+    # Compute sum of the marks, or number of events at each time in the grid
+    if 'mark' in events.columns:
+        events = events.groupby(['type', 'time_g'])['mark'].sum()
+    else:
+        events = events.groupby(['type', 'time_g']).count()
+
+    # Make sure the resulting DataFrame has the right columns
+    events.name = "mark_sum"
+    events = events.reset_index()
+
+    # Initialize the grid and fill it with events
+    n_dim = events['type'].nunique()
     events_grid = torch.zeros(n_dim, n_grid)
-    for i in range(n_dim):
-        ei_torch = torch.tensor(events[i])
-        temp = torch.round(ei_torch / grid_step).long() # * grid_step
-        # temp2 = torch.round(temp * size_discret)
-        idx, data = np.unique(temp, return_counts=True)
-        events_grid[i, idx] += torch.tensor(data)
+
+    i, idx = events['type'].values, events['time_g'].values
+    events_grid[i, idx] += torch.tensor(events["mark_sum"])
 
     return events_grid
 
