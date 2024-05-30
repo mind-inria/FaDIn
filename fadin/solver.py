@@ -48,28 +48,31 @@ class FaDIn(object):
     kernel : `str` or `callable`
         Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
+    TODO: ADD MOMENT MATCHING TO FADIN
+    init: dict default={'strategy': 'random'}
+        Initialization strategy of the parameters of the Hawkes process.
+        Must contain key 'strategy' in
+        ``{'random' | 'moment_matching', 'given'}``.
+        If 'strategy' is set to 'custom', the dictionary must contain the
+        following keys:
+        - 'baseline': `tensor` or `None`, shape (n_dim,): Initial baseline
+        - 'alpha': `tensor` or `None`, shape (n_dim, n_dim): Initial alpha
+        - 'kernel': `list` of tensor or `None`: Initial kernel parameters
+        Note that when one of 'baseline', 'alpha', or 'kernel' is set to None,
+        the corresponding parameters are initialized randomly.
 
-    kernel_params_init : `list` of tensor of shape (n_dim, n_dim)
-        Initial parameters of the kernel.
-
-    baseline_init : `tensor`, shape (n_dim,)
-        Initial baseline parameters of the intensity of the Hawkes process.
-
+    TODO: CONDENSE IN MASK PARAMETERS
     baseline_mask : `tensor` of shape (n_dim,), or `None`
         Tensor of same shape as the baseline vector, with values in (0, 1).
         `baseline` coordinates where `baseline_mask` is equal to 0
         will stay constant equal to zero and not be optimized.
         If set to `None`, all coordinates of baseline will be optimized.
-
-    alpha_init : `tensor`, shape (n_dim, n_dim)
-        Initial alpha parameters of the intensity of the Hawkes process.
-
     alpha_mask : `tensor` of shape (n_dim, n_dim), or `None`
         Tensor of same shape as the `alpha` tensor, with values in (0, 1).
         `alpha` coordinates and kernel parameters where `alpha_mask` = 0
         will not be optimized.
         If set to `None`, all coordinates of alpha will be optimized,
-        and all kernel parameters will be optimized if optimize_kernel=`True`.
+        and all kernel parameters will be optimized.
 
     kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
@@ -85,10 +88,6 @@ class FaDIn(object):
 
     max_iter : `int`, `default=1000`
         Maximum number of iterations during fit.
-
-    optimize_kernel : `boolean`, `default=True`
-        If optimize_kernel is false, kernel parameters are not optimized
-        and only the baseline and alpha are optimized.
 
     precomputations : `boolean`, `default=True`
         If precomputations is false, pytorch autodiff is applied on the loss.
@@ -141,11 +140,11 @@ class FaDIn(object):
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
 
-    def __init__(self, n_dim, kernel, kernel_params_init=None,
-                 baseline_init=None, baseline_mask=None,
-                 alpha_init=None, alpha_mask=None,
+    def __init__(self, n_dim, kernel, init={'strategy': 'random'},
+                 baseline_mask=None,
+                 alpha_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
-                 params_optim=dict(), max_iter=2000, optimize_kernel=True,
+                 params_optim=dict(), max_iter=2000,
                  precomputations=True, ztzG_approx=True,
                  device='cpu', log=False, grad_kernel=None, criterion='l2',
                  tol=10e-5, random_state=None):
@@ -163,10 +162,11 @@ class FaDIn(object):
 
         # params model
         self.n_dim = n_dim
-        if baseline_init is None:
+
+        if init['strategy'] in ['random', 'moment_matching']:
             self.baseline = torch.rand(self.n_dim)
-        else:
-            self.baseline = baseline_init.float()
+        elif init['strategy'] == 'given':
+            self.baseline = init['baseline'].float()
         if baseline_mask is None:
             self.baseline_mask = torch.ones([n_dim])
         else:
@@ -174,10 +174,11 @@ class FaDIn(object):
                 "Invalid baseline_mask shape, must be (n_dim,)"
             self.baseline_mask = baseline_mask
         self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
-        if alpha_init is None:
+
+        if init['strategy'] in ['random', 'moment_matching']:
             self.alpha = torch.rand(self.n_dim, self.n_dim)
-        else:
-            self.alpha = alpha_init.float()
+        elif init['strategy'] == 'given':
+            self.alpha = init['alpha'].float()
         if alpha_mask is None:
             self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
         else:
@@ -186,7 +187,10 @@ class FaDIn(object):
             self.alpha_mask = alpha_mask
         self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
-        if kernel_params_init is None:
+        if init['strategy'] == 'given':
+            kernel_params_init = init['kernel']
+
+        elif init['strategy'] in ['random', 'custom']:
             kernel_params_init = []
             if kernel == 'raised_cosine':
                 temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
@@ -217,12 +221,9 @@ class FaDIn(object):
         # Set optimizer
         self.params_intens = [self.baseline, self.alpha]
 
-        self.optimize_kernel = optimize_kernel
-
-        if self.optimize_kernel:
-            for i in range(self.n_kernel_params):
-                self.params_intens.append(
-                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
+        for i in range(self.n_kernel_params):
+            self.params_intens.append(
+                kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
 
         self.precomputations = precomputations
 
@@ -302,10 +303,8 @@ class FaDIn(object):
         self.param_baseline[0] = self.params_intens[0].detach()
         self.param_alpha[0] = self.params_intens[1].detach()
 
-        # If kernel parameters are optimized
-        if self.optimize_kernel:
-            for i in range(self.n_kernel_params):
-                self.param_kernel[i, 0] = self.params_intens[2 + i].detach()
+        for i in range(self.n_kernel_params):
+            self.param_kernel[i, 0] = self.params_intens[2 + i].detach()
 
         ####################################################
         start = time.time()
@@ -315,16 +314,15 @@ class FaDIn(object):
 
             self.opt.zero_grad()
             if self.precomputations:
-                if self.optimize_kernel:
-                    # Update kernel
-                    kernel = self.kernel_model.kernel_eval(self.params_intens[2:],
-                                                           discretization)
-                    # print('kernel', kernel)
-                    grad_theta = self.kernel_model.grad_eval(self.params_intens[2:],
-                                                             discretization)
-                else:
-                    kernel = self.kernel_model.kernel_eval(self.kernel_params_fixed,
-                                                           discretization)
+                # Compute kernel and gradient
+                kernel = self.kernel_model.kernel_eval(
+                    self.params_intens[2:],
+                    discretization
+                )
+                grad_theta = self.kernel_model.grad_eval(
+                    self.params_intens[2:],
+                    discretization
+                )
 
                 if self.log:
                     self.v_loss[i] = \
@@ -349,18 +347,20 @@ class FaDIn(object):
                                                             kernel,
                                                             self.delta,
                                                             n_events)
-                if self.optimize_kernel:
-                    for j in range(self.n_kernel_params):
-                        self.params_intens[2 + j].grad = \
-                            get_grad_eta(zG,
-                                         zN,
-                                         ztzG,
-                                         self.params_intens[0],
-                                         self.params_intens[1],
-                                         kernel,
-                                         grad_theta[j],
-                                         self.delta,
-                                         n_events)
+                # Update kernel
+                for j in range(self.n_kernel_params):
+                    self.params_intens[2 + j].grad = \
+                        get_grad_eta(
+                            zG,
+                            zN,
+                            ztzG,
+                            self.params_intens[0],
+                            self.params_intens[1],
+                            kernel,
+                            grad_theta[j],
+                            self.delta,
+                            n_events
+                        )
 
             else:
                 intens = self.kernel_model.intensity_eval(self.params_intens[0],
@@ -383,13 +383,10 @@ class FaDIn(object):
                 self.alpha_mask
             self.param_baseline[i + 1] = self.params_intens[0].detach()
             self.param_alpha[i + 1] = self.params_intens[1].detach()
-
-            # If kernel parameters are optimized
-            if self.optimize_kernel:
-                for j in range(self.n_kernel_params):
-                    self.params_intens[2 + j].data = \
-                        self.params_intens[2 + j].data.clip(0)
-                    self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
+            for j in range(self.n_kernel_params):
+                self.params_intens[2 + j].data = \
+                    self.params_intens[2 + j].data.clip(0)
+                self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:
