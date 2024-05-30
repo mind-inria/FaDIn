@@ -1,14 +1,34 @@
 import numpy as np
-from scipy.optimize import minimize_scalar
-from scipy.interpolate import interp1d
-from scipy.integrate import simps
-import scipy.stats as stats
+import pandas as pd
+
+import scipy
+from scipy import stats
 
 
 def find_max(intensity_function, duration):
     """Find the maximum intensity of a function."""
-    res = minimize_scalar(lambda x: -intensity_function(x), bounds=(0, duration))
+    res = scipy.optimize.minimize_scalar(
+        lambda x: -intensity_function(x), bounds=(0, duration)
+    )
     return -res.fun
+
+
+def to_pandas(events):
+
+    return pd.DataFrame({
+        'time': np.concatenate(events),
+        'type': np.concatenate([
+            [i] * len(evi) for i, evi in enumerate(events)
+        ])
+    })
+
+
+def from_pandas(events):
+    assert 'mark' not in events.columns
+    return [
+        events.query("type == @i")['time'].values
+        for i in events['type'].unique()
+    ]
 
 
 def check_random_state(seed):
@@ -84,7 +104,7 @@ class custom_distribution(stats.rv_continuous):
     # function to normalise the pdf over chosen domain
 
     def normalisation(self, x):
-        return simps(self.pdf(x), x)
+        return scipy.integrate.simps(self.pdf(x), x)
 
     def create_cdf_ppf(self):
         # define normalization support with the given kernel length
@@ -98,8 +118,10 @@ class custom_distribution(stats.rv_continuous):
         # make sure cdf bounded on [0,1]
         my_cdf = my_cdf / my_cdf[-1]
         # create cdf and ppf
-        func_cdf = interp1d(discrete_time, my_cdf)
-        func_ppf = interp1d(my_cdf, discrete_time, fill_value='extrapolate')
+        func_cdf = scipy.interpolate.interp1d(discrete_time, my_cdf)
+        func_ppf = scipy.interpolate.interp1d(
+            my_cdf, discrete_time, fill_value='extrapolate'
+        )
         return func_cdf, func_ppf
 
     # pdf function for averaged normals
@@ -151,7 +173,7 @@ def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
         assert isinstance(intensity, (int, float))
         n_events = rng.poisson(lam=intensity*end_time, size=1)
         events = np.sort(rng.uniform(0, end_time, size=n_events))
-        return events
+        return to_pandas(events)
 
     if upper_bound is None:
         upper_bound = find_max(intensity, end_time)
@@ -164,7 +186,7 @@ def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
     # ogata's thinning algorithm
     accepted = intensity(ev_x) > ev_y
     events = np.sort(ev_x[accepted])
-    return events
+    return to_pandas(events)
 
 
 def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None):
@@ -206,7 +228,7 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
         for i in range(n_dim):
             evs = np.sort(rng.uniform(0, end_time, size=n_events[i]))
             events.append(evs)
-        return events
+        return to_pandas(events)
 
     if upper_bound is None:
         upper_bound = np.zeros(n_dim)
@@ -221,7 +243,7 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
 
         events.append(np.sort(ev_xi[accepted_i]))
 
-    return events
+    return to_pandas(events)
 
 
 def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
@@ -281,6 +303,7 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     immigrants = simu_multi_poisson(end_time, baseline,
                                     upper_bound=upper_bound,
                                     random_state=random_state)
+    immigrants = from_pandas(immigrants)
     gen = dict(gen0=immigrants)
     events = immigrants.copy()
 
@@ -317,7 +340,7 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
 
         it += 1
 
-    return events
+    return to_pandas(events)
 
 
 def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
@@ -346,8 +369,8 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
     kernel: str
         The choice of the kernel for the simulation.
         Kernel available are probability distribution from scipy.stats module.
-        Note that this function will automatically convert the scipy kernel to a
-        finite support kernel of size 'kernel_length'.
+        Note that this function will automatically convert the scipy kernel to
+        a finite support kernel of size 'kernel_length'.
 
     kernel_length: int
         Length of kernels in the Hawkes process.
@@ -402,89 +425,4 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
             del events[i][-1]
         events[i] = np.array(events[i])
 
-    return events
-
-
-# def simu_hawkes(end_time, baseline, alpha, kernel, upper_bound=None,
-#                 random_state=None):
-#     """ Simulate a Hawkes process following an immigration-birth procedure.
-#         Edge effects may be reduced according to the second references below.
-
-#     References:
-
-#     Møller, J., & Rasmussen, J. G. (2006). Approximate simulation of Hawkes processes.
-#     Methodology and Computing in Applied Probability, 8, 53-64.
-
-#     Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes processes.
-#     Advances in applied probability, 37(3), 629-646.
-
-#     Parameters
-#     ----------
-#     end_time : int | float
-#         Duration of the Poisson process.
-
-#     baseline : float
-#         Baseline parameter of the Hawkes process.
-
-#     alpha : float
-#         Weight parameter associated to the kernel function.
-
-#     kernel: str
-#         The choice of the kernel for the simulation.
-#         Kernel available are probability distribution from scipy.stats module.
-
-#     upper_bound : int, float or None, default=None
-#         Upper bound of the baseline function. If None,
-#         the maximum of the baseline is taken onto a finite discrete grid.
-
-#     random_state : int, RandomState instance or None, default=None
-#         Set the numpy seed to 'random_state'.
-
-#     Returns
-#     -------
-#     events : array
-#         The timestamps of the point process' events.
-#     """
-#     if random_state is None:
-#         np.random.seed(0)
-#     else:
-#         np.random.seed(random_state)
-
-#     # Simulate events from baseline
-#     immigrants = simu_poisson(end_time, intensity=baseline, upper_bound=upper_bound)
-
-#     # initialize
-#     gen = dict(gen0=immigrants)
-#     ev = [immigrants]
-#     sample_from_kernel = getattr(scipy.stats, kernel) #  dic = [4, 3]
-
-#     # generate offsprings
-#     it = 0
-#     while len(gen[f'gen{it}']):
-#         Ci = gen[f'gen{it}']
-
-#         # number of descendents of an event follow a Poisson law of parameter alpha
-#         # the expected number of event induced by an event is then alpha
-
-#         Di = np.random.poisson(lam=alpha, size=len(Ci))
-
-#         # sample interval range according to the given pdf (kernel of the parameter)
-#         Ci = np.repeat(Ci, repeats=Di)
-#         n = Di.sum()
-#         Ei =  sample_from_kernel.rvs(size=n) # * dic
-#         Fi = Ci + Ei
-
-
-#         if len(Fi) > 0:
-#             gen[f'gen{it+1}'] = np.hstack(Fi)
-#             ev.append(np.hstack(Fi))
-#         else:
-#             break
-#         it += 1
-
-#     # Add immigrants and sort
-#     events = np.hstack(ev)
-#     valid_events = events < end_time
-#     events = np.sort(events[valid_events])
-
-#     return events
+    return to_pandas(events)

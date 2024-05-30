@@ -252,8 +252,12 @@ class FaDIn(object):
 
         Parameters
         ----------
-        events : list of array of size number of timestamps,
-        list size is self.n_dim.
+        events : pd.DataFrame
+            The events to infer the Hawkes Process's parameters.
+            The event should be formatted as a pd.DataFrame, with columns:
+                - `'time'` or index: to represent the time of the event.
+                - `'type'`: to annotate which event type the event belongs to.
+                - `'mark'` (optional): to represent the mark of the event.
 
         end_time : int
             The end time of the Hawkes process.
