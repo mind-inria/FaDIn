@@ -208,8 +208,10 @@ class FaDIn(object):
                 kernel_params_init.append(2 * torch.rand(self.n_dim,
                                                          self.n_dim))
             else:
-                raise NotImplementedError('kernel initial parameters of not \
-                                           implemented kernel have to be given')
+                raise NotImplementedError(
+                    'kernel initial parameters of not \
+                     implemented kernel have to be given'
+                )
         elif init['kernel'] is None:
             kernel_params_init = init['kernel']
 
@@ -361,20 +363,26 @@ class FaDIn(object):
                                                         self.delta,
                                                         end_time).detach()
                 # Update baseline
-                self.params_intens[0].grad = get_grad_baseline(zG,
-                                                               self.params_intens[0],
-                                                               self.params_intens[1],
-                                                               kernel, self.delta,
-                                                               n_events, end_time)
+                self.params_intens[0].grad = get_grad_baseline(
+                    zG,
+                    self.params_intens[0],
+                    self.params_intens[1],
+                    kernel,
+                    self.delta,
+                    n_events,
+                    end_time
+                )
                 # Update alpha
-                self.params_intens[1].grad = get_grad_alpha(zG,
-                                                            zN,
-                                                            ztzG,
-                                                            self.params_intens[0],
-                                                            self.params_intens[1],
-                                                            kernel,
-                                                            self.delta,
-                                                            n_events)
+                self.params_intens[1].grad = get_grad_alpha(
+                    zG,
+                    zN,
+                    ztzG,
+                    self.params_intens[0],
+                    self.params_intens[1],
+                    kernel,
+                    self.delta,
+                    n_events
+                )
                 # Update kernel
                 for j in range(self.n_kernel_params):
                     self.params_intens[2 + j].grad = \
@@ -391,15 +399,21 @@ class FaDIn(object):
                         )
 
             else:
-                intens = self.kernel_model.intensity_eval(self.params_intens[0],
-                                                          self.params_intens[1],
-                                                          self.params_intens[2:],
-                                                          events_grid,
-                                                          discretization)
+                intens = self.kernel_model.intensity_eval(
+                    self.params_intens[0],
+                    self.params_intens[1],
+                    self.params_intens[2:],
+                    events_grid,
+                    discretization
+                )
                 if self.criterion == 'll':
-                    loss = discrete_ll_loss_conv(intens, events_grid, self.delta)
+                    loss = discrete_ll_loss_conv(
+                        intens, events_grid, self.delta
+                    )
                 else:
-                    loss = discrete_l2_loss_conv(intens, events_grid, self.delta)
+                    loss = discrete_l2_loss_conv(
+                        intens, events_grid, self.delta
+                    )
                 loss.backward()
 
             self.opt.step()
@@ -438,7 +452,8 @@ class FaDIn(object):
         return self
 
 
-def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None, savefig=None):
+def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
+         savefig=None):
     """
     Plots estimated kernels and baselines of solver.
     Should be called after calling the `fit` method on solver.

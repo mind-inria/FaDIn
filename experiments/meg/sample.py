@@ -133,262 +133,99 @@ def fit_fadin_sample(list_tasks, atom, cdl_dict, filter_interval, thresh_acti,
 
 
 ##############################################################################
-# REPRODUCE SAMPLE RESULTS IN [1]
+# REPRODUCE SAMPLE RESULTS IN FaDIn PAPER
 ##############################################################################
 
-fig, tg_atom6_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-                                      atom=6,
-                                      cdl_dict=dict_cdl,
-                                      filter_interval=0.01,
-                                      thresh_acti=0.6e-10,
-                                      kernel='truncated_gaussian',
-                                      optim_mask=OPTIM_MASK,
-                                      kernel_length=0.5,
-                                      delta=0.02,
-                                      optim='RMSprop',
-                                      params_optim={'lr': 1e-3},
-                                      max_iter=10000,
-                                      ztzG_approx=False,
-                                      figtitle='Masked FaDIn with TG kernels, atom 6 filt and thresh actis',
-                                      savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_practi.png',
-                                      plotfig=True,
-                                      )
+fig, tg_atom6_mask = fit_fadin_sample(
+    list_tasks=(['1', '2'], ['3', '4']),
+    atom=6,
+    cdl_dict=dict_cdl,
+    filter_interval=0.01,
+    thresh_acti=0.6e-10,
+    kernel='truncated_gaussian',
+    optim_mask=OPTIM_MASK,
+    kernel_length=0.5,
+    delta=0.02,
+    optim='RMSprop',
+    params_optim={'lr': 1e-3},
+    max_iter=10000,
+    ztzG_approx=False,
+    figtitle='Masked FaDIn with TG kernels, atom 6 filt and thresh actis',
+    savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_practi.png',
+    plotfig=True
+)
 print('Truncated gaussian, atom 6, with mask')
 print('Estimated baseline:', tg_atom6_mask[0])
 print('Estimated alpha:', tg_atom6_mask[1])
 print('Estimated kernel parameters', tg_atom6_mask[2:])
 
 
-fig, tg_atom3_allmask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-                                         atom=3,
-                                         cdl_dict=dict_cdl,
-                                         filter_interval=0.01,
-                                         thresh_acti=0.6e-10,
-                                         kernel='truncated_gaussian',
-                                         optim_mask=OPTIM_MASK,
-                                         kernel_length=0.5,
-                                         delta=0.02,
-                                         optim='RMSprop',
-                                         params_optim={'lr': 1e-3},
-                                         max_iter=10000,
-                                         ztzG_approx=False,
-                                         figtitle='Masked FaDIn with TG kernels, atom 3 filt and thresh actis',
-                                         savefig='fit_fadin_sample_plots/nomarked_masked_tg_3_practi.png',
-                                         plotfig=True
-                                         )
+fig, tg_atom3_allmask = fit_fadin_sample(
+    list_tasks=(['1', '2'], ['3', '4']),
+    atom=3,
+    cdl_dict=dict_cdl,
+    filter_interval=0.01,
+    thresh_acti=0.6e-10,
+    kernel='truncated_gaussian',
+    optim_mask=OPTIM_MASK,
+    kernel_length=0.5,
+    delta=0.02,
+    optim='RMSprop',
+    params_optim={'lr': 1e-3},
+    max_iter=10000,
+    ztzG_approx=False,
+    figtitle='Masked FaDIn with TG kernels, atom 3 filt and thresh actis',
+    savefig='fit_fadin_sample_plots/nomarked_masked_tg_3_practi.png',
+    plotfig=True
+)
 print('Truncated gaussian, atom 3, with mask')
 print('Estimated baseline:', tg_atom3_allmask[0])
 print('Estimated alpha:', tg_atom3_allmask[1])
 print('Estimated kernel parameters', tg_atom3_allmask[2:])
 
-fig, rc_atom3_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-                                      atom=3,
-                                      cdl_dict=dict_cdl,
-                                      filter_interval=0.01,
-                                      thresh_acti=0.6e-10,
-                                      kernel='raised_cosine',
-                                      optim_mask=OPTIM_MASK,
-                                      kernel_length=0.5,
-                                      delta=0.02,
-                                      optim='RMSprop',
-                                      params_optim={'lr': 1e-3},
-                                      max_iter=20000,
-                                      ztzG_approx=False,
-                                      figtitle='Masked FaDIn with RC kernels, atom 3 filt and thresh actis',
-                                      savefig='fit_fadin_sample_plots/nomarked_masked_rc_3_practi.png',
-                                      plotfig=True
-                                      )
+fig, rc_atom3_mask = fit_fadin_sample(
+    list_tasks=(['1', '2'], ['3', '4']),
+    atom=3,
+    cdl_dict=dict_cdl,
+    filter_interval=0.01,
+    thresh_acti=0.6e-10,
+    kernel='raised_cosine',
+    optim_mask=OPTIM_MASK,
+    kernel_length=0.5,
+    delta=0.02,
+    optim='RMSprop',
+    params_optim={'lr': 1e-3},
+    max_iter=20000,
+    ztzG_approx=False,
+    figtitle='Masked FaDIn with RC kernels, atom 3 filt and thresh actis',
+    savefig='fit_fadin_sample_plots/nomarked_masked_rc_3_practi.png',
+    plotfig=True
+)
 print('Raised_cosine, atom 3, with mask')
 print('Estimated baseline:', rc_atom3_mask[0])
 print('Estimated alpha:', 2 * rc_atom3_mask[3] * rc_atom3_mask[1])
 print('Estimated kernel parameters u and s', rc_atom3_mask[2:])
 
-fig, rc_atom6_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-                                      atom=6,
-                                      cdl_dict=dict_cdl,
-                                      filter_interval=0.01,
-                                      thresh_acti=0.6e-10,
-                                      kernel='raised_cosine',
-                                      optim_mask=OPTIM_MASK,
-                                      kernel_length=0.5,
-                                      delta=0.02,
-                                      optim='RMSprop',
-                                      params_optim={'lr': 1e-3},
-                                      max_iter=20000,
-                                      ztzG_approx=False,
-                                      figtitle='Masked FaDIn with RC kernels, atom 6 filt and thresh actis',
-                                      savefig='fit_fadin_sample_plots/nomarked_masked_rc_6_practi.png',
-                                      plotfig=True
-                                      )
+fig, rc_atom6_mask = fit_fadin_sample(
+    list_tasks=(['1', '2'], ['3', '4']),
+    atom=6,
+    cdl_dict=dict_cdl,
+    filter_interval=0.01,
+    thresh_acti=0.6e-10,
+    kernel='raised_cosine',
+    optim_mask=OPTIM_MASK,
+    kernel_length=0.5,
+    delta=0.02,
+    optim='RMSprop',
+    params_optim={'lr': 1e-3},
+    max_iter=20000,
+    ztzG_approx=False,
+    figtitle='Masked FaDIn with RC kernels, atom 6 filt and thresh actis',
+    savefig='fit_fadin_sample_plots/nomarked_masked_rc_6_practi.png',
+    plotfig=True
+)
 
 print('Raised_cosine, atom 6, with mask')
 print('Estimated baseline:', rc_atom6_mask[0])
 print('Estimated alpha:', 2 * rc_atom6_mask[3] * rc_atom6_mask[1])
 print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
-
-# ##############################################################################
-# # OTHER EXPERIMENTS WITH TRUNCATED GAUSSIAN KERNELS
-# ##############################################################################
-
-# fig, tg_atom6_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=6,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=0.01,
-#                                    thresh_acti=0.6e-10,
-#                                    kernel='truncated_gaussian',
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=10000,
-#                                    ztzG_approx=False,
-#                                    figtitle='FaDIn with TG kernels, atom 6 filt and thresh actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_nomasked_tg_6_practi.png',
-#                                    plotfig=True
-#                                    )
-
-# print('Truncated gaussian, atom 6, without mask')
-# print('Estimated baseline:', tg_atom6_nomask[0])
-# print('Estimated alpha:', 2 * tg_atom6_nomask[3] * tg_atom6_nomask[1])
-# print('Estimated kernel parameters u and s', tg_atom6_nomask[2:])
-
-# fig, tg_atom3_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=3,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=0.01,
-#                                    thresh_acti=0.6e-10,
-#                                    kernel='truncated_gaussian',
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=10000,
-#                                    ztzG_approx=False,
-#                                    figtitle='FaDIn with TG kernels, atom 3 filt and thresh actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_nomasked_tg_3_practi.png',
-#                                    plotfig=True
-#                                    )
-
-# print('Truncated gaussian, atom 3 without mask')
-# print('Estimated baseline:', tg_atom3_nomask[0])
-# print('Estimated alpha:', 2 * tg_atom3_nomask[3] * tg_atom3_nomask[1])
-# print('Estimated kernel parameters u and s', tg_atom3_nomask[2:])
-
-# fig, tg_atom3_nofilt_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                           atom=3,
-#                                           cdl_dict=dict_cdl,
-#                                           filter_interval=None,
-#                                           thresh_acti=0.,
-#                                           kernel='truncated_gaussian',
-#                                           kernel_length=0.5,
-#                                           delta=0.02,
-#                                           optim='RMSprop',
-#                                           params_optim={'lr': 1e-3},
-#                                           max_iter=10000,
-#                                           ztzG_approx=False, 
-#                                           figtitle='FaDIn with TG kernels, atom 3 raw actis',
-#                                           savefig='fit_fadin_sample_plots/nomarked_nomasked_tg_3_rawacti.png',
-#                                           plotfig=True
-#                                           )
-
-# fig, tg_atom3_nofilt = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=3,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=None,
-#                                    thresh_acti=0.,
-#                                    kernel='truncated_gaussian',
-#                                    optim_mask=OPTIM_MASK,
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=10000,
-#                                    ztzG_approx=False,
-#                                    figtitle='Masked FaDIn with TG kernels, atom 3 raw actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_masked_tg_3_rawacti.png',
-#                                    plotfig=True
-#                                    )
-
-# fig, tg_atom6_nofilt_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                           atom=6,
-#                                           cdl_dict=dict_cdl,
-#                                           filter_interval=None,
-#                                           thresh_acti=0.,
-#                                           kernel='truncated_gaussian',
-#                                           baseline_mask=None,
-#                                           alpha_mask=None,
-#                                           kernel_length=0.5,
-#                                           delta=0.02,
-#                                           optim='RMSprop',
-#                                           params_optim={'lr': 1e-3},
-#                                           max_iter=10000,
-#                                           ztzG_approx=False,
-#                                           figtitle='FaDIn with TG kernels, atom 6 raw actis',
-#                                           savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_rawacti.png',
-#                                           plotfig=True
-#                                           )
-
-# fig, tg_atom6_nofilt = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=6,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=None,
-#                                    thresh_acti=0.,
-#                                    kernel='truncated_gaussian',
-#                                    optim_mask=OPTIM_MASK,
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=10000,
-#                                    ztzG_approx=False,
-#                                    figtitle='Masked FaDIn with TG kernels, atom 6 raw actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_rawacti.png',
-#                                    plotfig=True
-#                                    )
-
-##############################################################################
-# OTHER EXPERIMENTS WITH RAISED_COSINE KERNELS
-##############################################################################
-
-# fig, rc_atom3_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=3,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=0.01,
-#                                    thresh_acti=0.6e-10,
-#                                    kernel='raised_cosine',
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=20000,
-#                                    ztzG_approx=False,
-#                                    figtitle='FaDIn with RC kernels, atom 3 filt and thresh actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_nomasked_rc_3_practi.png',
-#                                    plotfig=True
-#                                    )
-# print('Raised_cosine, atom 3, no mask')
-# print('Estimated baseline:', rc_atom3_nomask[0])
-# print('Estimated alpha:', 2 * rc_atom3_nomask[3] * rc_atom3_nomask[1])
-# print('Estimated kernel parameters', rc_atom3_nomask[2:])
-
-# fig, rc_atom6_nomask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
-#                                    atom=6,
-#                                    cdl_dict=dict_cdl,
-#                                    filter_interval=0.01,
-#                                    thresh_acti=0.6e-10,
-#                                    kernel='raised_cosine',
-#                                    kernel_length=0.5,
-#                                    delta=0.02,
-#                                    optim='RMSprop',
-#                                    params_optim={'lr': 1e-3},
-#                                    max_iter=20000,
-#                                    ztzG_approx=False,
-#                                    figtitle='FaDIn with RC kernels, atom 6 filt and thresh actis',
-#                                    savefig='fit_fadin_sample_plots/nomarked_nomasked_rc_6_practi.png',
-#                                    plotfig=True
-#                                    )
-
-# print('Raised_cosine, atom 6, without mask')
-# print('Estimated baseline:', rc_atom6_nomask[0])
-# print('Estimated alpha:', 2 * rc_atom6_nomask[3] * rc_atom6_nomask[1])
-# print('Estimated kernel parameters', rc_atom6_nomask[2:])

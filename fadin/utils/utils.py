@@ -75,7 +75,7 @@ def projected_grid(events, grid_step, n_grid):
     events_grid = torch.zeros(n_dim, n_grid)
     for i in range(n_dim):
         ei_torch = torch.tensor(events[i])
-        temp = torch.round(ei_torch / grid_step).long() # * grid_step
+        temp = torch.round(ei_torch / grid_step).long()  # * grid_step
         # temp2 = torch.round(temp * size_discret)
         idx, data = np.unique(temp, return_counts=True)
         events_grid[i, idx] += torch.tensor(data)

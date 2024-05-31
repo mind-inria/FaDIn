@@ -78,7 +78,7 @@ def run_solver(events, m_init, sigma_init, baseline_init, alpha_init, T, dt, see
                    log=False,
                    random_state=seed,
                    device="cpu",
-                   optimize_kernel=True)
+                   )
     results = solver.fit(events, T)
     return results
 

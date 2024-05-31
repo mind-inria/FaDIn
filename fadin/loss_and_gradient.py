@@ -109,7 +109,8 @@ def squared_compensator_2(zG, baseline, alpha, kernel):
 
     .. math::
         \\sum_{i=1}^{p}\\mu_i \\sum_{j=1}^{p} \\sum_{\tau=1}^{L}
-        \\phi_{ij}^\\Delta[\\tau] \\left(\\sum_{s=1}^{G} z_{j}[s-\\tau] \\right)
+        \\phi_{ij}^\\Delta[\\tau] \\left(\\sum_{s=1}^{G} z_{j}[s-\\tau]
+        \\right)
 
     Parameters
     ----------
@@ -175,8 +176,9 @@ def squared_compensator_3(ztzG, alpha, kernel):
             for k in range(n_dim):
                 for j in range(n_dim):
                     alpha_prod_ijk = alpha[i, j] * alpha[i, k]
-                    temp2 = kernel[i, k].view(1, L) * (ztzG[j, k]
-                                                       * kernel[i, j].view(L, 1)).sum(0)
+                    temp2 = kernel[i, k].view(1, L) * (
+                        ztzG[j, k] * kernel[i, j].view(L, 1)
+                    ).sum(0)
                     res += alpha_prod_ijk * temp2.sum()
 
     return res
@@ -357,7 +359,8 @@ def get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
 
 def get_grad_eta(zG, zN, ztzG, baseline, alpha, kernel,
                  grad_kernel, delta, n_events):
-    """Return the gradient of the discrete l2 loss w.r.t. one kernel parameters.
+    """Return the gradient of the discrete l2 loss w.r.t. one kernel
+    parameter.
 
     .. math::
         N_T\\frac{\\partial\\mathcal{L}_G}{\\partial \\eta{ml}} =

@@ -64,7 +64,7 @@ def run_solver(events, dt, T,
     solver = FaDIn(2,
                    "raised_cosine",
                    delta=dt, optim="RMSprop", max_iter=max_iter,
-                   optimize_kernel=True, precomputations=True,
+                   precomputations=True,
                    ztzG_approx=ztzG_approx, device='cpu', log=False, tol=10e-6
                    )
 

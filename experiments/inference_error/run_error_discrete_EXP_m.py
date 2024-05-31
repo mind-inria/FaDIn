@@ -81,7 +81,6 @@ def run_solver(events, decay_init, baseline_init, alpha_init, dt, T, seed=0):
                    log=False,
                    random_state=0,
                    device="cpu",
-                   optimize_kernel=True,
                    precomputations=True,
                    ztzG_approx=True)
 
