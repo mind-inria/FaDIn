@@ -76,7 +76,6 @@ def run_solver(events, m_init, sigma_init, baseline_init, alpha_init, dt, T, see
                    log=False,
                    random_state=0,
                    device="cpu",
-                   precomputations=True,
                    ztzG_approx=True)
 
     print(time.time() - start)

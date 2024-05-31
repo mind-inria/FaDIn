@@ -73,7 +73,6 @@ def run_fadin(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, seed
                    init=init,
                    delta=dt, optim="RMSprop",
                    step_size=1e-3, max_iter=max_iter,
-                   optimize_kernel=True, precomputations=True,
                    ztzG_approx=True, device='cpu', log=False
                    )
 

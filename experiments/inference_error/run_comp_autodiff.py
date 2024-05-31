@@ -10,7 +10,7 @@ from joblib import Memory, Parallel, delayed
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
-from fadin.solver import FaDIn
+from fadin.solver import FaDIn, FaDIn_no_precomputations
 
 ################################
 # Meta parameters
@@ -64,12 +64,14 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, see
         'baseline': torch.tensor(baseline_init),
         'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
     }
-    solver_autodiff = FaDIn(1,
-                            "raised_cosine",
-                            init=init,
-                            delta=dt, optim="RMSprop",
-                            step_size=1e-3, max_iter=max_iter,
-                            precomputations=False, random_state=0)
+    solver_autodiff = FaDIn_no_precomputations(
+        1,
+        "raised_cosine",
+        init=init,
+        delta=dt, optim="RMSprop",
+        step_size=1e-3, max_iter=max_iter,
+        random_state=0
+    )
     start_autodiff = time.time()
     solver_autodiff.fit(events, T)
     time_autodiff = time.time() - start_autodiff
@@ -78,12 +80,14 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, see
         'baseline': torch.tensor(baseline_init),
         'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
     }
-    solver_FaDIn = FaDIn(1,
-                         "raised_cosine",
-                         init=init,
-                         delta=dt, optim="RMSprop",
-                         step_size=1e-3, max_iter=max_iter,
-                         precomputations=True, random_state=0)
+    solver_FaDIn = FaDIn(
+        1,
+        "raised_cosine",
+        init=init,
+        delta=dt, optim="RMSprop",
+        step_size=1e-3, max_iter=max_iter,
+        random_state=0
+    )
     start_FaDIn = time.time()
     solver_FaDIn.fit(events, T)
     time_FaDIn = time.time() - start_FaDIn

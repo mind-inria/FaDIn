@@ -6,9 +6,8 @@ import numpy as np
 from fadin.utils.utils import optimizer, projected_grid, momentmatching
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
-from fadin.loss_and_gradient import discrete_l2_loss_precomputation, \
-    discrete_l2_loss_conv, get_grad_baseline, get_grad_alpha, get_grad_eta, \
-    discrete_ll_loss_conv
+from fadin.loss_and_gradient import optim_iteration_fadin, \
+    optim_iteration_l2_noprecomput, optim_iteration_loglikelihood
 from fadin.kernels import DiscreteKernelFiniteSupport
 
 
@@ -93,10 +92,6 @@ class FaDIn(object):
     max_iter : `int`, `default=1000`
         Maximum number of iterations during fit.
 
-    precomputations : `boolean`, `default=True`
-        If precomputations is false, pytorch autodiff is applied on the loss.
-        If precomputations is true, then FaDIn is computed.
-
     ztzG_approx : `boolean`, `default=True`
         If ztzG_approx is false, compute the true ztzG precomputation constant
         that is the computational bottleneck of FaDIn. if ztzG_approx is true,
@@ -113,10 +108,6 @@ class FaDIn(object):
         If kernel in ``{'raised_cosine'| 'truncated_gaussian' |
         'truncated_exponential'}`` the gradient function is implemented.
         If kernel is custom, the custom gradient must be given.
-
-    criterion : `str` in ``{'l2' | 'll'}``, `default='l2'`
-        The criterion to minimize. if not l2, FaDIn minimize
-        the Log-Likelihood loss through AutoDifferentiation.
 
     tol : `float`, `default=1e-5`
         The tolerance of the solver (iterations stop when the stopping
@@ -143,14 +134,15 @@ class FaDIn(object):
         If `log=True`, compute the loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
+    optim_iteration = staticmethod(optim_iteration_fadin)
+    precomputations = True
 
-    def __init__(self, n_dim, kernel, init='random',
-                 optim_mask=None,
+    def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
-                 params_optim=dict(), max_iter=2000,
-                 precomputations=True, ztzG_approx=True,
-                 device='cpu', log=False, grad_kernel=None, criterion='l2',
+                 params_optim=dict(), max_iter=2000, ztzG_approx=True,
+                 device='cpu', log=False, grad_kernel=None,
                  tol=10e-5, random_state=None):
+
         # param discretisation
         self.delta = delta
         self.W = kernel_length
@@ -231,19 +223,13 @@ class FaDIn(object):
             self.params_intens.append(
                 kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
 
-        self.precomputations = precomputations
-
         # If the learning rate is not given, fix it to 1e-3
-        if 'lr' in params_optim.keys():
+        if 'lr' not in params_optim.keys():
             params_optim['lr'] = 1e-3
         self.params_solver = params_optim
 
         # self.opt = optimizer(self.params_intens, params_optim, solver=optim)
 
-        if criterion == 'll':
-            self.precomputations = False
-
-        self.criterion = criterion
         # device and seed
         if random_state is None:
             torch.manual_seed(0)
@@ -313,9 +299,9 @@ class FaDIn(object):
             else:
                 ztzG = get_ztzG(events_grid.double().numpy(), self.L)
 
-            zG = torch.tensor(zG).float()
-            zN = torch.tensor(zN).float()
-            ztzG = torch.tensor(ztzG).float()
+            self.zG = torch.tensor(zG).float()
+            self.zN = torch.tensor(zN).float()
+            self.ztzG = torch.tensor(ztzG).float()
             print('precomput:', time.time() - start)
 
         ####################################################
@@ -338,84 +324,15 @@ class FaDIn(object):
 
         ####################################################
         start = time.time()
+        # Optimize parameters
         for i in range(self.max_iter):
             print(f"Fitting model... {i/self.max_iter:6.1%}\r", end='',
                   flush=True)
 
             self.opt.zero_grad()
-            if self.precomputations:
-                # Compute kernel and gradient
-                kernel = self.kernel_model.kernel_eval(
-                    self.params_intens[2:],
-                    discretization
-                )
-                grad_theta = self.kernel_model.grad_eval(
-                    self.params_intens[2:],
-                    discretization
-                )
-
-                if self.log:
-                    self.v_loss[i] = \
-                        discrete_l2_loss_precomputation(zG, zN, ztzG,
-                                                        self.params_intens[0],
-                                                        self.params_intens[1],
-                                                        kernel, n_events,
-                                                        self.delta,
-                                                        end_time).detach()
-                # Update baseline
-                self.params_intens[0].grad = get_grad_baseline(
-                    zG,
-                    self.params_intens[0],
-                    self.params_intens[1],
-                    kernel,
-                    self.delta,
-                    n_events,
-                    end_time
-                )
-                # Update alpha
-                self.params_intens[1].grad = get_grad_alpha(
-                    zG,
-                    zN,
-                    ztzG,
-                    self.params_intens[0],
-                    self.params_intens[1],
-                    kernel,
-                    self.delta,
-                    n_events
-                )
-                # Update kernel
-                for j in range(self.n_kernel_params):
-                    self.params_intens[2 + j].grad = \
-                        get_grad_eta(
-                            zG,
-                            zN,
-                            ztzG,
-                            self.params_intens[0],
-                            self.params_intens[1],
-                            kernel,
-                            grad_theta[j],
-                            self.delta,
-                            n_events
-                        )
-
-            else:
-                intens = self.kernel_model.intensity_eval(
-                    self.params_intens[0],
-                    self.params_intens[1],
-                    self.params_intens[2:],
-                    events_grid,
-                    discretization
-                )
-                if self.criterion == 'll':
-                    loss = discrete_ll_loss_conv(
-                        intens, events_grid, self.delta
-                    )
-                else:
-                    loss = discrete_l2_loss_conv(
-                        intens, events_grid, self.delta
-                    )
-                loss.backward()
-
+            self.optim_iteration(
+                self, events_grid, discretization, i, n_events, end_time
+            )
             self.opt.step()
 
             # Save parameters
@@ -450,6 +367,20 @@ class FaDIn(object):
         print('iterations in ', time.time() - start)
 
         return self
+
+
+class FaDIn_no_precomputations(FaDIn):
+    """Define the FaDIn framework for estimated Hawkes processes *without
+    precomputations*."""
+    optim_iteration = staticmethod(optim_iteration_l2_noprecomput)
+    precomputations = False
+
+
+class FaDIn_loglikelihood(FaDIn):
+    """Define the FaDIn framework for estimated Hawkes processes *with
+    loglikelihood criterion instead of l2 loss*."""
+    optim_iteration = staticmethod(optim_iteration_loglikelihood)
+    precomputations = False
 
 
 def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,

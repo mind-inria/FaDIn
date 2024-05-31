@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
-from fadin.solver import FaDIn
+from fadin.solver import FaDIn, FaDIn_loglikelihood
 
 # %% simulate data
 # Simulated data
@@ -64,18 +64,32 @@ def run_solver(criterion, events, kernel_params_init,
         'baseline': torch.tensor(baseline_init),
         'kernel': [torch.tensor(a) for a in kernel_params_init]
     }
-    solver = FaDIn(1,
-                   kernel,
-                   init=init,
-                   delta=dt,
-                   optim="RMSprop",
-                   step_size=1e-3,
-                   max_iter=max_iter,
-                   log=False,
-                   random_state=seed,
-                   device="cpu",
-                   optimize_kernel=True,
-                   criterion=criterion)
+    if criterion == 'l2':
+        solver = FaDIn(
+            1,
+            kernel,
+            init=init,
+            delta=dt,
+            optim="RMSprop",
+            step_size=1e-3,
+            max_iter=max_iter,
+            log=False,
+            random_state=seed,
+            device="cpu"
+        )
+    elif criterion == 'll':
+        solver = FaDIn_loglikelihood(
+            1,
+            kernel,
+            init=init,
+            delta=dt,
+            optim="RMSprop",
+            step_size=1e-3,
+            max_iter=max_iter,
+            log=False,
+            random_state=seed,
+            device="cpu"
+        )
     results = solver.fit(events, T)
     if kernel == 'truncated_exponential':
         results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),

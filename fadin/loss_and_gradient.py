@@ -1,6 +1,97 @@
 import torch
 
 
+def optim_iteration_fadin(solver, events_grid, discretization,
+                          i, n_events, end_time):
+    """One optimizer iteration of FaDIn solver, with l2 loss and
+    precomputations.
+    """
+    # Compute kernel and gradient
+    kernel = solver.kernel_model.kernel_eval(
+        solver.params_intens[2:],
+        discretization
+    )
+    grad_theta = solver.kernel_model.grad_eval(
+        solver.params_intens[2:],
+        discretization
+    )
+
+    if solver.log:
+        solver.v_loss[i] = \
+            discrete_l2_loss_precomputation(solver.zG, solver.zN, solver.ztzG,
+                                            solver.params_intens[0],
+                                            solver.params_intens[1],
+                                            kernel, n_events,
+                                            solver.delta,
+                                            end_time).detach()
+    # Update baseline
+    solver.params_intens[0].grad = get_grad_baseline(
+        solver.zG,
+        solver.params_intens[0],
+        solver.params_intens[1],
+        kernel,
+        solver.delta,
+        n_events,
+        end_time
+    )
+    # Update alpha
+    solver.params_intens[1].grad = get_grad_alpha(
+        solver.zG,
+        solver.zN,
+        solver.ztzG,
+        solver.params_intens[0],
+        solver.params_intens[1],
+        kernel,
+        solver.delta,
+        n_events
+    )
+    # Update kernel
+    for j in range(solver.n_kernel_params):
+        solver.params_intens[2 + j].grad = \
+            get_grad_eta(
+                solver.zG,
+                solver.zN,
+                solver.ztzG,
+                solver.params_intens[0],
+                solver.params_intens[1],
+                kernel,
+                grad_theta[j],
+                solver.delta,
+                n_events
+            )
+
+
+def optim_iteration_l2_noprecomput(solver, events_grid, discretization,
+                                   i, n_events, end_time):
+    """One optimizer iteration of FaDIn_no_precomputations solver,
+    with l2 loss and no precomputations."""
+    intens = solver.kernel_model.intensity_eval(
+        solver.params_intens[0],
+        solver.params_intens[1],
+        solver.params_intens[2:],
+        events_grid,
+        discretization
+    )
+    loss = discrete_l2_loss_conv(intens, events_grid, solver.delta)
+    loss.backward()
+
+
+def optim_iteration_loglikelihood(solver, events_grid, discretization,
+                                  i, n_events, end_time):
+    """One optimizer iteration of FaDIn_loglikelihood solver,
+    with loglikelihood loss.
+    """
+    intens = solver.kernel_model.intensity_eval(
+        solver.params_intens[0],
+        solver.params_intens[1],
+        solver.params_intens[2:],
+        events_grid,
+        discretization
+    )
+    loss = discrete_ll_loss_conv(intens, events_grid, solver.delta)
+    loss.backward()
+
+
 def discrete_l2_loss_conv(intensity, events_grid, delta):
     """Compute the l2 discrete loss using convolutions.
 

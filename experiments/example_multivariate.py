@@ -61,12 +61,12 @@ def run_solver(events, dt, T,
                ztzG_approx, seed=0):
     start = time.time()
     max_iter = 2000
-    solver = FaDIn(2,
-                   "raised_cosine",
-                   delta=dt, optim="RMSprop", max_iter=max_iter,
-                   precomputations=True,
-                   ztzG_approx=ztzG_approx, device='cpu', log=False, tol=10e-6
-                   )
+    solver = FaDIn(
+        2,
+        "raised_cosine",
+        delta=dt, optim="RMSprop", max_iter=max_iter,
+        ztzG_approx=ztzG_approx, device='cpu', log=False, tol=10e-6
+)
 
     print(time.time() - start)
     solver.fit(events, T)
