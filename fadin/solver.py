@@ -3,7 +3,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fadin.utils.utils import optimizer, projected_grid
+from fadin.utils.utils import optimizer, projected_grid, momentmatching
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
 from fadin.loss_and_gradient import discrete_l2_loss_precomputation, \
@@ -48,7 +48,7 @@ class FaDIn(object):
     kernel : `str` or `callable`
         Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
-
+    TODO: update moment_matching methods with DataFrame inputs
     init: `str` or `dict`, default='random'
         Initialization strategy of the parameters of the Hawkes process.
         If set to 'random', the parameters are initialized randomly.
@@ -58,22 +58,25 @@ class FaDIn(object):
         , which must contain the following keys:
         - 'baseline': `tensor` or `None`, shape (n_dim,): Initial baseline
         - 'alpha': `tensor` or `None`, shape (n_dim, n_dim): Initial alpha
-        - 'kernel': `list` of tensor or `None`: Initial kernel parameters
-        Note that when one of 'baseline', 'alpha', or 'kernel' is set to None,
-        the corresponding parameters are initialized randomly.
+        - 'kernel': `list` of tensors of shape (n_dim, n_dim) or `None`:
+        Initial kernel parameters
+        Note that when at least one of 'baseline', 'alpha', or 'kernel'
+        is set to None, the corresponding parameters are initialized randomly.
 
-    TODO: CONDENSE IN MASK PARAMETERS
-    baseline_mask : `tensor` of shape (n_dim,), or `None`
-        Tensor of same shape as the baseline vector, with values in (0, 1).
-        `baseline` coordinates where `baseline_mask` is equal to 0
-        will stay constant equal to zero and not be optimized.
-        If set to `None`, all coordinates of baseline will be optimized.
-    alpha_mask : `tensor` of shape (n_dim, n_dim), or `None`
-        Tensor of same shape as the `alpha` tensor, with values in (0, 1).
-        `alpha` coordinates and kernel parameters where `alpha_mask` = 0
-        will not be optimized.
-        If set to `None`, all coordinates of alpha will be optimized,
-        and all kernel parameters will be optimized.
+    optim_mask: `dict` of `tensor` or `None`, default=`None`.
+        Dictionary containing the masks for the optimization of the parameters
+        of the Hawkes process. If set to `None`, all parameters are optimized.
+        The dictionary must contain the following keys:
+        - 'baseline': `tensor` of shape (n_dim,), or `None`.
+            Tensor of same shape as the baseline vector, with values in (0, 1).
+            `baseline` coordinates where then tensor is equal to 0
+            will not be optimized. If set to `None`, all coordinates of
+            baseline will be optimized.
+        - 'alpha': `tensor` of shape (n_dim, n_dim), or `None`.
+            Tensor of same shape as the `alpha` tensor, with values in (0, 1).
+            `alpha` coordinates and kernel parameters where `alpha_mask` = 0
+            will not be optimized. If set to `None`, all coordinates of alpha
+            and kernel parameters will be optimized.
 
     kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
@@ -142,8 +145,7 @@ class FaDIn(object):
     """
 
     def __init__(self, n_dim, kernel, init='random',
-                 baseline_mask=None,
-                 alpha_mask=None,
+                 optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000,
                  precomputations=True, ztzG_approx=True,
@@ -160,32 +162,34 @@ class FaDIn(object):
         self.max_iter = max_iter
         self.log = log
         self.tol = tol
+        if optim_mask is None:
+            optim_mask = {'baseline': None, 'alpha': None}
 
         # params model
         self.n_dim = n_dim
-
+        self.moment_matching = (init == 'moment_matching')
         if init in ['random', 'moment_matching'] or init['baseline'] is None:
             self.baseline = torch.rand(self.n_dim)
         else:
             self.baseline = init['baseline'].float()
-        if baseline_mask is None:
+        if optim_mask['baseline'] is None:
             self.baseline_mask = torch.ones([n_dim])
         else:
-            assert baseline_mask.shape == self.baseline.shape, \
+            assert optim_mask['baseline'].shape == self.baseline.shape, \
                 "Invalid baseline_mask shape, must be (n_dim,)"
-            self.baseline_mask = baseline_mask
+            self.baseline_mask = optim_mask['baseline']
         self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
 
         if init in ['random', 'moment_matching'] or init['alpha'] is None:
             self.alpha = torch.rand(self.n_dim, self.n_dim)
         else:
             self.alpha = init['alpha'].float()
-        if alpha_mask is None:
+        if optim_mask['alpha'] is None:
             self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
         else:
-            assert alpha_mask.shape == self.alpha.shape, \
+            assert optim_mask['alpha'].shape == self.alpha.shape, \
                 "Invalid alpha_mask shape, must be (n_dim, n_dim)"
-            self.alpha_mask = alpha_mask
+            self.alpha_mask = optim_mask['alpha']
         self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
         if init in ['random', 'moment_matching'] or init['kernel'] is None:
@@ -230,8 +234,9 @@ class FaDIn(object):
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' in params_optim.keys():
             params_optim['lr'] = 1e-3
+        self.params_solver = params_optim
 
-        self.opt = optimizer(self.params_intens, params_optim, solver=optim)
+        # self.opt = optimizer(self.params_intens, params_optim, solver=optim)
 
         if criterion == 'll':
             self.precomputations = False
@@ -268,6 +273,29 @@ class FaDIn(object):
         discretization = torch.linspace(0, self.W, self.L)
         events_grid = projected_grid(events, self.delta, n_grid)
         n_events = events_grid.sum(1)
+        n_ground_events = [events[i].shape[0] for i in range(len(events))]
+        print('number of events is:', n_ground_events)
+        n_ground_events = torch.tensor(n_ground_events)
+
+        if self.moment_matching:
+            # Moment matching initialization of Hawkes parameters
+            baseline, alpha, kernel_params_init = momentmatching(
+                self, events, n_ground_events, end_time
+            )
+            self.baseline = baseline
+            self.alpha = alpha
+            # Set optimizer with moment_matching parameters
+            self.params_intens = [self.baseline, self.alpha]
+
+            for i in range(self.n_params_kernel):
+                self.params_intens.append(
+                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True)
+                )
+        self.opt = optimizer(
+            self.params_intens,
+            self.params_solver,
+            solver=self.solver
+        )
 
         ####################################################
         # Precomputations

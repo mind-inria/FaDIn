@@ -76,8 +76,7 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
                    max_iter=max_iter,
                    log=False,
                    random_state=0,
-                   device="cpu",
-                   optimize_kernel=True)
+                   device="cpu")
     print(time.time() - start)
     results = solver.fit(events, T)
     results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),

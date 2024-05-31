@@ -9,14 +9,12 @@ from fadin.kernels import DiscreteKernelFiniteSupport
 
 # %% Function
 def maskedsolver(events, T, kernel, max_iter=1000, ztzG_approx=False,
-                 baseline_mask=None, init='random', alpha_mask=None,
-                 random_state=0):
+                 optim_mask=None, init='random', random_state=0):
     solver = FaDIn(
         n_dim=n_dim,
         kernel=kernel,
-        baseline_mask=baseline_mask,
+        optim_mask=optim_mask,
         init=init,
-        alpha_mask=alpha_mask,
         kernel_length=kernel_length,
         delta=dt, optim="RMSprop",
         params_optim=params_optim,
@@ -55,8 +53,10 @@ kernel_length = 3
 L = int(1 / dt)
 size_grid = int(T / dt) + 1
 discretization = torch.linspace(0, kernel_length, L)
-baseline_mask = torch.Tensor([0, 0])
-alpha_mask = torch.Tensor([[0, 0], [1, 0]])
+optim_mask = {
+    'baseline': torch.Tensor([0, 0]),
+    'alpha': torch.Tensor([[0, 0], [1, 0]])
+}
 init1 = {
     'alpha': torch.Tensor([[0.2, 0.4], [0.7, 0.9]]),
     'baseline': torch.Tensor([0.7, 0.4]),
@@ -83,8 +83,7 @@ def test_exp_mask():
         exp_bl, exp_alpha = maskedsolver(
             kernel='truncated_exponential',
             events=events, T=T,
-            baseline_mask=baseline_mask,
-            alpha_mask=alpha_mask,
+            optim_mask=optim_mask,
             init=init,
             ztzG_approx=ztzG_approx,
             random_state=simu_random_state
@@ -116,8 +115,7 @@ def test_rc_mask():
             kernel='raised_cosine',
             events=events_rc,
             T=T,
-            baseline_mask=baseline_mask,
-            alpha_mask=alpha_mask,
+            optim_mask=optim_mask,
             init=init,
             ztzG_approx=ztzG_approx,
             random_state=simu_random_state

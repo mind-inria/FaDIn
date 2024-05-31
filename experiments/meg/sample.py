@@ -7,16 +7,17 @@ from fadin.utils.utils_meg import proprocess_tasks, filter_activation, \
     get_atoms_timestamps
 
 # Load CDL output
-with open("experiments/meg/dict_sample.json", "r") as fp:
+with open("experiments/meg/cdl_sample.json", "r") as fp:
     dict_cdl = json.load(fp)
 
 
 BL_MASK = torch.Tensor([1, 1, 1])
 ALPHA_MASK = torch.Tensor([[0, 0, 0], [0, 0, 0], [1, 1, 0]])
+OPTIM_MASK = {'baseline': BL_MASK, 'alpha': ALPHA_MASK}
 
 
 def fit_fadin_sample(list_tasks, atom, cdl_dict, filter_interval, thresh_acti,
-                     kernel, baseline_mask, alpha_mask,
+                     kernel, optim_mask,
                      plotfig=False, figtitle=None, savefig=None,
                      **fadin_init):
     """
@@ -119,7 +120,7 @@ def fit_fadin_sample(list_tasks, atom, cdl_dict, filter_interval, thresh_acti,
 
     # Fit Hawkes process to data
     solver = FaDIn(n_dim=len(events_acti_tt), kernel=kernel,
-                   baseline_mask=baseline_mask, alpha_mask=alpha_mask,
+                   optim_mask=optim_mask,
                    **fadin_init)
     solver.fit(events_acti_tt, T)
     # Return results
@@ -141,8 +142,7 @@ fig, tg_atom6_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
                                       filter_interval=0.01,
                                       thresh_acti=0.6e-10,
                                       kernel='truncated_gaussian',
-                                      baseline_mask=BL_MASK,
-                                      alpha_mask=ALPHA_MASK,
+                                      optim_mask=OPTIM_MASK,
                                       kernel_length=0.5,
                                       delta=0.02,
                                       optim='RMSprop',
@@ -151,7 +151,7 @@ fig, tg_atom6_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
                                       ztzG_approx=False,
                                       figtitle='Masked FaDIn with TG kernels, atom 6 filt and thresh actis',
                                       savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_practi.png',
-                                      plotfig=True
+                                      plotfig=True,
                                       )
 print('Truncated gaussian, atom 6, with mask')
 print('Estimated baseline:', tg_atom6_mask[0])
@@ -165,8 +165,7 @@ fig, tg_atom3_allmask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
                                          filter_interval=0.01,
                                          thresh_acti=0.6e-10,
                                          kernel='truncated_gaussian',
-                                         baseline_mask=BL_MASK,
-                                         alpha_mask=ALPHA_MASK,
+                                         optim_mask=OPTIM_MASK,
                                          kernel_length=0.5,
                                          delta=0.02,
                                          optim='RMSprop',
@@ -188,8 +187,7 @@ fig, rc_atom3_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
                                       filter_interval=0.01,
                                       thresh_acti=0.6e-10,
                                       kernel='raised_cosine',
-                                      baseline_mask=BL_MASK,
-                                      alpha_mask=ALPHA_MASK,
+                                      optim_mask=OPTIM_MASK,
                                       kernel_length=0.5,
                                       delta=0.02,
                                       optim='RMSprop',
@@ -211,8 +209,7 @@ fig, rc_atom6_mask = fit_fadin_sample(list_tasks=(['1', '2'], ['3', '4']),
                                       filter_interval=0.01,
                                       thresh_acti=0.6e-10,
                                       kernel='raised_cosine',
-                                      baseline_mask=BL_MASK,
-                                      alpha_mask=ALPHA_MASK,
+                                      optim_mask=OPTIM_MASK,
                                       kernel_length=0.5,
                                       delta=0.02,
                                       optim='RMSprop',
@@ -239,8 +236,6 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=0.01,
 #                                    thresh_acti=0.6e-10,
 #                                    kernel='truncated_gaussian',
-#                                    baseline_mask=None,
-#                                    alpha_mask=None,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',
@@ -263,8 +258,6 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=0.01,
 #                                    thresh_acti=0.6e-10,
 #                                    kernel='truncated_gaussian',
-#                                    baseline_mask=None,
-#                                    alpha_mask=None,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',
@@ -287,8 +280,6 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                           filter_interval=None,
 #                                           thresh_acti=0.,
 #                                           kernel='truncated_gaussian',
-#                                           baseline_mask=None,
-#                                           alpha_mask=None,
 #                                           kernel_length=0.5,
 #                                           delta=0.02,
 #                                           optim='RMSprop',
@@ -306,8 +297,7 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=None,
 #                                    thresh_acti=0.,
 #                                    kernel='truncated_gaussian',
-#                                    baseline_mask=BL_MASK,
-#                                    alpha_mask=ALPHA_MASK,
+#                                    optim_mask=OPTIM_MASK,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',
@@ -344,8 +334,7 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=None,
 #                                    thresh_acti=0.,
 #                                    kernel='truncated_gaussian',
-#                                    baseline_mask=BL_MASK,
-#                                    alpha_mask=ALPHA_MASK,
+#                                    optim_mask=OPTIM_MASK,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',
@@ -367,8 +356,6 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=0.01,
 #                                    thresh_acti=0.6e-10,
 #                                    kernel='raised_cosine',
-#                                    baseline_mask=None,
-#                                    alpha_mask=None,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',
@@ -390,8 +377,6 @@ print('Estimated kernel parameters u and s', rc_atom6_mask[2:])
 #                                    filter_interval=0.01,
 #                                    thresh_acti=0.6e-10,
 #                                    kernel='raised_cosine',
-#                                    baseline_mask=None,
-#                                    alpha_mask=None,
 #                                    kernel_length=0.5,
 #                                    delta=0.02,
 #                                    optim='RMSprop',

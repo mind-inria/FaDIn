@@ -63,20 +63,21 @@ events = simulate_data(baseline, alpha, m, sigma, T, dt, seed=0)
 def run_solver(events, m_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(m_init), torch.tensor(sigma_init)]
+    }
     solver = FaDIn(2,
                    "truncated_gaussian",
-                   [torch.tensor(m_init),
-                    torch.tensor(sigma_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    delta=dt,
                    optim="RMSprop",
                    step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
                    random_state=0,
-                   device="cpu",
-                   optimize_kernel=True)
+                   device="cpu")
 
     print(time.time() - start)
     results = solver.fit(events, T)
