@@ -154,11 +154,10 @@ fig, tg_atom6_mask = fit_fadin_sample(
     savefig='fit_fadin_sample_plots/nomarked_masked_tg_6_practi.png',
     plotfig=True
 )
-print('Truncated gaussian, atom 6, with mask')
+print('\nTruncated gaussian, atom 6, with mask')
 print('Estimated baseline:', tg_atom6_mask[0])
 print('Estimated alpha:', tg_atom6_mask[1])
 print('Estimated kernel parameters', tg_atom6_mask[2:])
-
 
 fig, tg_atom3_allmask = fit_fadin_sample(
     list_tasks=(['1', '2'], ['3', '4']),
@@ -178,7 +177,7 @@ fig, tg_atom3_allmask = fit_fadin_sample(
     savefig='fit_fadin_sample_plots/nomarked_masked_tg_3_practi.png',
     plotfig=True
 )
-print('Truncated gaussian, atom 3, with mask')
+print('\nTruncated gaussian, atom 3, with mask')
 print('Estimated baseline:', tg_atom3_allmask[0])
 print('Estimated alpha:', tg_atom3_allmask[1])
 print('Estimated kernel parameters', tg_atom3_allmask[2:])
@@ -201,7 +200,7 @@ fig, rc_atom3_mask = fit_fadin_sample(
     savefig='fit_fadin_sample_plots/nomarked_masked_rc_3_practi.png',
     plotfig=True
 )
-print('Raised_cosine, atom 3, with mask')
+print('\nRaised_cosine, atom 3, with mask')
 print('Estimated baseline:', rc_atom3_mask[0])
 print('Estimated alpha:', 2 * rc_atom3_mask[3] * rc_atom3_mask[1])
 print('Estimated kernel parameters u and s', rc_atom3_mask[2:])
@@ -225,7 +224,7 @@ fig, rc_atom6_mask = fit_fadin_sample(
     plotfig=True
 )
 
-print('Raised_cosine, atom 6, with mask')
+print('nRaised_cosine, atom 6, with mask')
 print('Estimated baseline:', rc_atom6_mask[0])
 print('Estimated alpha:', 2 * rc_atom6_mask[3] * rc_atom6_mask[1])
 print('Estimated kernel parameters u and s', rc_atom6_mask[2:])

@@ -19,7 +19,6 @@ def maskedsolver(events, T, kernel, max_iter=1000, ztzG_approx=False,
         delta=dt, optim="RMSprop",
         params_optim=params_optim,
         max_iter=max_iter,
-        criterion='l2',
         ztzG_approx=ztzG_approx,
         random_state=random_state
     )
@@ -63,6 +62,8 @@ init1 = {
     'kernel': None
 }
 init2 = 'random'
+init3 = 'moment_matching_mean'
+init4 = 'moment_matching_max'
 max_iter = 5000
 ztzG_approx = True
 params_optim = {'lr': 1e-3}
@@ -110,7 +111,7 @@ def test_rc_mask():
                                     random_state=simu_random_state)
 
     # %% Fit Hawkes process to raised_cosine simulation
-    for init in [init1, init2]:
+    for init in [init1, init2, init3, init4]:
         rc_bl, rc_alpha = maskedsolver(
             kernel='raised_cosine',
             events=events_rc,

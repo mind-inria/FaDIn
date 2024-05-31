@@ -3,7 +3,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fadin.utils.utils import optimizer, projected_grid, momentmatching
+from fadin.utils.utils import optimizer, projected_grid, momentmatching_nomark
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
 from fadin.loss_and_gradient import optim_iteration_fadin, \
@@ -51,8 +51,10 @@ class FaDIn(object):
     init: `str` or `dict`, default='random'
         Initialization strategy of the parameters of the Hawkes process.
         If set to 'random', the parameters are initialized randomly.
-        If set to 'moment_matching', the parameters are initialized
-        using the moment matching method.
+        If set to 'moment_matching_max', the parameters are initialized
+        using the moment matching method with max mode.
+        If set to 'moment_matching_mean', the parameters are initialized
+        using the moment matching method with mean mode.
         Otherwise, the parameters are initialized using the given dictionary,
         , which must contain the following keys:
         - 'baseline': `tensor` or `None`, shape (n_dim,): Initial baseline
@@ -143,13 +145,13 @@ class FaDIn(object):
                  device='cpu', log=False, grad_kernel=None,
                  tol=10e-5, random_state=None):
 
-        # param discretisation
+        # Discretization parameters
         self.delta = delta
         self.W = kernel_length
         self.L = int(self.W / delta)
         self.ztzG_approx = ztzG_approx
 
-        # param optim
+        # Optimizer parameters
         self.solver = optim
         self.max_iter = max_iter
         self.log = log
@@ -157,10 +159,13 @@ class FaDIn(object):
         if optim_mask is None:
             optim_mask = {'baseline': None, 'alpha': None}
 
-        # params model
+        # Model parameters
         self.n_dim = n_dim
-        self.moment_matching = (init == 'moment_matching')
-        if init in ['random', 'moment_matching'] or init['baseline'] is None:
+        self.moment_matching = ('moment_matching' in init)
+        if self.moment_matching:
+            self.mm_mode = init.split('_')[-1]
+        random_bl_init = init == 'random' or self.moment_matching
+        if random_bl_init or init['baseline'] is None:
             self.baseline = torch.rand(self.n_dim)
         else:
             self.baseline = init['baseline'].float()
@@ -170,9 +175,10 @@ class FaDIn(object):
             assert optim_mask['baseline'].shape == self.baseline.shape, \
                 "Invalid baseline_mask shape, must be (n_dim,)"
             self.baseline_mask = optim_mask['baseline']
-        self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
+        bl = self.baseline * self.baseline_mask
+        self.baseline = bl.requires_grad_(True)
 
-        if init in ['random', 'moment_matching'] or init['alpha'] is None:
+        if init == 'random' or self.moment_matching or init['alpha'] is None:
             self.alpha = torch.rand(self.n_dim, self.n_dim)
         else:
             self.alpha = init['alpha'].float()
@@ -184,7 +190,7 @@ class FaDIn(object):
             self.alpha_mask = optim_mask['alpha']
         self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
-        if init in ['random', 'moment_matching'] or init['kernel'] is None:
+        if init == 'random' or self.moment_matching or init['kernel'] is None:
             kernel_params_init = []
             if kernel == 'raised_cosine':
                 temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
@@ -204,8 +210,6 @@ class FaDIn(object):
                     'kernel initial parameters of not \
                      implemented kernel have to be given'
                 )
-        elif init['kernel'] is None:
-            kernel_params_init = init['kernel']
 
         self.kernel_params_fixed = kernel_params_init
 
@@ -254,6 +258,7 @@ class FaDIn(object):
 
         Returns
         -------
+        TODO: attributes
         self : object
             Fitted parameters.
         """
@@ -267,18 +272,18 @@ class FaDIn(object):
 
         if self.moment_matching:
             # Moment matching initialization of Hawkes parameters
-            baseline, alpha, kernel_params_init = momentmatching(
-                self, events, n_ground_events, end_time
+            baseline, alpha, kernel_params_init = momentmatching_nomark(
+                self, events, n_ground_events, end_time, self.mm_mode
             )
             self.baseline = baseline
             self.alpha = alpha
             # Set optimizer with moment_matching parameters
             self.params_intens = [self.baseline, self.alpha]
 
-            for i in range(self.n_params_kernel):
-                self.params_intens.append(
-                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True)
-                )
+            for i in range(self.n_kernel_params):
+                kernel_param = kernel_params_init[i].float().clip(1e-4)
+                kernel_param.requires_grad_(True)
+                self.params_intens.append(kernel_param)
         self.opt = optimizer(
             self.params_intens,
             self.params_solver,
@@ -289,7 +294,6 @@ class FaDIn(object):
         # Precomputations
         ####################################################
         if self.precomputations:
-            print('number of events is:', int(n_events[0]))
             start = time.time()
             zG = get_zG(events_grid.double().numpy(), self.L)
             zN = get_zN(events_grid.double().numpy(), self.L)
@@ -345,7 +349,8 @@ class FaDIn(object):
             for j in range(self.n_kernel_params):
                 self.params_intens[2 + j].data = \
                     self.params_intens[2 + j].data.clip(0)
-                self.param_kernel[j, i + 1] = self.params_intens[2 + j].detach()
+                self.param_kernel[j, i + 1] = \
+                    self.params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:
@@ -438,7 +443,8 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
     for i in range(solver.n_dim):
         for j in range(solver.n_dim):
             # Plot baseline
-            label = rf'$\mu_{{{ch_names[i]}}}$={round(solver.baseline[i].item(), 2)}'
+            label = (rf'$\mu_{{{ch_names[i]}}}$=' +
+                     f'{round(solver.baseline[i].item(), 2)}')
             axs[i, j].hlines(
                 y=solver.baseline[i].item(),
                 xmin=0,
