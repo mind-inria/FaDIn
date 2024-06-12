@@ -275,7 +275,7 @@ def run_experiment(baseline, alpha, decay, T, dt, seed=0):
 
     res['err_fadin'] = np.absolute(
         intens.numpy() - intens_fadin.numpy()
-        ).mean()
+    ).mean()
     res['time_fadin'] = results['time']
 
     results = run_gibbs(S, size_grid, dt, seed=seed)
