@@ -381,7 +381,7 @@ class FaDIn_no_precomputations(FaDIn):
     precomputations = False
 
 
-class FaDIn_loglikelihood(FaDIn):
+class FaDILogLikelihood(FaDIn):
     """Define the FaDIn framework for estimated Hawkes processes *with
     loglikelihood criterion instead of l2 loss*."""
     optim_iteration = staticmethod(optim_iteration_loglikelihood)
