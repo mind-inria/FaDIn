@@ -7,7 +7,7 @@ from fadin.utils.utils import optimizer, projected_grid, momentmatching_nomark
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
 from fadin.loss_and_gradient import optim_iteration_fadin, \
-    optim_iteration_l2_noprecomput, optim_iteration_loglikelihood
+    optim_iteration_loglikelihood
 from fadin.kernels import DiscreteKernelFiniteSupport
 
 
@@ -372,20 +372,6 @@ class FaDIn(object):
         print('iterations in ', time.time() - start)
 
         return self
-
-
-class FaDInNoPrecomputations(FaDIn):
-    """Define the FaDIn framework for estimated Hawkes processes *without
-    precomputations*."""
-    optim_iteration = staticmethod(optim_iteration_l2_noprecomput)
-    precomputations = False
-
-
-class FaDILogLikelihood(FaDIn):
-    """Define the FaDIn framework for estimated Hawkes processes *with
-    loglikelihood criterion instead of l2 loss*."""
-    optim_iteration = staticmethod(optim_iteration_loglikelihood)
-    precomputations = False
 
 
 def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,

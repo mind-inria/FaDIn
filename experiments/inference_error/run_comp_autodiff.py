@@ -10,7 +10,35 @@ from joblib import Memory, Parallel, delayed
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
-from fadin.solver import FaDIn, FaDIn_no_precomputations
+from fadin.solver import FaDIn
+from fadin.loss_and_gradient import discrete_l2_loss_conv
+
+################################
+# Define solver without precomputations
+################################
+
+
+def optim_iteration_l2_noprecomput(solver, events_grid, discretization,
+                                   i, n_events, end_time):
+    """One optimizer iteration of FaDIn_no_precomputations solver,
+    with l2 loss and no precomputations."""
+    intens = solver.kernel_model.intensity_eval(
+        solver.params_intens[0],
+        solver.params_intens[1],
+        solver.params_intens[2:],
+        events_grid,
+        discretization
+    )
+    loss = discrete_l2_loss_conv(intens, events_grid, solver.delta)
+    loss.backward()
+
+
+class FaDInNoPrecomputations(FaDIn):
+    """Define the FaDIn framework for estimated Hawkes processes *without
+    precomputations*."""
+    optim_iteration = staticmethod(optim_iteration_l2_noprecomput)
+    precomputations = False
+
 
 ################################
 # Meta parameters
@@ -48,7 +76,11 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
     tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
     kernels = [[tf]]
     hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
+        baseline=baseline,
+        kernels=kernels,
+        end_time=T,
+        verbose=False,
+        seed=int(seed)
     )
 
     hawkes.simulate()
@@ -57,14 +89,15 @@ def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
 
 
 @mem.cache
-def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
+def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, T, dt,
+               seed=0):
     max_iter = 800
     init = {
         'alpha': torch.tensor(alpha_init),
         'baseline': torch.tensor(baseline_init),
         'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
     }
-    solver_autodiff = FaDIn_no_precomputations(
+    solver_autodiff = FaDInNoPrecomputations(
         1,
         "raised_cosine",
         init=init,

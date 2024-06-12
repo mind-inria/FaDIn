@@ -9,9 +9,58 @@ from joblib import Parallel, delayed
 from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
-from fadin.solver import FaDIn, FaDIn_loglikelihood
+from fadin.solver import FaDIn
+from fadin.loss_and_gradient import discrete_l2_loss_conv
 
-# %% simulate data
+# %% 
+################################
+# Define solver with loglikelihood criterion
+################################
+
+
+def discrete_ll_loss_conv(intensity, events_grid, delta):
+    """Compute the LL discrete loss using convolutions.
+
+    Parameters
+    ----------
+    intensity : tensor, shape (n_dim, n_grid)
+        Values of the intensity function evaluated  on the grid.
+
+    events_grid : tensor, shape (n_dim, n_grid)
+        Events projected on the pre-defined grid.
+
+    delta : float
+        Step size of the discretization grid.
+    """
+    mask = events_grid > 0
+    intens = torch.log(intensity[mask])
+    return (intensity.sum(1) * delta -
+            intens.sum()).sum() / events_grid.sum()
+
+
+def optim_iteration_loglikelihood(solver, events_grid, discretization,
+                                  i, n_events, end_time):
+    """One optimizer iteration of FaDIn_loglikelihood solver,
+    with loglikelihood loss.
+    """
+    intens = solver.kernel_model.intensity_eval(
+        solver.params_intens[0],
+        solver.params_intens[1],
+        solver.params_intens[2:],
+        events_grid,
+        discretization
+    )
+    loss = discrete_ll_loss_conv(intens, events_grid, solver.delta)
+    loss.backward()
+
+
+class FaDInLogLikelihood(FaDIn):
+    """Define the FaDIn framework for estimated Hawkes processes *with
+    loglikelihood criterion instead of l2 loss*."""
+    optim_iteration = staticmethod(optim_iteration_loglikelihood)
+    precomputations = False
+
+
 # Simulated data
 ################################
 
@@ -78,7 +127,7 @@ def run_solver(criterion, events, kernel_params_init,
             device="cpu"
         )
     elif criterion == 'll':
-        solver = FaDIn_loglikelihood(
+        solver = FaDInLogLikelihood(
             1,
             kernel,
             init=init,

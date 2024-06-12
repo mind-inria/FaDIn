@@ -61,37 +61,6 @@ def optim_iteration_fadin(solver, events_grid, discretization,
             )
 
 
-def optim_iteration_l2_noprecomput(solver, events_grid, discretization,
-                                   i, n_events, end_time):
-    """One optimizer iteration of FaDIn_no_precomputations solver,
-    with l2 loss and no precomputations."""
-    intens = solver.kernel_model.intensity_eval(
-        solver.params_intens[0],
-        solver.params_intens[1],
-        solver.params_intens[2:],
-        events_grid,
-        discretization
-    )
-    loss = discrete_l2_loss_conv(intens, events_grid, solver.delta)
-    loss.backward()
-
-
-def optim_iteration_loglikelihood(solver, events_grid, discretization,
-                                  i, n_events, end_time):
-    """One optimizer iteration of FaDIn_loglikelihood solver,
-    with loglikelihood loss.
-    """
-    intens = solver.kernel_model.intensity_eval(
-        solver.params_intens[0],
-        solver.params_intens[1],
-        solver.params_intens[2:],
-        events_grid,
-        discretization
-    )
-    loss = discrete_ll_loss_conv(intens, events_grid, solver.delta)
-    loss.backward()
-
-
 def discrete_l2_loss_conv(intensity, events_grid, delta):
     """Compute the l2 discrete loss using convolutions.
 
@@ -114,26 +83,6 @@ def discrete_l2_loss_conv(intensity, events_grid, delta):
     """
     return 2 * (((intensity**2).sum(1) * 0.5 * delta -
                  (intensity * events_grid).sum(1)).sum()) / events_grid.sum()
-
-
-def discrete_ll_loss_conv(intensity, events_grid, delta):
-    """Compute the LL discrete loss using convolutions.
-
-    Parameters
-    ----------
-    intensity : tensor, shape (n_dim, n_grid)
-        Values of the intensity function evaluated  on the grid.
-
-    events_grid : tensor, shape (n_dim, n_grid)
-        Events projected on the pre-defined grid.
-
-    delta : float
-        Step size of the discretization grid.
-    """
-    mask = events_grid > 0
-    intens = torch.log(intensity[mask])
-    return (intensity.sum(1) * delta -
-            intens.sum()).sum() / events_grid.sum()
 
 
 def discrete_l2_loss_precomputation(zG, zN, ztzG, baseline, alpha, kernel,
