@@ -374,7 +374,7 @@ class FaDIn(object):
         return self
 
 
-class FaDIn_no_precomputations(FaDIn):
+class FaDInNoPrecomputations(FaDIn):
     """Define the FaDIn framework for estimated Hawkes processes *without
     precomputations*."""
     optim_iteration = staticmethod(optim_iteration_l2_noprecomput)
