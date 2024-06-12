@@ -6,8 +6,7 @@ import numpy as np
 from fadin.utils.utils import optimizer, projected_grid, momentmatching_nomark
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
-from fadin.loss_and_gradient import optim_iteration_fadin, \
-    optim_iteration_loglikelihood
+from fadin.loss_and_gradient import optim_iteration_fadin
 from fadin.kernels import DiscreteKernelFiniteSupport
 
 

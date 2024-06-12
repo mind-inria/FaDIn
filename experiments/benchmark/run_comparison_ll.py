@@ -10,9 +10,8 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
-from fadin.loss_and_gradient import discrete_l2_loss_conv
 
-# %% 
+# %%
 ################################
 # Define solver with loglikelihood criterion
 ################################
