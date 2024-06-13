@@ -37,8 +37,8 @@ def discrete_ll_loss_conv(intensity, events_grid, delta):
             intens.sum()).sum() / events_grid.sum()
 
 
-def optim_iteration_loglikelihood(solver, events_grid, discretization,
-                                  i, n_events, end_time):
+def compute_gradient_loglikelihood(solver, events_grid, discretization,
+                                   i, n_events, end_time):
     """One optimizer iteration of FaDIn_loglikelihood solver,
     with loglikelihood loss.
     """
@@ -56,10 +56,10 @@ def optim_iteration_loglikelihood(solver, events_grid, discretization,
 class FaDInLogLikelihood(FaDIn):
     """Define the FaDIn framework for estimated Hawkes processes *with
     loglikelihood criterion instead of l2 loss*."""
-    optim_iteration = staticmethod(optim_iteration_loglikelihood)
+    compute_gradient = staticmethod(compute_gradient_loglikelihood)
     precomputations = False
 
-
+################################
 # Simulated data
 ################################
 

@@ -6,7 +6,7 @@ import numpy as np
 from fadin.utils.utils import optimizer, projected_grid, momentmatching_nomark
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
-from fadin.loss_and_gradient import optim_iteration_fadin
+from fadin.loss_and_gradient import compute_gradient_fadin
 from fadin.kernels import DiscreteKernelFiniteSupport
 
 
@@ -135,7 +135,7 @@ class FaDIn(object):
         If `log=True`, compute the loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
-    optim_iteration = staticmethod(optim_iteration_fadin)
+    compute_gradient = staticmethod(compute_gradient_fadin)
     precomputations = True
 
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
@@ -333,7 +333,7 @@ class FaDIn(object):
                   flush=True)
 
             self.opt.zero_grad()
-            self.optim_iteration(
+            self.compute_gradient(
                 self, events_grid, discretization, i, n_events, end_time
             )
             self.opt.step()

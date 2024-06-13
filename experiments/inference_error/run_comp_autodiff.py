@@ -18,8 +18,8 @@ from fadin.loss_and_gradient import discrete_l2_loss_conv
 ################################
 
 
-def optim_iteration_l2_noprecomput(solver, events_grid, discretization,
-                                   i, n_events, end_time):
+def compute_gradient_l2_noprecomput(solver, events_grid, discretization,
+                                    i, n_events, end_time):
     """One optimizer iteration of FaDIn_no_precomputations solver,
     with l2 loss and no precomputations."""
     intens = solver.kernel_model.intensity_eval(
@@ -36,7 +36,7 @@ def optim_iteration_l2_noprecomput(solver, events_grid, discretization,
 class FaDInNoPrecomputations(FaDIn):
     """Define the FaDIn framework for estimated Hawkes processes *without
     precomputations*."""
-    optim_iteration = staticmethod(optim_iteration_l2_noprecomput)
+    compute_gradient = staticmethod(compute_gradient_l2_noprecomput)
     precomputations = False
 
 

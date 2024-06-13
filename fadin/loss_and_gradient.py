@@ -1,10 +1,29 @@
 import torch
 
 
-def optim_iteration_fadin(solver, events_grid, discretization,
-                          i, n_events, end_time):
-    """One optimizer iteration of FaDIn solver, with l2 loss and
-    precomputations.
+def compute_gradient_fadin(solver, events_grid, discretization,
+                           i, n_events, end_time):
+    """Updates gradients for optimizer iteration of FaDIn solver,
+    with l2 loss and precomputations. Gradients are updated inplace.
+
+    Parameters
+    ----------
+    solver : FaDIn
+        The FaDIn solver.
+    events_grid : tensor, shape (n_dim, n_grid) (optionnal)
+        Not necessary in this function, present for FaDIn derived classes.
+    discretization : tensor, shape (L,)
+        Discretization grid.
+    i : int
+        Optimizer iteration number.
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+    end_time : float
+        The end time of the Hawkes process.
+
+    Returns
+    -------
+    None
     """
     # Compute kernel and gradient
     kernel = solver.kernel_model.kernel_eval(
@@ -24,7 +43,7 @@ def optim_iteration_fadin(solver, events_grid, discretization,
                                             kernel, n_events,
                                             solver.delta,
                                             end_time).detach()
-    # Update baseline
+    # Update baseline gradient
     solver.params_intens[0].grad = get_grad_baseline(
         solver.zG,
         solver.params_intens[0],
@@ -34,7 +53,7 @@ def optim_iteration_fadin(solver, events_grid, discretization,
         n_events,
         end_time
     )
-    # Update alpha
+    # Update alpha gradient
     solver.params_intens[1].grad = get_grad_alpha(
         solver.zG,
         solver.zN,
@@ -45,7 +64,7 @@ def optim_iteration_fadin(solver, events_grid, discretization,
         solver.delta,
         n_events
     )
-    # Update kernel
+    # Update kernel gradient
     for j in range(solver.n_kernel_params):
         solver.params_intens[2 + j].grad = \
             get_grad_eta(
