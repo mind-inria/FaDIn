@@ -4,14 +4,11 @@ import itertools
 import pandas as pd
 import time
 import numpy as np
-import torch
 from joblib import Parallel, delayed
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
-from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
 from fadin.utils.utils import l2_error
-
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
 # mem = Memory(location=".", verbose=2)
 
@@ -26,68 +23,33 @@ decay = np.array([[5, 5], [5, 5]])
 
 
 # @mem.cache
-def simulate_data(baseline, alpha, decay, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
-    n_dim = decay.shape[0]
-    EXP = DiscreteKernelFiniteSupport(dt, n_dim, kernel='truncated_exponential')
-
-    kernel_values = EXP.kernel_eval([torch.Tensor(decay)],
-                                    discretization)
-    kernel_values = kernel_values * alpha[:, :, None]
-
-    t_values = discretization.double().numpy()
-    k11 = kernel_values[0, 0].double().numpy()
-    k12 = kernel_values[0, 1].double().numpy()
-    k21 = kernel_values[1, 0].double().numpy()
-    k22 = kernel_values[1, 1].double().numpy()
-
-    tf11 = HawkesKernelTimeFunc(t_values=t_values, y_values=k11)
-    tf12 = HawkesKernelTimeFunc(t_values=t_values, y_values=k12)
-    tf21 = HawkesKernelTimeFunc(t_values=t_values, y_values=k21)
-    tf22 = HawkesKernelTimeFunc(t_values=t_values, y_values=k22)
-
-    kernels = [[tf11, tf12], [tf21, tf22]]
-    hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
-    )
-
-    hawkes.simulate()
-    events = hawkes.timestamps
+def simulate_data(baseline, alpha, decay, T, seed=0):
+    kernel = 'expon'
+    events = simu_hawkes_cluster(T, baseline, alpha, kernel,
+                                 params_kernel={'scale': 1 / decay},
+                                 random_state=seed)
     return events
-
-    # %% solver
-##
 
 # %% solver
 
 
-# @mem.cache
-def run_solver(events, decay_init, baseline_init, alpha_init, dt, T, seed=0):
+def run_solver(events, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
-    init = {
-        'alpha': torch.tensor(alpha_init),
-        'baseline': torch.tensor(baseline_init),
-        'kernel': [torch.tensor(decay_init)]
-    }
     solver = FaDIn(2,
                    "truncated_exponential",
-                   init=init,
                    delta=dt,
                    optim="RMSprop",
-                   step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
                    random_state=0,
-                   device="cpu",
                    ztzG_approx=True)
 
     print(time.time() - start)
-    results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean(0),
-                    param_alpha=results['param_alpha'][-10:].mean(0),
-                    param_kernel=[results['param_kernel'][0][-10:].mean(0)])
+    solver.fit(events, T)
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean(0),
+                    param_alpha=solver.param_alpha[-10:].mean(0),
+                    param_kernel=[solver.param_kernel[0][-10:].mean(0)])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
@@ -98,15 +60,9 @@ def run_solver(events, decay_init, baseline_init, alpha_init, dt, T, seed=0):
 
 
 def run_experiment(baseline, alpha, decay, T, dt, seed=0):
-    v = 0.2
-    events = simulate_data(baseline, alpha, decay, T, dt, seed=seed)
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    decay_init = decay + v
+    events = simulate_data(baseline, alpha, decay, T, seed=seed)
+    results = run_solver(events, dt, T, seed)
 
-    results = run_solver(events, decay_init,
-                         baseline_init, alpha_init,
-                         dt, T, seed)
     return results
 
 

@@ -196,8 +196,8 @@ class FaDIn(object):
         self.n_kernel_params = len(kernel_params_init)
 
         self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
-                                                        kernel, self.kernel_length, 
-                                                        0, self.kernel_length, 
+                                                        kernel, self.kernel_length,
+                                                        0, self.kernel_length,
                                                         grad_kernel)
         self.kernel = kernel
         # Set optimizer
