@@ -47,7 +47,6 @@ def simulate_data(baseline, alpha, m, sigma, T, dt, seed=0):
 # %% solver
 
 
-@mem.cache
 def run_solver(events, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
@@ -107,3 +106,5 @@ df['err_sum'] = np.sqrt(df['err_baseline']**2 + df['err_alpha']**2 +
                         df['err_m']**2 + df['err_sigma']**2)
 
 df.to_csv('results/error_discrete_TG_m.csv', index=False)
+
+# %%
