@@ -210,7 +210,7 @@ def momentmatching_kernel_nomark(solver, events, n_ground_events,
                 for n in range(int(n_ground_events[i])):
                     t_n_i = events[i][n]
                     for t_n_j in events[j]:
-                        if t_n_j < t_n_i - solver.W:
+                        if t_n_j < t_n_i - solver.kernel_length:
                             continue
                         if t_n_j >= t_n_i:
                             break
@@ -221,7 +221,7 @@ def momentmatching_kernel_nomark(solver, events, n_ground_events,
             if plot_delta:
                 fig_delta, ax_delta = plt.subplots()
                 ax_delta.hist(delta_t, bins=20)
-                ax_delta.set_xlim([0, solver.W])
+                ax_delta.set_xlim([0, solver.kernel_length])
                 ax_delta.set_xlabel('Time')
                 ax_delta.set_ylabel('Histogram')
                 fig_delta.suptitle('Moment Matching delta_t')
