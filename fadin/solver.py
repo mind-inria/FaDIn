@@ -143,8 +143,8 @@ class FaDIn(object):
 
         # Discretization parameters
         self.delta = delta
-        self.W = kernel_length
-        self.L = int(self.W / delta)
+        self.kernel_length = kernel_length
+        self.L = int(kernel_length / delta)
         self.ztzG_approx = ztzG_approx
 
         # Optimizer parameters
@@ -195,10 +195,10 @@ class FaDIn(object):
 
         self.n_kernel_params = len(kernel_params_init)
 
-        # self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
-        #                                                 kernel,
-        #                                                 self.W, 0, self.W,
-        #                                                 grad_kernel)
+        self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
+                                                        kernel, self.kernel_length, 
+                                                        0, self.kernel_length, 
+                                                        grad_kernel)
         self.kernel = kernel
         # Set optimizer
         self.params_intens = [self.baseline, self.alpha]
@@ -238,7 +238,7 @@ class FaDIn(object):
             Fitted parameters.
         """
         n_grid = int(1 / self.delta) * end_time + 1
-        discretization = torch.linspace(0, self.W, self.L)
+        discretization = torch.linspace(0, self.kernel_length, self.L)
         events_grid = projected_grid(events, self.delta, n_grid)
         n_events = events_grid.sum(1)
         n_ground_events = [events[i].shape[0] for i in range(len(events))]
@@ -382,6 +382,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
                                          solver.n_dim,
                                          kernel=solver.kernel,
                                          kernel_length=solver.W)
+
     kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
                                       discretization).detach()
     # Plot
