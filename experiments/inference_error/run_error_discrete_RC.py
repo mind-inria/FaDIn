@@ -6,10 +6,10 @@ import time
 import numpy as np
 import torch
 from joblib import Parallel, delayed, Memory
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
 ################################
 # Meta parameters
@@ -31,58 +31,50 @@ sigma = np.array([[0.3]])
 u = mu - sigma
 
 
-@mem.cache
 def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
     u = mu - sigma
-    RC = DiscreteKernelFiniteSupport(dt, 1, kernel='raised_cosine')
-    kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
-                                   discretization)
-    kernel_values = kernel_values * alpha[:, :, None]
+    params = {'u': u, 'sigma': sigma}
 
-    t_values = discretization.double().numpy()
-    k = kernel_values[0, 0].double().numpy()
+    def raised_cosine(x, **params):
+        rc = DiscreteKernelFiniteSupport(delta=dt, n_dim=1,
+                                         kernel='raised_cosine')
+        u = params['u']
+        sigma = params['sigma']
+        kernel_values = rc.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
+                                       torch.tensor(x))
 
-    tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
-    kernels = [[tf]]
-    hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
-    )
+        return kernel_values.double().numpy()
 
-    hawkes.simulate()
-    events = hawkes.timestamps
+    events = simu_hawkes_cluster(T, baseline, alpha,
+                                 raised_cosine,
+                                 params_kernel=params,
+                                 random_state=seed)
     return events
 
+
+events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0)
 # %% solver
 ##
 
 
-@mem.cache
-def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
+def run_solver(events, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
-    init = {
-        'alpha': torch.tensor(alpha_init),
-        'baseline': torch.tensor(baseline_init),
-        'kernel': [torch.tensor(u_init), torch.tensor(sigma_init)]
-    }
-    solver = FaDIn(2,
+
+    solver = FaDIn(1,
                    "raised_cosine",
-                   init=init,
                    delta=dt,
                    optim="RMSprop",
-                   step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
-                   random_state=0,
-                   device="cpu")
+                   random_state=0)
+
     print(time.time() - start)
-    results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_alpha=results['param_alpha'][-10:].mean().item(),
-                    param_kernel=[results['param_kernel'][0][-10:].mean().item(),
-                                  results['param_kernel'][1][-10:].mean().item()])
+    solver.fit(events, T)
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean().item(),
+                    param_alpha=solver.param_alpha[-10:].mean().item(),
+                    param_kernel=[solver.param_kernel[0][-10:].mean().item(),
+                                  solver.param_kernel[1][-10:].mean().item()])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
@@ -93,16 +85,9 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
 # %% eval on grid
 ##
 def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
-    v = 0.2
     events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=seed)
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    mu_init = mu + v
-    sigma_init = sigma - v
-    u_init = mu_init - sigma_init
-    results = run_solver(events, u_init, sigma_init,
-                         baseline_init, alpha_init,
-                         dt, T, seed)
+    results = run_solver(events, dt, T, seed)
+
     return results
 
 

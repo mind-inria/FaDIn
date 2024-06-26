@@ -7,11 +7,10 @@ import time
 import numpy as np
 import torch
 from joblib import Memory, Parallel, delayed
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
-
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
 ################################
 # Meta parameters
@@ -33,59 +32,49 @@ m = np.array([[0.5]])
 sigma = np.array([[0.3]])
 
 
-@mem.cache
 def simulate_data(baseline, alpha, m, sigma, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
-    TG = DiscreteKernelFiniteSupport(dt, 1, kernel='truncated_gaussian')
-    kernel_values = TG.kernel_eval([torch.Tensor(m), torch.Tensor(sigma)],
-                                   discretization)  # * dt
-    kernel_values = kernel_values * alpha[:, :, None]
+    params = {'mu': m, 'sigma': sigma}
 
-    t_values = discretization.double().numpy()
-    k = kernel_values[0, 0].double().numpy()
+    def truncated_gaussian(x, **params):
+        tg = DiscreteKernelFiniteSupport(delta=dt, n_dim=1,
+                                         kernel='truncated_gaussian')
+        mu = params['mu']
+        sigma = params['sigma']
+        kernel_values = tg.kernel_eval(
+            [torch.Tensor(mu), torch.Tensor(sigma)], torch.tensor(x))
 
-    tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
-    kernels = [[tf]]
-    hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
-    )
+        return kernel_values.double().numpy()
 
-    hawkes.simulate()
-    events = hawkes.timestamps
+    events = simu_hawkes_cluster(T, baseline, alpha,
+                                 truncated_gaussian,
+                                 params_kernel=params,
+                                 random_state=seed)
     return events
 
 
 events = simulate_data(baseline, alpha, m, sigma, T, dt, seed=0)
 
+# %%
 
-@mem.cache
-def run_solver(events, m_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0):
+
+def run_solver(events, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
-    init = {
-        'alpha': torch.tensor(alpha_init),
-        'baseline': torch.tensor(baseline_init),
-        'kernel': [torch.tensor(m_init), torch.tensor(sigma_init)]
-    }
-    solver = FaDIn(2,
+    solver = FaDIn(1,
                    "truncated_gaussian",
-                   init=init,
                    delta=dt,
                    optim="RMSprop",
-                   step_size=1e-3,
                    max_iter=max_iter,
                    log=False,
-                   random_state=0,
-                   device="cpu")
+                   random_state=seed)
 
     print(time.time() - start)
-    results = solver.fit(events, T)
+    solver.fit(events, T)
 
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_alpha=results['param_alpha'][-10:].mean().item(),
-                    param_kernel=[results['param_kernel'][0][-10:].mean().item(),
-                                  results['param_kernel'][1][-10:].mean().item()])
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean().item(),
+                    param_alpha=solver.param_alpha[-10:].mean().item(),
+                    param_kernel=[solver.param_kernel[0][-10:].mean().item(),
+                                  solver.param_kernel[1][-10:].mean().item()])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
@@ -100,9 +89,7 @@ m_init = np.array([[np.random.rand()]])
 sigma_init = np.array([[np.random.rand() * 0.5]])
 
 start = time.time()
-results_1 = run_solver(
-    events, m_init, sigma_init, baseline_init, alpha_init, T, dt, seed=0
-)
+results_1 = run_solver(events, T, dt, seed=0)
 baseline_our = results_1['param_baseline']
 alpha_our = results_1['param_alpha']
 print(np.abs(results_1['param_baseline']))  # baseline))
@@ -114,15 +101,8 @@ print(np.abs(results_1['param_kernel'][1]))
 
 
 def run_experiment(baseline, alpha, m, sigma, T, dt, seed=0):
-    v = 0.2
     events = simulate_data(baseline, alpha, m, sigma, T, dt, seed=seed)
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    m_init = m + v
-    sigma_init = sigma - v
-    results = run_solver(events, m_init, sigma_init,
-                         baseline_init, alpha_init,
-                         T, dt, seed)
+    results = run_solver(events, T, dt, seed)
     return results
 
 
@@ -157,3 +137,5 @@ df['err_norm2'] = df.apply(
     lambda x: compute_norm2_error(x), axis=1)
 
 df.to_csv('results/error_discrete_TG.csv', index=False)
+
+# %%

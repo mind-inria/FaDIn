@@ -3,12 +3,13 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fadin.utils.utils import optimizer, projected_grid
-from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
-    get_ztzG_approx
+from fadin.utils.utils import optimizer, projected_grid, \
+    init_kernel_parameters
+from fadin.utils.compute_constants import compute_constants_fadin
 from fadin.loss_and_gradient import compute_gradient_fadin
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.init import init_hawkes_params
+
 
 
 class FaDIn(object):
@@ -98,9 +99,6 @@ class FaDIn(object):
         ztzG is approximated with Toeplitz matrix not taking into account
         edge effects.
 
-    device : `str` in ``{'cpu' | 'cuda'}``
-        Computations done on cpu or gpu. Gpu is not implemented yet.
-
     log : `boolean`, `default=False`
         Record the loss values during the optimization.
 
@@ -140,13 +138,13 @@ class FaDIn(object):
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, ztzG_approx=True,
-                 device='cpu', log=False, grad_kernel=None,
+                 log=False, grad_kernel=None,
                  tol=10e-5, random_state=None):
 
         # Discretization parameters
         self.delta = delta
-        self.W = kernel_length
-        self.L = int(self.W / delta)
+        self.kernel_length = kernel_length
+        self.L = int(kernel_length / delta)
         self.ztzG_approx = ztzG_approx
 
         # Optimizer parameters
@@ -206,11 +204,6 @@ class FaDIn(object):
         else:
             torch.manual_seed(random_state)
 
-        if torch.cuda.is_available() and device == 'cuda':
-            self.device = 'cuda'
-        else:
-            self.device = 'cpu'
-
     def fit(self, events, end_time):
         """Learn the parameters of the Hawkes processes on a discrete grid.
 
@@ -230,7 +223,7 @@ class FaDIn(object):
         """
         # Initialize solver parameters
         n_grid = int(1 / self.delta) * end_time + 1
-        discretization = torch.linspace(0, self.W, self.L)
+        discretization = torch.linspace(0, self.kernel_length, self.L)
         events_grid = projected_grid(events, self.delta, n_grid)
         n_events = events_grid.sum(1)
         n_ground_events = [events[i].shape[0] for i in range(len(events))]
@@ -255,20 +248,11 @@ class FaDIn(object):
         ####################################################
         # Precomputations
         ####################################################
-        if self.precomputations:
-            start = time.time()
-            zG = get_zG(events_grid.double().numpy(), self.L)
-            zN = get_zN(events_grid.double().numpy(), self.L)
-
-            if self.ztzG_approx:
-                ztzG = get_ztzG_approx(events_grid.double().numpy(), self.L)
-            else:
-                ztzG = get_ztzG(events_grid.double().numpy(), self.L)
-
-            self.zG = torch.tensor(zG).float()
-            self.zN = torch.tensor(zN).float()
-            self.ztzG = torch.tensor(ztzG).float()
-            print('precomput:', time.time() - start)
+        start = time.time()
+        self.zG, self.zN, self.ztzG = compute_constants_fadin(events_grid,
+                                                              self.L,
+                                                              self.ztzG_approx)
+        print('precomput:', time.time() - start)
 
         ####################################################
         # save results
@@ -377,6 +361,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
                                          solver.n_dim,
                                          kernel=solver.kernel,
                                          kernel_length=solver.W)
+
     kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
                                       discretization).detach()
     # Plot

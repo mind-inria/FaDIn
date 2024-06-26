@@ -3,14 +3,11 @@
 import itertools
 import time
 import numpy as np
-import torch
 import pandas as pd
 from joblib import Parallel, delayed
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
-from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
-
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
 ################################
 # Meta parameters
@@ -32,56 +29,37 @@ decay = np.array([[5]])
 
 
 # @mem.cache
-def simulate_data(baseline, alpha, decay, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
-    Exp = DiscreteKernelFiniteSupport(dt, 1, kernel='truncated_exponential')
-    kernel_values = Exp.kernel_eval([torch.Tensor(decay)], discretization)
-    kernel_values = kernel_values * alpha[:, :, None]
-
-    t_values = discretization.double().numpy()
-    k = kernel_values[0, 0].double().numpy()
-
-    tf = HawkesKernelTimeFunc(t_values=t_values, y_values=k)
-    kernels = [[tf]]
-    hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
-    )
-
-    hawkes.simulate()
-    events = hawkes.timestamps
+def simulate_data(baseline, alpha, decay, T, seed=0):
+    kernel = 'expon'
+    events = simu_hawkes_cluster(T, baseline, alpha, kernel,
+                                 params_kernel={'scale': 1 / decay},
+                                 random_state=seed)
     return events
 
 
-events = simulate_data(baseline, alpha, decay, T, dt, seed=0)
+events = simulate_data(baseline, alpha, decay, T, seed=0)
 
 
 # @mem.cache
-def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
+def run_solver(events, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
-    init = {
-        'alpha': torch.tensor(alpha_init),
-        'baseline': torch.tensor(baseline_init),
-        'kernel': [torch.tensor(decay_init)]
-    }
-    solver = FaDIn(2,
+
+    solver = FaDIn(1,
                    "truncated_exponential",
-                   init=init,
                    delta=dt,
                    optim="RMSprop",
-                   step_size=1e-3,
                    max_iter=max_iter,
                    kernel_length=10,
                    log=False,
-                   random_state=0,
-                   device="cpu",
+                   random_state=0
                    )
+
     print(time.time() - start)
-    results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),
-                    param_alpha=results['param_alpha'][-10:].mean().item(),
-                    param_kernel=[results['param_kernel'][0][-10:].mean().item()])
+    solver.fit(events, T)
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean().item(),
+                    param_alpha=solver.param_alpha[-10:].mean().item(),
+                    param_kernel=[solver.param_kernel[0][-10:].mean().item()])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
@@ -93,13 +71,8 @@ def run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
 
 
 def run_experiment(baseline, alpha, decay, T, dt, seed=0):
-    v = 0.2
-    events = simulate_data(baseline, alpha, decay, T, dt, seed=seed)
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    decay_init = decay + v
-
-    results = run_solver(events, decay_init, baseline_init, alpha_init, T, dt, seed)
+    events = simulate_data(baseline, alpha, decay, T, seed=seed)
+    results = run_solver(events, T, dt, seed)
 
     return results
 
@@ -136,3 +109,5 @@ df.to_csv('results/error_discrete_EXP.csv', index=False)
 
 # df['param_sigma'] = df['param_kernel'].apply(lambda x: x[1])
 # , 'sigma': 0.3}
+
+# %%
