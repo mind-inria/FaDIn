@@ -158,9 +158,9 @@ class FaDIn(object):
             self.delta,
             self.n_dim,
             kernel,
-            self.W,
+            self.kernel_length,
             0,
-            self.W,
+            self.kernel_length,
             grad_kernel
         )
         if optim_mask is None:
@@ -356,11 +356,11 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
 
     """
     # Recover kernel time values and y values for kernel plot
-    discretization = torch.linspace(0, solver.W, 200)
+    discretization = torch.linspace(0, solver.kernel_length, 200)
     kernel = DiscreteKernelFiniteSupport(solver.delta,
                                          solver.n_dim,
                                          kernel=solver.kernel,
-                                         kernel_length=solver.W)
+                                         kernel_length=solver.kernel_length)
 
     kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
                                       discretization).detach()
@@ -381,7 +381,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
             axs[i, j].hlines(
                 y=solver.baseline[i].item(),
                 xmin=0,
-                xmax=solver.W,
+                xmax=solver.kernel_length,
                 label=label,
                 color='orange',
                 linewidth=4
@@ -393,7 +393,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
                 axs[i, j].hlines(
                     y=solver.baseline_noise[i].item(),
                     xmin=0,
-                    xmax=solver.W,
+                    xmax=solver.kernel_length,
                     label=label,
                     color='green',
                     linewidth=4
