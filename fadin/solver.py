@@ -3,13 +3,11 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fadin.utils.utils import optimizer, projected_grid, \
-    init_kernel_parameters
+from fadin.utils.utils import optimizer, projected_grid
 from fadin.utils.compute_constants import compute_constants_fadin
 from fadin.loss_and_gradient import compute_gradient_fadin
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.init import init_hawkes_params
-
 
 
 class FaDIn(object):
