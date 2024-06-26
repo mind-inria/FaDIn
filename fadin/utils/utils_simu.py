@@ -84,7 +84,7 @@ class custom_distribution(stats.rv_continuous):
     # function to normalise the pdf over chosen domain
 
     def normalisation(self, x):
-        return simpson(self.pdf(x), x)
+        return simpson(self.pdf(x), x=x)
 
     def create_cdf_ppf(self):
         # define normalization support with the given kernel length
