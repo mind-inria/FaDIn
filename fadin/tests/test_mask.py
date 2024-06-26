@@ -56,10 +56,16 @@ optim_mask = {
     'baseline': torch.Tensor([0, 0]),
     'alpha': torch.Tensor([[0, 0], [1, 0]])
 }
-init1 = {
+init1_rc = {
     'alpha': torch.Tensor([[0.2, 0.4], [0.7, 0.9]]),
     'baseline': torch.Tensor([0.7, 0.4]),
-    'kernel': None
+    'kernel': [torch.Tensor([[0.5, 0.5], [0.5, 0.5]]),
+               torch.Tensor([[0.25, 0.25], [0.25, 0.25]])]
+}
+init1_exp = {
+    'alpha': torch.Tensor([[0.2, 0.4], [0.7, 0.9]]),
+    'baseline': torch.Tensor([0.7, 0.4]),
+    'kernel': [torch.Tensor([[0.5, 0.5], [0.5, 0.5]])]
 }
 init2 = 'random'
 init3 = 'moment_matching_mean'
@@ -80,7 +86,7 @@ def test_exp_mask():
                                  random_state=simu_random_state)
 
     # Fit Hawkes process to exponential simulation
-    for init in [init1, init2]:
+    for init in [init1_exp, init2]:
         exp_bl, exp_alpha = maskedsolver(
             kernel='truncated_exponential',
             events=events, T=T,
@@ -111,7 +117,7 @@ def test_rc_mask():
                                     random_state=simu_random_state)
 
     # %% Fit Hawkes process to raised_cosine simulation
-    for init in [init1, init2, init3, init4]:
+    for init in [init1_rc, init2, init3, init4]:
         rc_bl, rc_alpha = maskedsolver(
             kernel='raised_cosine',
             events=events_rc,

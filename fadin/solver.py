@@ -3,11 +3,12 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fadin.utils.utils import optimizer, projected_grid, momentmatching_nomark
+from fadin.utils.utils import optimizer, projected_grid
 from fadin.utils.compute_constants import get_zG, get_zN, get_ztzG, \
     get_ztzG_approx
 from fadin.loss_and_gradient import compute_gradient_fadin
 from fadin.kernels import DiscreteKernelFiniteSupport
+from fadin.init import init_hawkes_params
 
 
 class FaDIn(object):
@@ -46,7 +47,7 @@ class FaDIn(object):
     kernel : `str` or `callable`
         Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
-    TODO: update moment_matching methods with DataFrame inputs
+
     init: `str` or `dict`, default='random'
         Initialization strategy of the parameters of the Hawkes process.
         If set to 'random', the parameters are initialized randomly.
@@ -56,12 +57,10 @@ class FaDIn(object):
         using the moment matching method with mean mode.
         Otherwise, the parameters are initialized using the given dictionary,
         , which must contain the following keys:
-        - 'baseline': `tensor` or `None`, shape (n_dim,): Initial baseline
-        - 'alpha': `tensor` or `None`, shape (n_dim, n_dim): Initial alpha
-        - 'kernel': `list` of tensors of shape (n_dim, n_dim) or `None`:
-        Initial kernel parameters
-        Note that when at least one of 'baseline', 'alpha', or 'kernel'
-        is set to None, the corresponding parameters are initialized randomly.
+        - 'baseline': `tensor`, shape (n_dim,): Initial baseline
+        - 'alpha': `tensor`, shape (n_dim, n_dim): Initial alpha
+        - 'kernel': `list` of tensors of shape (n_dim, n_dim):
+        Initial kernel parameters.
 
     optim_mask: `dict` of `tensor` or `None`, default=`None`.
         Dictionary containing the masks for the optimization of the parameters
@@ -151,87 +150,55 @@ class FaDIn(object):
         self.ztzG_approx = ztzG_approx
 
         # Optimizer parameters
+        self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
         self.log = log
         self.tol = tol
+        self.n_dim = n_dim
+        self.kernel_model = DiscreteKernelFiniteSupport(
+            self.delta,
+            self.n_dim,
+            kernel,
+            self.W,
+            0,
+            self.W,
+            grad_kernel
+        )
         if optim_mask is None:
             optim_mask = {'baseline': None, 'alpha': None}
-
-        # Model parameters
-        self.n_dim = n_dim
-        self.moment_matching = ('moment_matching' in init)
-        if self.moment_matching:
-            self.mm_mode = init.split('_')[-1]
-        random_bl_init = init == 'random' or self.moment_matching
-        if random_bl_init or init['baseline'] is None:
-            self.baseline = torch.rand(self.n_dim)
-        else:
-            self.baseline = init['baseline'].float()
         if optim_mask['baseline'] is None:
             self.baseline_mask = torch.ones([n_dim])
         else:
-            assert optim_mask['baseline'].shape == self.baseline.shape, \
+            assert optim_mask['baseline'].shape == torch.Size([n_dim]), \
                 "Invalid baseline_mask shape, must be (n_dim,)"
             self.baseline_mask = optim_mask['baseline']
-        bl = self.baseline * self.baseline_mask
-        self.baseline = bl.requires_grad_(True)
-
-        if init == 'random' or self.moment_matching or init['alpha'] is None:
-            self.alpha = torch.rand(self.n_dim, self.n_dim)
-        else:
-            self.alpha = init['alpha'].float()
         if optim_mask['alpha'] is None:
             self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
         else:
-            assert optim_mask['alpha'].shape == self.alpha.shape, \
+            assert optim_mask['alpha'].shape == torch.Size([n_dim, n_dim]), \
                 "Invalid alpha_mask shape, must be (n_dim, n_dim)"
             self.alpha_mask = optim_mask['alpha']
-        self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
 
-        if init == 'random' or self.moment_matching or init['kernel'] is None:
-            kernel_params_init = []
-            if kernel == 'raised_cosine':
-                temp = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
-                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
-                kernel_params_init.append(temp)
-                kernel_params_init.append(temp2)
-            elif kernel == 'truncated_gaussian':
-                temp = 0.25 * self.W * torch.rand(self.n_dim, self.n_dim)
-                temp2 = 0.5 * self.W * torch.rand(self.n_dim, self.n_dim)
-                kernel_params_init.append(temp)
-                kernel_params_init.append(temp2)
-            elif kernel == 'truncated_exponential':
-                kernel_params_init.append(2 * torch.rand(self.n_dim,
-                                                         self.n_dim))
-            else:
-                raise NotImplementedError(
-                    'kernel initial parameters of not \
-                     implemented kernel have to be given'
-                )
-
-        self.kernel_params_fixed = kernel_params_init
-
-        self.n_kernel_params = len(kernel_params_init)
-
-        self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
-                                                        kernel,
-                                                        self.W, 0, self.W,
-                                                        grad_kernel)
-        self.kernel = kernel
-        # Set optimizer
-        self.params_intens = [self.baseline, self.alpha]
-
-        for i in range(self.n_kernel_params):
-            self.params_intens.append(
-                kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
+        # Model parameters
+        if 'moment_matching' in init:
+            self.init_mode = 'moment_matching'
+            self.mm_mode = init.split('_')[-1]
+        elif init == 'random':
+            self.init_mode = 'random'
+        else:
+            self.init_mode = init
+            assert 'baseline' in init.keys(), \
+                "baseline parameter must be given"
+            assert 'alpha' in init.keys(), \
+                "alpha parameter must be given"
+            assert 'kernel' in init.keys(), \
+                "kernel parameter must be given"
 
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' not in params_optim.keys():
             params_optim['lr'] = 1e-3
         self.params_solver = params_optim
-
-        # self.opt = optimizer(self.params_intens, params_optim, solver=optim)
 
         # device and seed
         if random_state is None:
@@ -261,6 +228,7 @@ class FaDIn(object):
         self : object
             Fitted parameters.
         """
+        # Initialize solver parameters
         n_grid = int(1 / self.delta) * end_time + 1
         discretization = torch.linspace(0, self.W, self.L)
         events_grid = projected_grid(events, self.delta, n_grid)
@@ -268,21 +236,16 @@ class FaDIn(object):
         n_ground_events = [events[i].shape[0] for i in range(len(events))]
         print('number of events is:', n_ground_events)
         n_ground_events = torch.tensor(n_ground_events)
+        # Initialize Hawkes parameters
+        self.params_intens = init_hawkes_params(
+            self,
+            self.init_mode,
+            events,
+            n_ground_events,
+            end_time
+        )
 
-        if self.moment_matching:
-            # Moment matching initialization of Hawkes parameters
-            baseline, alpha, kernel_params_init = momentmatching_nomark(
-                self, events, n_ground_events, end_time, self.mm_mode
-            )
-            self.baseline = baseline
-            self.alpha = alpha
-            # Set optimizer with moment_matching parameters
-            self.params_intens = [self.baseline, self.alpha]
-
-            for i in range(self.n_kernel_params):
-                kernel_param = kernel_params_init[i].float().clip(1e-4)
-                kernel_param.requires_grad_(True)
-                self.params_intens.append(kernel_param)
+        # Initialize optimizer
         self.opt = optimizer(
             self.params_intens,
             self.params_solver,
