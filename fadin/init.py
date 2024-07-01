@@ -10,6 +10,8 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     - 'random': Random initialization of parameters.
     - 'moment_matching': Moment matching initialization of parameters.
     - given: parameters are given by user.
+
+    Parameters
     ----------
     solver : FaDIn
         FaDIn solver.
