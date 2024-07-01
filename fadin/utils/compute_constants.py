@@ -1,5 +1,6 @@
 import numba
 import numpy as np
+import torch
 from scipy.linalg import toeplitz
 
 
@@ -131,3 +132,20 @@ def get_ztzG_approx_(events_grid, L):
         for j in range(n_dim):
             ztzG[i, j] = toeplitz(diff_tau[i, j])
     return ztzG
+
+
+def compute_constants_fadin(events_grid, L, ztzG_approx=True):
+    """Compute all precomputations"""
+    zG = get_zG(events_grid.double().numpy(), L)
+    zN = get_zN(events_grid.double().numpy(), L)
+
+    if ztzG_approx:
+        ztzG = get_ztzG_approx(events_grid.double().numpy(), L)
+    else:
+        ztzG = get_ztzG(events_grid.double().numpy(), L)
+
+    zG = torch.tensor(zG).float()
+    zN = torch.tensor(zN).float()
+    ztzG = torch.tensor(ztzG).float()
+
+    return zG, zN, ztzG
