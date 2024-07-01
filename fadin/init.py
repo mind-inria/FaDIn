@@ -163,7 +163,31 @@ def momentmatching_nomark(solver, events, n_ground_events, end_time,
 
     $\\mu_i^s = \frac{\\#\\mathscr{F}^i_T}{(D+1)T} \forall i \\in [1, D]$
     $\\alpha_{i, j}^s = \\frac{1}{D+1} \\forall i,j \\in [1, D]$
-    Kernel parameters are initialized by `momentmatching_kernel`.
+    Kernel parameters are initialized by function 
+    momentmatching_kernel_nomark`.
+
+    Parameters
+    ----------
+    solver: FaDIn
+        FaDIn solver.
+    events: list of array of size number of timestamps,
+        list size is self.n_dim.
+    n_ground_events : torch.tensor
+        Number of ground events for each dimension
+    end_time: float
+        End time of the events time series.
+    mode: `str`
+        Mode to compute the delta_t distribution. Supported values are 'max'
+        and 'mean'.
+
+    Returns
+    -------
+    baseline: torch.tensor
+        Baseline parameter of the Hawkes process.
+    alpha: torch.tensor
+        Weight parameter of the Hawkes process.
+    kernel_params_init: list of torch.tensor
+        List of kernel parameters.
     """
     assert solver.kernel in ['truncated_gaussian', 'raised_cosine'], (
         f"Smart initialization not implemented for kernel {solver.kernel}"
@@ -184,8 +208,21 @@ def momentmatching_nomark(solver, events, n_ground_events, end_time,
 def random_params(solver):
     """Random initialization of baseline, alpha, and kernel parameters.
 
-    Baseline and alpha are initialized with uniform distribution.
-    Kernel parameters are initialized with uniform distribution.
+    Hawkes parameters are initialized using a random distribution.
+
+    Parameters
+    ----------
+    solver : FaDIn
+        FaDIn solver.
+
+    Returns
+    -------
+    baseline: torch.tensor
+        Baseline parameter of the Hawkes process.
+    alpha: torch.tensor
+        Weight parameter of the Hawkes process.
+    kernel_params_init: list of torch.tensor
+        List of kernel parameters.
     """
     # Baseline init
     baseline = torch.rand(solver.n_dim)
