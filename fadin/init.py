@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     """
     Computes the initial Hawkes parameters for the FaDIn solver.
+
     The function supports three modes of initialization:
     - 'random': Random initialization of parameters.
     - 'moment_matching': Moment matching initialization of parameters.
