@@ -7,8 +7,8 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     Computes the initial Hawkes parameters for the FaDIn solver.
 
     The function supports three modes of initialization:
-    - 'random': Random initialization of parameters.
-    - 'moment_matching': Moment matching initialization of parameters.
+    - 'random': random initialization of parameters.
+    - 'moment_matching': moment matching initialization of parameters.
     - given: parameters are given by user.
 
     Parameters
@@ -16,8 +16,9 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     solver : FaDIn
         FaDIn solver.
     init_mode: `str` or `dict`
-        Mode of initialization. Supported values are 'random', 'moment_matching', and 
-        a dictionary with keys 'baseline', 'alpha' and 'kernel'.
+        Mode of initialization. Supported values are 'random',
+        'moment_matching', and a dictionary with keys 'baseline', 'alpha' and
+        'kernel'.
     events: list of array of size number of timestamps,
         list size is self.n_dim.
     n_ground_events : torch.tensor
@@ -28,7 +29,8 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     Returns:
     --------
     params_intens: list
-        List of parameters of the Hawkes process. [baseline, alpha, kernel_params]
+        List of parameters of the Hawkes process.
+        [baseline, alpha, kernel_params]
         baseline : `tensor`, shape `(solver.n_dim)`
             Baseline parameter of the Hawkes process.
         alpha : `tensor`, shape `(solver.n_dim, n_dim)`
@@ -36,7 +38,8 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
         kernel_params : `list` of `tensor`
             list containing tensor array of kernels parameters.
             The size of the list varies depending the number of
-            parameters. The shape of each tensor is `(solver.n_dim, solver.n_dim)`.
+            parameters. The shape of each tensor is
+            `(solver.n_dim, solver.n_dim)`.
     """
     # Compute initial Hawkes parameters
     if init_mode == 'moment_matching':
@@ -193,13 +196,17 @@ def random_params(solver):
     # Kernel parameters init
     kernel_params_init = []
     if solver.kernel == 'raised_cosine':
-        temp = 0.5 * solver.kernel_length * torch.rand(solver.n_dim, solver.n_dim)
-        temp2 = 0.5 * solver.kernel_length * torch.rand(solver.n_dim, solver.n_dim)
+        temp = 0.5 * solver.kernel_length * \
+            torch.rand(solver.n_dim, solver.n_dim)
+        temp2 = 0.5 * solver.kernel_length * \
+            torch.rand(solver.n_dim, solver.n_dim)
         kernel_params_init.append(temp)
         kernel_params_init.append(temp2)
     elif solver.kernel == 'truncated_gaussian':
-        temp = 0.25 * solver.kernel_length * torch.rand(solver.n_dim, solver.n_dim)
-        temp2 = 0.5 * solver.kernel_length * torch.rand(solver.n_dim, solver.n_dim)
+        temp = 0.25 * solver.kernel_length * \
+            torch.rand(solver.n_dim, solver.n_dim)
+        temp2 = 0.5 * solver.kernel_length * \
+            torch.rand(solver.n_dim, solver.n_dim)
         kernel_params_init.append(temp)
         kernel_params_init.append(temp2)
     elif solver.kernel == 'truncated_exponential':
