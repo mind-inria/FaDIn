@@ -69,8 +69,9 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
 
 def momentmatching_kernel_nomark(solver, events, n_ground_events,
                                  plot_delta=False, mode='max'):
-    """Moment matching initialization of kernel parameters. Implemented for
-    'truncated_gaussian' and 'raised_cosine' kernels.
+    """Moment matching initialization of kernel parameters.
+
+    Implemented for 'truncated_gaussian' and 'raised_cosine' kernels.
     For the truncated gaussian kernel, the means $m_{i,j}$ and std
     $\\sigma_{i,j}$ are:
     $m_{i, j} =
