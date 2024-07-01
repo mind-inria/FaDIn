@@ -179,7 +179,8 @@ def momentmatching_nomark(solver, events, n_ground_events, end_time,
 
 
 def random_params(solver):
-    """Random initialization of baseline, alpha and kernel parameters.
+    """Random initialization of baseline, alpha, and kernel parameters.
+
     Baseline and alpha are initialized with uniform distribution.
     Kernel parameters are initialized with uniform distribution.
     """
