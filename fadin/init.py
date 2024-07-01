@@ -157,6 +157,7 @@ def momentmatching_kernel_nomark(solver, events, n_ground_events,
 def momentmatching_nomark(solver, events, n_ground_events, end_time,
                           mode='max'):
     """Moment matching initialization of baseline, alpha and kernel parameters.
+
     $\\mu_i^s = \frac{\\#\\mathscr{F}^i_T}{(D+1)T} \forall i \\in [1, D]$
     $\\alpha_{i, j}^s = \\frac{1}{D+1} \\forall i,j \\in [1, D]$
     Kernel parameters are initialized by `momentmatching_kernel`.
