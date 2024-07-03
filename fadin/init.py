@@ -2,7 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 
 
-def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
+def init_hawkes_params(solver, init, events, n_ground_events, end_time):
     """
     Computes the initial Hawkes parameters for the FaDIn solver.
 
@@ -15,7 +15,7 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
     ----------
     solver : FaDIn
         FaDIn solver.
-    init_mode: `str` or `dict`
+    init: `str` or `dict`
         Mode of initialization. Supported values are 'random',
         'moment_matching', and a dictionary with keys 'baseline', 'alpha' and
         'kernel'.
@@ -42,20 +42,21 @@ def init_hawkes_params(solver, init_mode, events, n_ground_events, end_time):
             `(solver.n_dim, solver.n_dim)`.
     """
     # Compute initial Hawkes parameters
-    if init_mode == 'moment_matching':
+    if 'moment_matching' in init:
+        mm_mode = init.split('_')[-1]
         baseline, alpha, kernel_params_init = momentmatching_nomark(
             solver,
             events,
             n_ground_events,
             end_time,
-            solver.mm_mode
+            mm_mode
         )
-    elif init_mode == 'random':
+    elif init == 'random':
         baseline, alpha, kernel_params_init = random_params(solver)
     else:
-        baseline = init_mode['baseline'].float()
-        alpha = init_mode['alpha'].float()
-        kernel_params_init = init_mode['kernel']
+        baseline = init['baseline'].float()
+        alpha = init['alpha'].float()
+        kernel_params_init = init['kernel']
 
     # Format initial parameters for optimization
     baseline = (baseline * solver.baseline_mask).requires_grad_(True)

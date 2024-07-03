@@ -59,7 +59,7 @@ class FaDIn(object):
         - 'baseline': `tensor`, shape (n_dim,): Initial baseline
         - 'alpha': `tensor`, shape (n_dim, n_dim): Initial alpha
         - 'kernel': `list` of tensors of shape (n_dim, n_dim):
-        Initial kernel parameters.
+            Initial kernel parameters.
 
     optim_mask: `dict` of `tensor` or `None`, default=`None`.
         Dictionary containing the masks for the optimization of the parameters
@@ -176,20 +176,17 @@ class FaDIn(object):
                 "Invalid alpha_mask shape, must be (n_dim, n_dim)"
             self.alpha_mask = optim_mask['alpha']
 
-        # Model parameters
-        if 'moment_matching' in init:
-            self.init_mode = 'moment_matching'
-            self.mm_mode = init.split('_')[-1]
-        elif init == 'random':
-            self.init_mode = 'random'
+        # Initialization option for Hawkes parameters
+        if isinstance(init, str):
+            s = ['random', 'moment_matching_max', 'moment_matching_mean']
+            assert init in s, \
+                f"Invalid string init {init}. init must be a dict or in {s}."
         else:
-            self.init_mode = init
-            assert 'baseline' in init.keys(), \
-                "baseline parameter must be given"
-            assert 'alpha' in init.keys(), \
-                "alpha parameter must be given"
-            assert 'kernel' in init.keys(), \
-                "kernel parameter must be given"
+            keys_ok = set(init.keys()) == set(['baseline', 'alpha', 'kernel'])
+            is_dict = isinstance(init, dict)
+            assert is_dict and len(init.keys()) == 3 and keys_ok, \
+                "Dict init must contain keys 'baseline', 'alpha' and 'kernel'"
+        self.init = init
 
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' not in params_optim.keys():
@@ -230,7 +227,7 @@ class FaDIn(object):
         # Initialize Hawkes parameters
         self.params_intens = init_hawkes_params(
             self,
-            self.init_mode,
+            self.init,
             events,
             n_ground_events,
             end_time
