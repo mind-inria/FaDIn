@@ -177,15 +177,18 @@ class FaDIn(object):
             self.alpha_mask = optim_mask['alpha']
 
         # Initialization option for Hawkes parameters
+        s = ['random', 'moment_matching_max', 'moment_matching_mean']
         if isinstance(init, str):
-            s = ['random', 'moment_matching_max', 'moment_matching_mean']
-            assert init in s, \
+            assert init in s, (
                 f"Invalid string init {init}. init must be a dict or in {s}."
+            )
         else:
-            keys_ok = set(init.keys()) == set(['baseline', 'alpha', 'kernel'])
+            keys = set(['baseline', 'alpha', 'kernel'])
             is_dict = isinstance(init, dict)
-            assert is_dict and len(init.keys()) == 3 and keys_ok, \
-                "Dict init must contain keys 'baseline', 'alpha' and 'kernel'"
+            assert is_dict and set(init.keys()) == keys, (
+                f"If init is not a str, it should be a dict with keys {keys}. "
+                f"Got {init}."
+            )
         self.init = init
 
         # If the learning rate is not given, fix it to 1e-3
