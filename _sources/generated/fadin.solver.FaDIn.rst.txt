@@ -14,10 +14,17 @@
    .. autosummary::
    
       ~FaDIn.__init__
+      ~FaDIn.compute_gradient
       ~FaDIn.fit
    
    
 
    
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~FaDIn.precomputations
    
    

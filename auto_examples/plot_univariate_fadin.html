@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="FaDIn on simulated 2-d Hawkes processes" href="plot_multivariate_fadin.html" /><link rel="prev" title="Examples Gallery" href="index.html" />
 
-    <!-- Generated with Sphinx 7.1.2 and Furo 2024.01.29 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.05.06 -->
         <title>FaDIn on simulated univariate Hawkes processes - fadin 0.1.dev0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=045299b1" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
@@ -73,7 +73,7 @@
   <symbol id="svg-sun" viewBox="0 0 24 24">
     <title>Light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
       <circle cx="12" cy="12" r="5"></circle>
       <line x1="12" y1="1" x2="12" y2="3"></line>
       <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -88,7 +88,7 @@
   <symbol id="svg-moon" viewBox="0 0 24 24">
     <title>Dark mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
@@ -96,7 +96,7 @@
   <symbol id="svg-sun-half" viewBox="0 0 24 24">
     <title>Auto light/dark mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <circle cx="12" cy="12" r="9" />
       <path d="M13 12h5" />
@@ -104,6 +104,60 @@
       <path d="M13 18h1" />
       <path d="M13 9h4" />
       <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
 </svg>
@@ -116,6 +170,8 @@
 <label class="overlay toc-overlay" for="__toc">
   <div class="visually-hidden">Hide table of contents sidebar</div>
 </label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
 
 
 
@@ -134,7 +190,8 @@
       <div class="theme-toggle-container theme-toggle-header">
         <button class="theme-toggle">
           <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
           <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
@@ -195,10 +252,12 @@
         </a>
         <div class="content-icon-container">
           
+
 <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
-              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
               <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
@@ -208,14 +267,14 @@
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <article role="main">
+        <article role="main" id="furo-main-content">
           <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="#sphx-glr-download-auto-examples-plot-univariate-fadin-py"><span class="std std-ref">Go to the end</span></a>
-to download the full example code</p>
+to download the full example code.</p>
 </div>
 <section class="sphx-glr-example-title" id="fadin-on-simulated-univariate-hawkes-processes">
-<span id="sphx-glr-auto-examples-plot-univariate-fadin-py"></span><h1>FaDIn on simulated univariate Hawkes processes<a class="headerlink" href="#fadin-on-simulated-univariate-hawkes-processes" title="Permalink to this heading">#</a></h1>
+<span id="sphx-glr-auto-examples-plot-univariate-fadin-py"></span><h1>FaDIn on simulated univariate Hawkes processes<a class="headerlink" href="#fadin-on-simulated-univariate-hawkes-processes" title="Permalink to this heading">¶</a></h1>
 <p>This example demonstrates inference performed
 by FaDIn on univariate Hawkes processes simulated
 with specific kernels.</p>
@@ -285,6 +344,15 @@ Simulate generation 23
 Simulate generation 24
 Simulate generation 25
 Simulate generation 26
+Simulate generation 27
+Simulate generation 28
+Simulate generation 29
+Simulate generation 30
+Simulate generation 31
+Simulate generation 32
+Simulate generation 33
+Simulate generation 34
+Simulate generation 35
 </pre></div>
 </div>
 <p>Here, we apply FaDIn.</p>
@@ -293,7 +361,7 @@ Simulate generation 26
                <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kernel_length</span></a><span class="p">,</span>
                <span class="n">delta</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a><span class="p">,</span> <span class="n">optim</span><span class="o">=</span><span class="s2">&quot;RMSprop&quot;</span><span class="p">,</span>
                <span class="n">params_optim</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;lr&#39;</span><span class="p">:</span> <span class="mf">1e-3</span><span class="p">},</span>
-               <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;l2&#39;</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span>
                <span class="p">)</span>
 <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">solver</span></a><span class="o">.</span><span class="n">fit</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T</span></a><span class="p">)</span>
 
@@ -308,8 +376,8 @@ Simulate generation 26
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Estimated beta parameter of the exponential kernel is:&#39;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: 19101
-precomput: 1.4645137786865234
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: [20346]
+precomput: 1.5059421062469482
 Fitting model...   0.0%
 Fitting model...   0.1%
 Fitting model...   0.1%
@@ -1511,11 +1579,809 @@ Fitting model...  59.9%
 Fitting model...  59.9%
 Fitting model...  60.0%
 Fitting model...  60.0%
-early stopping at iteration: 1200
-iterations in  1.5178656578063965
-Estimated baseline is: 0.3707818388938904
-Estimated alpha is: 0.806178092956543
-Estimated beta parameter of the exponential kernel is: 0.9326611757278442
+Fitting model...  60.1%
+Fitting model...  60.1%
+Fitting model...  60.2%
+Fitting model...  60.2%
+Fitting model...  60.2%
+Fitting model...  60.3%
+Fitting model...  60.4%
+Fitting model...  60.4%
+Fitting model...  60.5%
+Fitting model...  60.5%
+Fitting model...  60.6%
+Fitting model...  60.6%
+Fitting model...  60.7%
+Fitting model...  60.7%
+Fitting model...  60.8%
+Fitting model...  60.8%
+Fitting model...  60.9%
+Fitting model...  60.9%
+Fitting model...  61.0%
+Fitting model...  61.0%
+Fitting model...  61.1%
+Fitting model...  61.1%
+Fitting model...  61.2%
+Fitting model...  61.2%
+Fitting model...  61.3%
+Fitting model...  61.3%
+Fitting model...  61.4%
+Fitting model...  61.4%
+Fitting model...  61.5%
+Fitting model...  61.5%
+Fitting model...  61.6%
+Fitting model...  61.6%
+Fitting model...  61.7%
+Fitting model...  61.7%
+Fitting model...  61.8%
+Fitting model...  61.8%
+Fitting model...  61.9%
+Fitting model...  61.9%
+Fitting model...  62.0%
+Fitting model...  62.0%
+Fitting model...  62.1%
+Fitting model...  62.1%
+Fitting model...  62.2%
+Fitting model...  62.2%
+Fitting model...  62.3%
+Fitting model...  62.3%
+Fitting model...  62.4%
+Fitting model...  62.4%
+Fitting model...  62.5%
+Fitting model...  62.5%
+Fitting model...  62.5%
+Fitting model...  62.6%
+Fitting model...  62.6%
+Fitting model...  62.7%
+Fitting model...  62.7%
+Fitting model...  62.8%
+Fitting model...  62.8%
+Fitting model...  62.9%
+Fitting model...  62.9%
+Fitting model...  63.0%
+Fitting model...  63.0%
+Fitting model...  63.1%
+Fitting model...  63.1%
+Fitting model...  63.2%
+Fitting model...  63.2%
+Fitting model...  63.3%
+Fitting model...  63.3%
+Fitting model...  63.4%
+Fitting model...  63.4%
+Fitting model...  63.5%
+Fitting model...  63.5%
+Fitting model...  63.6%
+Fitting model...  63.6%
+Fitting model...  63.7%
+Fitting model...  63.7%
+Fitting model...  63.8%
+Fitting model...  63.8%
+Fitting model...  63.9%
+Fitting model...  63.9%
+Fitting model...  64.0%
+Fitting model...  64.0%
+Fitting model...  64.1%
+Fitting model...  64.1%
+Fitting model...  64.2%
+Fitting model...  64.2%
+Fitting model...  64.3%
+Fitting model...  64.3%
+Fitting model...  64.4%
+Fitting model...  64.5%
+Fitting model...  64.5%
+Fitting model...  64.5%
+Fitting model...  64.6%
+Fitting model...  64.6%
+Fitting model...  64.7%
+Fitting model...  64.8%
+Fitting model...  64.8%
+Fitting model...  64.8%
+Fitting model...  64.9%
+Fitting model...  65.0%
+Fitting model...  65.0%
+Fitting model...  65.0%
+Fitting model...  65.1%
+Fitting model...  65.1%
+Fitting model...  65.2%
+Fitting model...  65.2%
+Fitting model...  65.3%
+Fitting model...  65.3%
+Fitting model...  65.4%
+Fitting model...  65.5%
+Fitting model...  65.5%
+Fitting model...  65.5%
+Fitting model...  65.6%
+Fitting model...  65.6%
+Fitting model...  65.7%
+Fitting model...  65.8%
+Fitting model...  65.8%
+Fitting model...  65.8%
+Fitting model...  65.9%
+Fitting model...  66.0%
+Fitting model...  66.0%
+Fitting model...  66.0%
+Fitting model...  66.1%
+Fitting model...  66.1%
+Fitting model...  66.2%
+Fitting model...  66.2%
+Fitting model...  66.3%
+Fitting model...  66.3%
+Fitting model...  66.4%
+Fitting model...  66.5%
+Fitting model...  66.5%
+Fitting model...  66.5%
+Fitting model...  66.6%
+Fitting model...  66.6%
+Fitting model...  66.7%
+Fitting model...  66.8%
+Fitting model...  66.8%
+Fitting model...  66.8%
+Fitting model...  66.9%
+Fitting model...  67.0%
+Fitting model...  67.0%
+Fitting model...  67.0%
+Fitting model...  67.1%
+Fitting model...  67.2%
+Fitting model...  67.2%
+Fitting model...  67.2%
+Fitting model...  67.3%
+Fitting model...  67.3%
+Fitting model...  67.4%
+Fitting model...  67.5%
+Fitting model...  67.5%
+Fitting model...  67.5%
+Fitting model...  67.6%
+Fitting model...  67.7%
+Fitting model...  67.7%
+Fitting model...  67.8%
+Fitting model...  67.8%
+Fitting model...  67.8%
+Fitting model...  67.9%
+Fitting model...  68.0%
+Fitting model...  68.0%
+Fitting model...  68.0%
+Fitting model...  68.1%
+Fitting model...  68.2%
+Fitting model...  68.2%
+Fitting model...  68.2%
+Fitting model...  68.3%
+Fitting model...  68.3%
+Fitting model...  68.4%
+Fitting model...  68.5%
+Fitting model...  68.5%
+Fitting model...  68.5%
+Fitting model...  68.6%
+Fitting model...  68.7%
+Fitting model...  68.7%
+Fitting model...  68.8%
+Fitting model...  68.8%
+Fitting model...  68.8%
+Fitting model...  68.9%
+Fitting model...  69.0%
+Fitting model...  69.0%
+Fitting model...  69.0%
+Fitting model...  69.1%
+Fitting model...  69.2%
+Fitting model...  69.2%
+Fitting model...  69.2%
+Fitting model...  69.3%
+Fitting model...  69.3%
+Fitting model...  69.4%
+Fitting model...  69.5%
+Fitting model...  69.5%
+Fitting model...  69.5%
+Fitting model...  69.6%
+Fitting model...  69.7%
+Fitting model...  69.7%
+Fitting model...  69.8%
+Fitting model...  69.8%
+Fitting model...  69.8%
+Fitting model...  69.9%
+Fitting model...  70.0%
+Fitting model...  70.0%
+Fitting model...  70.0%
+Fitting model...  70.1%
+Fitting model...  70.2%
+Fitting model...  70.2%
+Fitting model...  70.2%
+Fitting model...  70.3%
+Fitting model...  70.3%
+Fitting model...  70.4%
+Fitting model...  70.5%
+Fitting model...  70.5%
+Fitting model...  70.5%
+Fitting model...  70.6%
+Fitting model...  70.7%
+Fitting model...  70.7%
+Fitting model...  70.8%
+Fitting model...  70.8%
+Fitting model...  70.9%
+Fitting model...  70.9%
+Fitting model...  71.0%
+Fitting model...  71.0%
+Fitting model...  71.0%
+Fitting model...  71.1%
+Fitting model...  71.2%
+Fitting model...  71.2%
+Fitting model...  71.2%
+Fitting model...  71.3%
+Fitting model...  71.4%
+Fitting model...  71.4%
+Fitting model...  71.5%
+Fitting model...  71.5%
+Fitting model...  71.5%
+Fitting model...  71.6%
+Fitting model...  71.7%
+Fitting model...  71.7%
+Fitting model...  71.8%
+Fitting model...  71.8%
+Fitting model...  71.9%
+Fitting model...  71.9%
+Fitting model...  72.0%
+Fitting model...  72.0%
+Fitting model...  72.0%
+Fitting model...  72.1%
+Fitting model...  72.2%
+Fitting model...  72.2%
+Fitting model...  72.2%
+Fitting model...  72.3%
+Fitting model...  72.4%
+Fitting model...  72.4%
+Fitting model...  72.5%
+Fitting model...  72.5%
+Fitting model...  72.5%
+Fitting model...  72.6%
+Fitting model...  72.7%
+Fitting model...  72.7%
+Fitting model...  72.8%
+Fitting model...  72.8%
+Fitting model...  72.9%
+Fitting model...  72.9%
+Fitting model...  73.0%
+Fitting model...  73.0%
+Fitting model...  73.0%
+Fitting model...  73.1%
+Fitting model...  73.2%
+Fitting model...  73.2%
+Fitting model...  73.2%
+Fitting model...  73.3%
+Fitting model...  73.4%
+Fitting model...  73.4%
+Fitting model...  73.5%
+Fitting model...  73.5%
+Fitting model...  73.6%
+Fitting model...  73.6%
+Fitting model...  73.7%
+Fitting model...  73.7%
+Fitting model...  73.8%
+Fitting model...  73.8%
+Fitting model...  73.9%
+Fitting model...  73.9%
+Fitting model...  74.0%
+Fitting model...  74.0%
+Fitting model...  74.1%
+Fitting model...  74.1%
+Fitting model...  74.2%
+Fitting model...  74.2%
+Fitting model...  74.2%
+Fitting model...  74.3%
+Fitting model...  74.4%
+Fitting model...  74.4%
+Fitting model...  74.5%
+Fitting model...  74.5%
+Fitting model...  74.6%
+Fitting model...  74.6%
+Fitting model...  74.7%
+Fitting model...  74.7%
+Fitting model...  74.8%
+Fitting model...  74.8%
+Fitting model...  74.9%
+Fitting model...  74.9%
+Fitting model...  75.0%
+Fitting model...  75.0%
+Fitting model...  75.0%
+Fitting model...  75.1%
+Fitting model...  75.1%
+Fitting model...  75.2%
+Fitting model...  75.2%
+Fitting model...  75.3%
+Fitting model...  75.3%
+Fitting model...  75.4%
+Fitting model...  75.4%
+Fitting model...  75.5%
+Fitting model...  75.5%
+Fitting model...  75.6%
+Fitting model...  75.6%
+Fitting model...  75.7%
+Fitting model...  75.8%
+Fitting model...  75.8%
+Fitting model...  75.8%
+Fitting model...  75.9%
+Fitting model...  75.9%
+Fitting model...  76.0%
+Fitting model...  76.0%
+Fitting model...  76.1%
+Fitting model...  76.1%
+Fitting model...  76.2%
+Fitting model...  76.2%
+Fitting model...  76.3%
+Fitting model...  76.3%
+Fitting model...  76.4%
+Fitting model...  76.4%
+Fitting model...  76.5%
+Fitting model...  76.5%
+Fitting model...  76.6%
+Fitting model...  76.6%
+Fitting model...  76.7%
+Fitting model...  76.8%
+Fitting model...  76.8%
+Fitting model...  76.8%
+Fitting model...  76.9%
+Fitting model...  77.0%
+Fitting model...  77.0%
+Fitting model...  77.0%
+Fitting model...  77.1%
+Fitting model...  77.1%
+Fitting model...  77.2%
+Fitting model...  77.2%
+Fitting model...  77.3%
+Fitting model...  77.3%
+Fitting model...  77.4%
+Fitting model...  77.5%
+Fitting model...  77.5%
+Fitting model...  77.5%
+Fitting model...  77.6%
+Fitting model...  77.6%
+Fitting model...  77.7%
+Fitting model...  77.8%
+Fitting model...  77.8%
+Fitting model...  77.8%
+Fitting model...  77.9%
+Fitting model...  78.0%
+Fitting model...  78.0%
+Fitting model...  78.0%
+Fitting model...  78.1%
+Fitting model...  78.1%
+Fitting model...  78.2%
+Fitting model...  78.2%
+Fitting model...  78.3%
+Fitting model...  78.3%
+Fitting model...  78.4%
+Fitting model...  78.5%
+Fitting model...  78.5%
+Fitting model...  78.5%
+Fitting model...  78.6%
+Fitting model...  78.6%
+Fitting model...  78.7%
+Fitting model...  78.8%
+Fitting model...  78.8%
+Fitting model...  78.8%
+Fitting model...  78.9%
+Fitting model...  79.0%
+Fitting model...  79.0%
+Fitting model...  79.0%
+Fitting model...  79.1%
+Fitting model...  79.1%
+Fitting model...  79.2%
+Fitting model...  79.2%
+Fitting model...  79.3%
+Fitting model...  79.3%
+Fitting model...  79.4%
+Fitting model...  79.5%
+Fitting model...  79.5%
+Fitting model...  79.5%
+Fitting model...  79.6%
+Fitting model...  79.7%
+Fitting model...  79.7%
+Fitting model...  79.8%
+Fitting model...  79.8%
+Fitting model...  79.8%
+Fitting model...  79.9%
+Fitting model...  80.0%
+Fitting model...  80.0%
+Fitting model...  80.0%
+Fitting model...  80.1%
+Fitting model...  80.2%
+Fitting model...  80.2%
+Fitting model...  80.2%
+Fitting model...  80.3%
+Fitting model...  80.3%
+Fitting model...  80.4%
+Fitting model...  80.5%
+Fitting model...  80.5%
+Fitting model...  80.5%
+Fitting model...  80.6%
+Fitting model...  80.7%
+Fitting model...  80.7%
+Fitting model...  80.8%
+Fitting model...  80.8%
+Fitting model...  80.8%
+Fitting model...  80.9%
+Fitting model...  81.0%
+Fitting model...  81.0%
+Fitting model...  81.0%
+Fitting model...  81.1%
+Fitting model...  81.2%
+Fitting model...  81.2%
+Fitting model...  81.2%
+Fitting model...  81.3%
+Fitting model...  81.3%
+Fitting model...  81.4%
+Fitting model...  81.5%
+Fitting model...  81.5%
+Fitting model...  81.5%
+Fitting model...  81.6%
+Fitting model...  81.7%
+Fitting model...  81.7%
+Fitting model...  81.8%
+Fitting model...  81.8%
+Fitting model...  81.8%
+Fitting model...  81.9%
+Fitting model...  82.0%
+Fitting model...  82.0%
+Fitting model...  82.0%
+Fitting model...  82.1%
+Fitting model...  82.2%
+Fitting model...  82.2%
+Fitting model...  82.2%
+Fitting model...  82.3%
+Fitting model...  82.3%
+Fitting model...  82.4%
+Fitting model...  82.5%
+Fitting model...  82.5%
+Fitting model...  82.5%
+Fitting model...  82.6%
+Fitting model...  82.7%
+Fitting model...  82.7%
+Fitting model...  82.8%
+Fitting model...  82.8%
+Fitting model...  82.8%
+Fitting model...  82.9%
+Fitting model...  83.0%
+Fitting model...  83.0%
+Fitting model...  83.0%
+Fitting model...  83.1%
+Fitting model...  83.2%
+Fitting model...  83.2%
+Fitting model...  83.2%
+Fitting model...  83.3%
+Fitting model...  83.4%
+Fitting model...  83.4%
+Fitting model...  83.5%
+Fitting model...  83.5%
+Fitting model...  83.5%
+Fitting model...  83.6%
+Fitting model...  83.7%
+Fitting model...  83.7%
+Fitting model...  83.8%
+Fitting model...  83.8%
+Fitting model...  83.9%
+Fitting model...  83.9%
+Fitting model...  84.0%
+Fitting model...  84.0%
+Fitting model...  84.0%
+Fitting model...  84.1%
+Fitting model...  84.2%
+Fitting model...  84.2%
+Fitting model...  84.2%
+Fitting model...  84.3%
+Fitting model...  84.4%
+Fitting model...  84.4%
+Fitting model...  84.5%
+Fitting model...  84.5%
+Fitting model...  84.5%
+Fitting model...  84.6%
+Fitting model...  84.7%
+Fitting model...  84.7%
+Fitting model...  84.8%
+Fitting model...  84.8%
+Fitting model...  84.9%
+Fitting model...  84.9%
+Fitting model...  85.0%
+Fitting model...  85.0%
+Fitting model...  85.0%
+Fitting model...  85.1%
+Fitting model...  85.2%
+Fitting model...  85.2%
+Fitting model...  85.2%
+Fitting model...  85.3%
+Fitting model...  85.4%
+Fitting model...  85.4%
+Fitting model...  85.5%
+Fitting model...  85.5%
+Fitting model...  85.5%
+Fitting model...  85.6%
+Fitting model...  85.7%
+Fitting model...  85.7%
+Fitting model...  85.8%
+Fitting model...  85.8%
+Fitting model...  85.9%
+Fitting model...  85.9%
+Fitting model...  86.0%
+Fitting model...  86.0%
+Fitting model...  86.1%
+Fitting model...  86.1%
+Fitting model...  86.2%
+Fitting model...  86.2%
+Fitting model...  86.2%
+Fitting model...  86.3%
+Fitting model...  86.4%
+Fitting model...  86.4%
+Fitting model...  86.5%
+Fitting model...  86.5%
+Fitting model...  86.6%
+Fitting model...  86.6%
+Fitting model...  86.7%
+Fitting model...  86.7%
+Fitting model...  86.8%
+Fitting model...  86.8%
+Fitting model...  86.9%
+Fitting model...  86.9%
+Fitting model...  87.0%
+Fitting model...  87.0%
+Fitting model...  87.1%
+Fitting model...  87.1%
+Fitting model...  87.2%
+Fitting model...  87.2%
+Fitting model...  87.2%
+Fitting model...  87.3%
+Fitting model...  87.4%
+Fitting model...  87.4%
+Fitting model...  87.5%
+Fitting model...  87.5%
+Fitting model...  87.5%
+Fitting model...  87.6%
+Fitting model...  87.6%
+Fitting model...  87.7%
+Fitting model...  87.8%
+Fitting model...  87.8%
+Fitting model...  87.8%
+Fitting model...  87.9%
+Fitting model...  87.9%
+Fitting model...  88.0%
+Fitting model...  88.0%
+Fitting model...  88.1%
+Fitting model...  88.1%
+Fitting model...  88.2%
+Fitting model...  88.2%
+Fitting model...  88.3%
+Fitting model...  88.3%
+Fitting model...  88.4%
+Fitting model...  88.4%
+Fitting model...  88.5%
+Fitting model...  88.5%
+Fitting model...  88.6%
+Fitting model...  88.6%
+Fitting model...  88.7%
+Fitting model...  88.8%
+Fitting model...  88.8%
+Fitting model...  88.8%
+Fitting model...  88.9%
+Fitting model...  88.9%
+Fitting model...  89.0%
+Fitting model...  89.0%
+Fitting model...  89.1%
+Fitting model...  89.1%
+Fitting model...  89.2%
+Fitting model...  89.2%
+Fitting model...  89.3%
+Fitting model...  89.3%
+Fitting model...  89.4%
+Fitting model...  89.5%
+Fitting model...  89.5%
+Fitting model...  89.5%
+Fitting model...  89.6%
+Fitting model...  89.6%
+Fitting model...  89.7%
+Fitting model...  89.8%
+Fitting model...  89.8%
+Fitting model...  89.8%
+Fitting model...  89.9%
+Fitting model...  90.0%
+Fitting model...  90.0%
+Fitting model...  90.0%
+Fitting model...  90.1%
+Fitting model...  90.1%
+Fitting model...  90.2%
+Fitting model...  90.2%
+Fitting model...  90.3%
+Fitting model...  90.3%
+Fitting model...  90.4%
+Fitting model...  90.5%
+Fitting model...  90.5%
+Fitting model...  90.5%
+Fitting model...  90.6%
+Fitting model...  90.6%
+Fitting model...  90.7%
+Fitting model...  90.8%
+Fitting model...  90.8%
+Fitting model...  90.8%
+Fitting model...  90.9%
+Fitting model...  91.0%
+Fitting model...  91.0%
+Fitting model...  91.0%
+Fitting model...  91.1%
+Fitting model...  91.1%
+Fitting model...  91.2%
+Fitting model...  91.2%
+Fitting model...  91.3%
+Fitting model...  91.3%
+Fitting model...  91.4%
+Fitting model...  91.5%
+Fitting model...  91.5%
+Fitting model...  91.5%
+Fitting model...  91.6%
+Fitting model...  91.6%
+Fitting model...  91.7%
+Fitting model...  91.8%
+Fitting model...  91.8%
+Fitting model...  91.8%
+Fitting model...  91.9%
+Fitting model...  92.0%
+Fitting model...  92.0%
+Fitting model...  92.0%
+Fitting model...  92.1%
+Fitting model...  92.2%
+Fitting model...  92.2%
+Fitting model...  92.2%
+Fitting model...  92.3%
+Fitting model...  92.3%
+Fitting model...  92.4%
+Fitting model...  92.5%
+Fitting model...  92.5%
+Fitting model...  92.5%
+Fitting model...  92.6%
+Fitting model...  92.7%
+Fitting model...  92.7%
+Fitting model...  92.8%
+Fitting model...  92.8%
+Fitting model...  92.8%
+Fitting model...  92.9%
+Fitting model...  93.0%
+Fitting model...  93.0%
+Fitting model...  93.0%
+Fitting model...  93.1%
+Fitting model...  93.2%
+Fitting model...  93.2%
+Fitting model...  93.2%
+Fitting model...  93.3%
+Fitting model...  93.3%
+Fitting model...  93.4%
+Fitting model...  93.5%
+Fitting model...  93.5%
+Fitting model...  93.5%
+Fitting model...  93.6%
+Fitting model...  93.7%
+Fitting model...  93.7%
+Fitting model...  93.8%
+Fitting model...  93.8%
+Fitting model...  93.8%
+Fitting model...  93.9%
+Fitting model...  94.0%
+Fitting model...  94.0%
+Fitting model...  94.0%
+Fitting model...  94.1%
+Fitting model...  94.2%
+Fitting model...  94.2%
+Fitting model...  94.2%
+Fitting model...  94.3%
+Fitting model...  94.3%
+Fitting model...  94.4%
+Fitting model...  94.5%
+Fitting model...  94.5%
+Fitting model...  94.5%
+Fitting model...  94.6%
+Fitting model...  94.7%
+Fitting model...  94.7%
+Fitting model...  94.8%
+Fitting model...  94.8%
+Fitting model...  94.8%
+Fitting model...  94.9%
+Fitting model...  95.0%
+Fitting model...  95.0%
+Fitting model...  95.0%
+Fitting model...  95.1%
+Fitting model...  95.2%
+Fitting model...  95.2%
+Fitting model...  95.2%
+Fitting model...  95.3%
+Fitting model...  95.3%
+Fitting model...  95.4%
+Fitting model...  95.5%
+Fitting model...  95.5%
+Fitting model...  95.5%
+Fitting model...  95.6%
+Fitting model...  95.7%
+Fitting model...  95.7%
+Fitting model...  95.8%
+Fitting model...  95.8%
+Fitting model...  95.9%
+Fitting model...  95.9%
+Fitting model...  96.0%
+Fitting model...  96.0%
+Fitting model...  96.0%
+Fitting model...  96.1%
+Fitting model...  96.2%
+Fitting model...  96.2%
+Fitting model...  96.2%
+Fitting model...  96.3%
+Fitting model...  96.4%
+Fitting model...  96.4%
+Fitting model...  96.5%
+Fitting model...  96.5%
+Fitting model...  96.5%
+Fitting model...  96.6%
+Fitting model...  96.7%
+Fitting model...  96.7%
+Fitting model...  96.8%
+Fitting model...  96.8%
+Fitting model...  96.9%
+Fitting model...  96.9%
+Fitting model...  97.0%
+Fitting model...  97.0%
+Fitting model...  97.0%
+Fitting model...  97.1%
+Fitting model...  97.2%
+Fitting model...  97.2%
+Fitting model...  97.2%
+Fitting model...  97.3%
+Fitting model...  97.4%
+Fitting model...  97.4%
+Fitting model...  97.5%
+Fitting model...  97.5%
+Fitting model...  97.5%
+Fitting model...  97.6%
+Fitting model...  97.7%
+Fitting model...  97.7%
+Fitting model...  97.8%
+Fitting model...  97.8%
+Fitting model...  97.9%
+Fitting model...  97.9%
+Fitting model...  98.0%
+Fitting model...  98.0%
+Fitting model...  98.0%
+Fitting model...  98.1%
+Fitting model...  98.2%
+Fitting model...  98.2%
+Fitting model...  98.2%
+Fitting model...  98.3%
+Fitting model...  98.4%
+Fitting model...  98.4%
+Fitting model...  98.5%
+Fitting model...  98.5%
+Fitting model...  98.6%
+Fitting model...  98.6%
+Fitting model...  98.7%
+Fitting model...  98.7%
+Fitting model...  98.8%
+Fitting model...  98.8%
+Fitting model...  98.9%
+Fitting model...  98.9%
+Fitting model...  99.0%
+Fitting model...  99.0%
+Fitting model...  99.1%
+Fitting model...  99.1%
+Fitting model...  99.2%
+Fitting model...  99.2%
+Fitting model...  99.2%
+Fitting model...  99.3%
+Fitting model...  99.4%
+Fitting model...  99.4%
+Fitting model...  99.5%
+Fitting model...  99.5%
+Fitting model...  99.6%
+Fitting model...  99.6%
+Fitting model...  99.7%
+Fitting model...  99.7%
+Fitting model...  99.8%
+Fitting model...  99.8%
+Fitting model...  99.9%
+Fitting model...  99.9%
+Fitting model... 100.0%
+iterations in  2.5219380855560303
+Estimated baseline is: 0.4023369252681732
+Estimated alpha is: 0.8023015260696411
+Estimated beta parameter of the exponential kernel is: 0.9666296243667603
 </pre></div>
 </div>
 <p>Here, we plot the values of the estimated kernel with FaDIn.</p>
@@ -1535,7 +2401,7 @@ Estimated beta parameter of the exponential kernel is: 0.9326611757278442
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../_images/sphx_glr_plot_univariate_fadin_001.png" srcset="../_images/sphx_glr_plot_univariate_fadin_001.png" alt="Hawkes influence kernel" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 3.840 seconds)</p>
+<img src="../_images/sphx_glr_plot_univariate_fadin_001.png" srcset="../_images/sphx_glr_plot_univariate_fadin_001.png" alt="Hawkes influence kernel" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 5.024 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-univariate-fadin-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/4d9d8248607d7dfd1a6a1d91905ecec9/plot_univariate_fadin.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_univariate_fadin.ipynb</span></code></a></p>
@@ -1599,6 +2465,6 @@ Estimated beta parameter of the exponential kernel is: 0.9326611757278442
 </div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7adbc44"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
-    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
+    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
     </body>
 </html>

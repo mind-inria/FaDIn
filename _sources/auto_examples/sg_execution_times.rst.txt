@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**02:38.218** total execution time for 2 files **from auto_examples**:
+**02:41.775** total execution time for 2 files **from auto_examples**:
 
 .. container::
 
@@ -33,8 +33,8 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_auto_examples_plot_multivariate_fadin.py` (``plot_multivariate_fadin.py``)
-     - 02:34.379
+     - 02:36.751
      - 0.0
    * - :ref:`sphx_glr_auto_examples_plot_univariate_fadin.py` (``plot_univariate_fadin.py``)
-     - 00:03.840
+     - 00:05.024
      - 0.0

@@ -14,6 +14,7 @@ Some examples using FaDIn.
 
     <div class="sphx-glr-thumbnails">
 
+.. thumbnail-parent-div-open
 
 .. raw:: html
 
@@ -48,6 +49,8 @@ Some examples using FaDIn.
       <div class="sphx-glr-thumbnail-title">FaDIn on simulated 2-d Hawkes processes</div>
     </div>
 
+
+.. thumbnail-parent-div-close
 
 .. raw:: html
 
