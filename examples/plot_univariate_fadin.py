@@ -56,7 +56,7 @@ solver = FaDIn(n_dim=1,
                kernel_length=kernel_length,
                delta=dt, optim="RMSprop",
                params_optim={'lr': 1e-3},
-               max_iter=2000, criterion='l2'
+               max_iter=2000
                )
 solver.fit(events, T)
 

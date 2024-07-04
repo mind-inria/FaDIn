@@ -6,12 +6,11 @@ import time
 import numpy as np
 import torch
 from joblib import Parallel, delayed, Memory
-from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
 from fadin.utils.utils import l2_error
-
+from fadin.utils.utils_simu import simu_hawkes_cluster
 
 mem = Memory(location=".", verbose=2)
 
@@ -20,74 +19,61 @@ mem = Memory(location=".", verbose=2)
 ################################
 
 baseline = np.array([.1, .2])
-alpha = np.array([[1.5, 0.1], [0.1, 1.5]])
+alpha = np.array([[0.75, 0.1], [0.1, 0.75]])
 mu = np.array([[0.4, 0.6], [0.55, 0.6]])
 sigma = np.array([[0.3, 0.3], [0.25, 0.3]])
 u = mu - sigma
 
+dt = 0.01
+T = 1000
+size_grid = int(T / dt) + 1
 
-@mem.cache
+
 def simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0):
-    L = int(1 / dt)
-    discretization = torch.linspace(0, 1, L)
     u = mu - sigma
-    n_dim = u.shape[0]
-    RC = DiscreteKernelFiniteSupport(dt, n_dim, kernel='raised_cosine')
+    params = {'u': u, 'sigma': sigma}
 
-    kernel_values = RC.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
-                                   discretization)
-    kernel_values = kernel_values * alpha[:, :, None]
+    def raised_cosine(x, **params):
+        rc = DiscreteKernelFiniteSupport(delta=dt, n_dim=2,
+                                         kernel='raised_cosine')
+        u = params['u']
+        sigma = params['sigma']
+        kernel_values = rc.kernel_eval([torch.Tensor(u), torch.Tensor(sigma)],
+                                       torch.tensor(x))
 
-    t_values = discretization.double().numpy()
-    k11 = kernel_values[0, 0].double().numpy()
-    k12 = kernel_values[0, 1].double().numpy()
-    k21 = kernel_values[1, 0].double().numpy()
-    k22 = kernel_values[1, 1].double().numpy()
+        return kernel_values.double().numpy()
 
-    tf11 = HawkesKernelTimeFunc(t_values=t_values, y_values=k11)
-    tf12 = HawkesKernelTimeFunc(t_values=t_values, y_values=k12)
-    tf21 = HawkesKernelTimeFunc(t_values=t_values, y_values=k21)
-    tf22 = HawkesKernelTimeFunc(t_values=t_values, y_values=k22)
-
-    kernels = [[tf11, tf12], [tf21, tf22]]
-    hawkes = SimuHawkes(
-        baseline=baseline, kernels=kernels, end_time=T, verbose=False, seed=int(seed)
-    )
-
-    hawkes.simulate()
-    events = hawkes.timestamps
+    events = simu_hawkes_cluster(T, baseline, alpha,
+                                 raised_cosine,
+                                 params_kernel=params,
+                                 random_state=seed)
     return events
 
+
+events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=0)
 
 # %% solver
 ##
 
-@mem.cache
-def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, seed=0):
+
+def run_solver(events, dt, T, seed=0):
     start = time.time()
     max_iter = 2000
     solver = FaDIn(2,
                    "raised_cosine",
-                   [torch.tensor(u_init),
-                    torch.tensor(sigma_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
-                   delta=dt, optim="RMSprop",
-                   step_size=1e-3,
+                   delta=dt,
+                   optim="RMSprop",
                    max_iter=max_iter,
                    log=False,
                    random_state=0,
-                   device="cpu",
-                   optimize_kernel=True,
-                   precomputations=True,
                    ztzG_approx=True)
 
     print(time.time() - start)
-    results = solver.fit(events, T)
-    results_ = dict(param_baseline=results['param_baseline'][-10:].mean(0),
-                    param_alpha=results['param_alpha'][-10:].mean(0),
-                    param_kernel=[results['param_kernel'][0][-10:].mean(0),
-                                  results['param_kernel'][1][-10:].mean(0)])
+    solver.fit(events, T)
+    results_ = dict(param_baseline=solver.param_baseline[-10:].mean(0),
+                    param_alpha=solver.param_alpha[-10:].mean(0),
+                    param_kernel=[solver.param_kernel[0][-10:].mean(0),
+                                  solver.param_kernel[1][-10:].mean(0)])
     results_["time"] = time.time() - start
     results_["seed"] = seed
     results_["T"] = T
@@ -98,16 +84,8 @@ def run_solver(events, u_init, sigma_init, baseline_init, alpha_init, dt, T, see
 
 
 def run_experiment(baseline, alpha, mu, sigma, T, dt, seed=0):
-    v = 0.2
     events = simulate_data(baseline, alpha, mu, sigma, T, dt, seed=seed)
-    baseline_init = baseline + v
-    alpha_init = alpha + v
-    mu_init = mu
-    sigma_init = sigma + v
-    u_init = mu_init - sigma_init
-    results = run_solver(events, u_init, sigma_init,
-                         baseline_init, alpha_init,
-                         dt, T, seed)
+    results = run_solver(events, dt, T, seed)
     return results
 
 
@@ -138,3 +116,5 @@ df['err_sum'] = np.sqrt(df['err_baseline']**2 + df['err_alpha']**2 +
                         df['err_u']**2 + df['err_sigma']**2)
 
 df.to_csv('results/error_discrete_RC_m.csv', index=False)
+
+# %%

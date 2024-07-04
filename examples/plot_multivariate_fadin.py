@@ -35,7 +35,8 @@ size_grid = int(T / dt) + 1
 discretization = torch.linspace(0, kernel_length, L)
 
 ###############################################################################
-# Here, we set the parameters of a Hawkes process with a Exponential(1) distributions.
+# Here, we set the parameters of a Hawkes process with a Exponential(1)
+# distribution.
 
 baseline = np.array([.1, .5])
 alpha = np.array([[0.6, 0.3], [0.25, 0.7]])
@@ -50,13 +51,14 @@ events = simu_hawkes_cluster(T, baseline, alpha, kernel)
 ###############################################################################
 # Here, we apply FaDIn.
 
-solver = FaDIn(n_dim=n_dim,
-               kernel="truncated_exponential",
-               kernel_length=kernel_length,
-               delta=dt, optim="RMSprop",
-               params_optim={'lr': 1e-3},
-               max_iter=10000, criterion='l2'
-               )
+solver = FaDIn(
+    n_dim=n_dim,
+    kernel="truncated_exponential",
+    kernel_length=kernel_length,
+    delta=dt, optim="RMSprop",
+    params_optim={'lr': 1e-3},
+    max_iter=10000
+)
 solver.fit(events, T)
 
 # We average on the 10 last values of the optimization.

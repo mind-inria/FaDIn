@@ -11,7 +11,55 @@ from tick.hawkes import SimuHawkes, HawkesKernelTimeFunc
 from fadin.kernels import DiscreteKernelFiniteSupport
 from fadin.solver import FaDIn
 
-# %% simulate data
+# %%
+################################
+# Define solver with loglikelihood criterion
+################################
+
+
+def discrete_ll_loss_conv(intensity, events_grid, delta):
+    """Compute the LL discrete loss using convolutions.
+
+    Parameters
+    ----------
+    intensity : tensor, shape (n_dim, n_grid)
+        Values of the intensity function evaluated  on the grid.
+
+    events_grid : tensor, shape (n_dim, n_grid)
+        Events projected on the pre-defined grid.
+
+    delta : float
+        Step size of the discretization grid.
+    """
+    mask = events_grid > 0
+    intens = torch.log(intensity[mask])
+    return (intensity.sum(1) * delta -
+            intens.sum()).sum() / events_grid.sum()
+
+
+def compute_gradient_loglikelihood(solver, events_grid, discretization,
+                                   i, n_events, end_time):
+    """One optimizer iteration of FaDIn_loglikelihood solver,
+    with loglikelihood loss.
+    """
+    intens = solver.kernel_model.intensity_eval(
+        solver.params_intens[0],
+        solver.params_intens[1],
+        solver.params_intens[2:],
+        events_grid,
+        discretization
+    )
+    loss = discrete_ll_loss_conv(intens, events_grid, solver.delta)
+    loss.backward()
+
+
+class FaDInLogLikelihood(FaDIn):
+    """Define the FaDIn framework for estimated Hawkes processes *with
+    loglikelihood criterion instead of l2 loss*."""
+    compute_gradient = staticmethod(compute_gradient_loglikelihood)
+    precomputations = False
+
+################################
 # Simulated data
 ################################
 
@@ -56,23 +104,40 @@ def simulate_data(baseline, alpha, kernel_params,
 
 
 def run_solver(criterion, events, kernel_params_init,
-               baseline_init, alpha_init, T, dt, seed=0, kernel='raised_cosine'):
-    k_params_init = [torch.tensor(a) for a in kernel_params_init]
+               baseline_init, alpha_init, T, dt, seed=0,
+               kernel='raised_cosine'):
     max_iter = 2000
-    solver = FaDIn(1,
-                   kernel,
-                   k_params_init,
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
-                   delta=dt,
-                   optim="RMSprop",
-                   step_size=1e-3,
-                   max_iter=max_iter,
-                   log=False,
-                   random_state=seed,
-                   device="cpu",
-                   optimize_kernel=True,
-                   criterion=criterion)
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(a) for a in kernel_params_init]
+    }
+    if criterion == 'l2':
+        solver = FaDIn(
+            1,
+            kernel,
+            init=init,
+            delta=dt,
+            optim="RMSprop",
+            step_size=1e-3,
+            max_iter=max_iter,
+            log=False,
+            random_state=seed,
+            device="cpu"
+        )
+    elif criterion == 'll':
+        solver = FaDInLogLikelihood(
+            1,
+            kernel,
+            init=init,
+            delta=dt,
+            optim="RMSprop",
+            step_size=1e-3,
+            max_iter=max_iter,
+            log=False,
+            random_state=seed,
+            device="cpu"
+        )
     results = solver.fit(events, T)
     if kernel == 'truncated_exponential':
         results_ = dict(param_baseline=results['param_baseline'][-10:].mean().item(),

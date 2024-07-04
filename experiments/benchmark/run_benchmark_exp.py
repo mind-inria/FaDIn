@@ -25,8 +25,13 @@ def simulate_data(baseline, alpha, decay, T, dt, seed=0):
     L = int(1 / dt)
     discretization = torch.linspace(0, 1, L)
     n_dim = decay.shape[0]
-    EXP = DiscreteKernelFiniteSupport(dt, n_dim=n_dim, kernel='truncated_exponential',
-                                      lower=0, upper=1)
+    EXP = DiscreteKernelFiniteSupport(
+        dt,
+        n_dim=n_dim,
+        kernel='truncated_exponential',
+        lower=0,
+        upper=1
+    )
 
     kernel_values = EXP.kernel_eval([torch.Tensor(decay)],
                                     discretization)
@@ -62,14 +67,16 @@ def simulate_data(baseline, alpha, decay, T, dt, seed=0):
 def run_fadin(events, decay_init, baseline_init, alpha_init, T, dt, seed=0):
     start = time.time()
     max_iter = 2000
+    init = {
+        'alpha': torch.tensor(alpha_init),
+        'baseline': torch.tensor(baseline_init),
+        'kernel': [torch.tensor(decay_init)]
+    }
     solver = FaDIn(2,
                    "truncated_exponential",
-                   [torch.tensor(decay_init)],
-                   torch.tensor(baseline_init),
-                   torch.tensor(alpha_init),
+                   init=init,
                    delta=dt, optim="RMSprop",
                    step_size=1e-3, max_iter=max_iter,
-                   optimize_kernel=True, precomputations=True,
                    ztzG_approx=True, device='cpu', log=False
                    )
 
@@ -258,14 +265,17 @@ def run_experiment(baseline, alpha, decay, T, dt, seed=0):
     alpha_hat = results['param_alpha']
     decay_hat = results['param_kernel'][0]
 
-    RC = DiscreteKernelFiniteSupport(dt, n_dim=2, kernel='truncated_exponential',
+    RC = DiscreteKernelFiniteSupport(dt, n_dim=2,
+                                     kernel='truncated_exponential',
                                      lower=0, upper=1)
     intens_fadin = RC.intensity_eval(torch.tensor(baseline_hat),
                                      torch.tensor(alpha_hat),
                                      [torch.Tensor(decay_hat)],
                                      events_grid, torch.linspace(0, 1, L))
 
-    res['err_fadin'] = np.absolute(intens.numpy() - intens_fadin.numpy()).mean()
+    res['err_fadin'] = np.absolute(
+        intens.numpy() - intens_fadin.numpy()
+    ).mean()
     res['time_fadin'] = results['time']
 
     results = run_gibbs(S, size_grid, dt, seed=seed)

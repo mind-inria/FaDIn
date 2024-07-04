@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 from scipy.interpolate import interp1d
-from scipy.integrate import simps
+from scipy.integrate import simpson
 import scipy.stats as stats
 
 
@@ -84,7 +84,7 @@ class custom_distribution(stats.rv_continuous):
     # function to normalise the pdf over chosen domain
 
     def normalisation(self, x):
-        return simps(self.pdf(x), x)
+        return simpson(self.pdf(x), x=x)
 
     def create_cdf_ppf(self):
         # define normalization support with the given kernel length

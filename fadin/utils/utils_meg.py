@@ -169,6 +169,6 @@ def get_atoms_timestamps(acti, sfreq=None, info=None, threshold=0,
         threshold = np.percentile(acti[acti > 0], threshold)
 
     atoms_timestamps = [np.where(acti[i] > threshold)[0] / sfreq
-                        for i in range(n_atoms)]
+                        for i in range(n_atoms)][0]
 
     return atoms_timestamps

@@ -1,6 +1,85 @@
 import torch
 
 
+def compute_gradient_fadin(solver, events_grid, discretization,
+                           i, n_events, end_time):
+    """Updates gradients for optimizer iteration of FaDIn solver,
+    with l2 loss and precomputations. Gradients are updated inplace.
+
+    Parameters
+    ----------
+    solver : FaDIn
+        The FaDIn solver.
+    events_grid : tensor, shape (n_dim, n_grid) (optionnal)
+        Not necessary in this function, present for FaDIn derived classes.
+    discretization : tensor, shape (L,)
+        Discretization grid.
+    i : int
+        Optimizer iteration number.
+    n_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+    end_time : float
+        The end time of the Hawkes process.
+
+    Returns
+    -------
+    None
+    """
+    # Compute kernel and gradient
+    kernel = solver.kernel_model.kernel_eval(
+        solver.params_intens[2:],
+        discretization
+    )
+    grad_theta = solver.kernel_model.grad_eval(
+        solver.params_intens[2:],
+        discretization
+    )
+
+    if solver.log:
+        solver.v_loss[i] = \
+            discrete_l2_loss_precomputation(solver.zG, solver.zN, solver.ztzG,
+                                            solver.params_intens[0],
+                                            solver.params_intens[1],
+                                            kernel, n_events,
+                                            solver.delta,
+                                            end_time).detach()
+    # Update baseline gradient
+    solver.params_intens[0].grad = get_grad_baseline(
+        solver.zG,
+        solver.params_intens[0],
+        solver.params_intens[1],
+        kernel,
+        solver.delta,
+        n_events,
+        end_time
+    )
+    # Update alpha gradient
+    solver.params_intens[1].grad = get_grad_alpha(
+        solver.zG,
+        solver.zN,
+        solver.ztzG,
+        solver.params_intens[0],
+        solver.params_intens[1],
+        kernel,
+        solver.delta,
+        n_events
+    )
+    # Update kernel gradient
+    for j in range(solver.n_kernel_params):
+        solver.params_intens[2 + j].grad = \
+            get_grad_eta(
+                solver.zG,
+                solver.zN,
+                solver.ztzG,
+                solver.params_intens[0],
+                solver.params_intens[1],
+                kernel,
+                grad_theta[j],
+                solver.delta,
+                n_events
+            )
+
+
 def discrete_l2_loss_conv(intensity, events_grid, delta):
     """Compute the l2 discrete loss using convolutions.
 
@@ -23,26 +102,6 @@ def discrete_l2_loss_conv(intensity, events_grid, delta):
     """
     return 2 * (((intensity**2).sum(1) * 0.5 * delta -
                  (intensity * events_grid).sum(1)).sum()) / events_grid.sum()
-
-
-def discrete_ll_loss_conv(intensity, events_grid, delta):
-    """Compute the LL discrete loss using convolutions.
-
-    Parameters
-    ----------
-    intensity : tensor, shape (n_dim, n_grid)
-        Values of the intensity function evaluated  on the grid.
-
-    events_grid : tensor, shape (n_dim, n_grid)
-        Events projected on the pre-defined grid.
-
-    delta : float
-        Step size of the discretization grid.
-    """
-    mask = events_grid > 0
-    intens = torch.log(intensity[mask])
-    return (intensity.sum(1) * delta -
-            intens.sum()).sum() / events_grid.sum()
 
 
 def discrete_l2_loss_precomputation(zG, zN, ztzG, baseline, alpha, kernel,
@@ -109,7 +168,8 @@ def squared_compensator_2(zG, baseline, alpha, kernel):
 
     .. math::
         \\sum_{i=1}^{p}\\mu_i \\sum_{j=1}^{p} \\sum_{\tau=1}^{L}
-        \\phi_{ij}^\\Delta[\\tau] \\left(\\sum_{s=1}^{G} z_{j}[s-\\tau] \\right)
+        \\phi_{ij}^\\Delta[\\tau] \\left(\\sum_{s=1}^{G} z_{j}[s-\\tau]
+        \\right)
 
     Parameters
     ----------
@@ -175,8 +235,9 @@ def squared_compensator_3(ztzG, alpha, kernel):
             for k in range(n_dim):
                 for j in range(n_dim):
                     alpha_prod_ijk = alpha[i, j] * alpha[i, k]
-                    temp2 = kernel[i, k].view(1, L) * (ztzG[j, k]
-                                                       * kernel[i, j].view(L, 1)).sum(0)
+                    temp2 = kernel[i, k].view(1, L) * (
+                        ztzG[j, k] * kernel[i, j].view(L, 1)
+                    ).sum(0)
                     res += alpha_prod_ijk * temp2.sum()
 
     return res
@@ -357,7 +418,8 @@ def get_grad_alpha(zG, zN, ztzG, baseline, alpha, kernel, delta, n_events):
 
 def get_grad_eta(zG, zN, ztzG, baseline, alpha, kernel,
                  grad_kernel, delta, n_events):
-    """Return the gradient of the discrete l2 loss w.r.t. one kernel parameters.
+    """Return the gradient of the discrete l2 loss w.r.t. one kernel
+    parameter.
 
     .. math::
         N_T\\frac{\\partial\\mathcal{L}_G}{\\partial \\eta{ml}} =

@@ -207,7 +207,8 @@ def test_l2loss():
                                                       kernel_RC, n_events,
                                                       delta, end_time)
 
-    assert torch.isclose(loss_conv_RC, loss_precomp_RC)
+    assert torch.isclose(1 + loss_conv_RC, 1 + loss_precomp_RC)
+    # + 1 to avoid error when loss is close to 0
 
 
 def test_gradients():
