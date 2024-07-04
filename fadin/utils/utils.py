@@ -34,26 +34,6 @@ def kernel_deriv_norm(function, grad_function_param, delta):
             function * grad_function_param_sum) / (function_sum**2)
 
 
-def init_kernel_parameters(kernel, kernel_length, n_dim):
-    kernel_params_init = []
-    if kernel == 'raised_cosine':
-        temp = 0.5 * kernel_length * torch.rand(n_dim, n_dim)
-        temp2 = 0.5 * kernel_length * torch.rand(n_dim, n_dim)
-        kernel_params_init.append(temp)
-        kernel_params_init.append(temp2)
-    elif kernel == 'truncated_gaussian':
-        temp = 0.25 * kernel_length * torch.rand(n_dim, n_dim)
-        temp2 = 0.5 * kernel_length * torch.rand(n_dim, n_dim)
-        kernel_params_init.append(temp)
-        kernel_params_init.append(temp2)
-    elif kernel == 'truncated_exponential':
-        kernel_params_init.append(2 * torch.rand(n_dim, n_dim))
-    else:
-        raise NotImplementedError('kernel initial parameters of not \
-                                    implemented kernel have to be given')
-    return kernel_params_init
-
-
 def grad_kernel_callable(kernel, grad_kernel, kernel_params,
                          time_values, L, lower, upper, n_dim):
     """Transform the callables ``kernel and ``grad_kernel`` into
