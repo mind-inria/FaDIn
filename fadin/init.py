@@ -59,9 +59,9 @@ def init_hawkes_params(solver, init, events, n_ground_events, end_time):
         kernel_params_init = init['kernel']
 
     # Format initial parameters for optimization
-    baseline = (baseline * solver.baseline_mask).requires_grad_(True)
-    alpha = (alpha * solver.alpha_mask).requires_grad_(True)
-    params_intens = [baseline, alpha]
+    solver.baseline = (baseline * solver.baseline_mask).requires_grad_(True)
+    solver.alpha = (alpha * solver.alpha_mask).requires_grad_(True)
+    params_intens = [solver.baseline, solver.alpha]
     solver.n_kernel_params = len(kernel_params_init)
     for i in range(solver.n_kernel_params):
         kernel_param = kernel_params_init[i].float().clip(1e-4)

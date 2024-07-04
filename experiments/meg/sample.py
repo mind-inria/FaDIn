@@ -2,7 +2,8 @@ import json
 import numpy as np
 import copy
 import torch
-from fadin.solver import FaDIn, plot
+from fadin.solver import FaDIn
+from fadin.utils.vis import plot
 from fadin.utils.utils_meg import proprocess_tasks, filter_activation, \
     get_atoms_timestamps
 
