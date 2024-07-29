@@ -405,86 +405,163 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
     return events
 
 
-# def simu_hawkes(end_time, baseline, alpha, kernel, upper_bound=None,
-#                 random_state=None):
-#     """ Simulate a Hawkes process following an immigration-birth procedure.
-#         Edge effects may be reduced according to the second references below.
+def simu_marked_hawkes_cluster(end_time, baseline, alpha, time_kernel, marks_kernel,
+                               marks_density, params_time_kernel=dict(),
+                               params_marks_kernel=dict(), params_marks_density=dict(),
+                               time_kernel_length=None, marks_kernel_length=None,
+                               random_state=None):
+    """ Simulate a multivariate marked Hawkes process following
+        an immigration-birth procedure.
 
-#     References:
+    Parameters
+    ----------
+    end_time : int | float
+        Duration of the Poisson process.
 
-#     Møller, J., & Rasmussen, J. G. (2006). Approximate simulation of Hawkes processes.
-#     Methodology and Computing in Applied Probability, 8, 53-64.
+    baseline : array of float of size (n_dim,)
+        Baseline parameter of the Hawkes process.
 
-#     Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes processes.
-#     Advances in applied probability, 37(3), 629-646.
+    alpha : array of float of size (n_dim, n_dim)
+        Weight parameter associated to the kernel function.
 
-#     Parameters
-#     ----------
-#     end_time : int | float
-#         Duration of the Poisson process.
+    time_kernel: str or callable
+        The choice of the time kernel for the simulation.
+        String kernel available are probability distribution from scipy.stats module.
+        A custom kernel can be implemented with the form time_kernel(x, **params).
 
-#     baseline : float
-#         Baseline parameter of the Hawkes process.
+    marks_density: str
+        The choice of the kernel for the simulation.
+        String kernel available are probability distribution from scipy.stats module.
 
-#     alpha : float
-#         Weight parameter associated to the kernel function.
+    params_time_kernel: dict
+        Parameters of the kernel used to simulate the process.
+        It must follow parameters associated to scipy.stats distributions or the custom
+        given callable.
 
-#     kernel: str
-#         The choice of the kernel for the simulation.
-#         Kernel available are probability distribution from scipy.stats module.
+    params_marks_density: dict
+        Parameters of the kernel used to simulate the process.
+        It must follow parameters associated to scipy.stats distributions or the custom
+        given callable.
 
-#     upper_bound : int, float or None, default=None
-#         Upper bound of the baseline function. If None,
-#         the maximum of the baseline is taken onto a finite discrete grid.
+    kernel_length: float or None, default=None
+        If the custom kernel has finite support, fixe the limit of the support.
+        The support need to be high enough such that probability mass between
+        zero and kernel_length is strictly higher than zero.
 
-#     random_state : int, RandomState instance or None, default=None
-#         Set the numpy seed to 'random_state'.
+    random_state : int, RandomState instance or None, default=None
+        Set the numpy seed to 'random_state'.
 
-#     Returns
-#     -------
-#     events : array
-#         The timestamps of the point process' events.
-#     """
-#     if random_state is None:
-#         np.random.seed(0)
-#     else:
-#         np.random.seed(random_state)
+    Returns
+    -------
+    events : list of array-like with shape (n_events, 2)
+        The timestamps and the marks of the point process' events.
+        Timestamps are first coordinate.
+    """
 
-#     # Simulate events from baseline
-#     immigrants = simu_poisson(end_time, intensity=baseline, upper_bound=upper_bound)
+    if random_state is None:
+        np.random.seed(np.random.randint(0, 100))
+    else:
+        np.random.seed(random_state)
 
-#     # initialize
-#     gen = dict(gen0=immigrants)
-#     ev = [immigrants]
-#     sample_from_kernel = getattr(scipy.stats, kernel) #  dic = [4, 3]
+    n_dim = baseline.shape[0]
+    immigrants = simu_multi_poisson(end_time, baseline,
+                                    upper_bound=None,
+                                    random_state=random_state)
 
-#     # generate offsprings
-#     it = 0
-#     while len(gen[f'gen{it}']):
-#         Ci = gen[f'gen{it}']
+    immigrants_marks = [custom_density(
+        marks_density, params_marks_density, size=immigrants[i].shape[0],
+        kernel_length=marks_kernel_length) for i in range(n_dim)]
 
-#         # number of descendents of an event follow a Poisson law of parameter alpha
-#         # the expected number of event induced by an event is then alpha
+    gen_time = dict(gen0=immigrants)
+    gen_mark = dict(gen0=immigrants_marks)
+    gen_labels = dict()
 
-#         Di = np.random.poisson(lam=alpha, size=len(Ci))
+    events = []
+    labels = [0] * n_dim
+    for i in range(n_dim):
+        temp = np.vstack([immigrants[i], immigrants_marks[i]]).T
+        events.append(temp)
 
-#         # sample interval range according to the given pdf (kernel of the parameter)
-#         Ci = np.repeat(Ci, repeats=Di)
-#         n = Di.sum()
-#         Ei =  sample_from_kernel.rvs(size=n) # * dic
-#         Fi = Ci + Ei
+    it = 0
+    while len(gen_time[f'gen{it}']):
+        print(f"Simulate generation {it}\r")
+        time_ev_k = gen_time[f'gen{it}']
+        marks_k = gen_mark[f'gen{it}']
+        induced_ev = [[0] * n_dim for _ in range(n_dim)]
+        time_ev = [[0] * n_dim for _ in range(n_dim)]
+        sim_ev = []
+        sim_marks = []
+        sim_labels = []
+        s = 0
+        for i in range(n_dim):
+            sim_ev_i = []
+            sim_marks_i = []
+            sim_labels_i = []
+            for j in range(n_dim):
+                induced_ev[i][j] = np.random.poisson(
+                    lam=alpha[i, j]*marks_k[j], size=len(time_ev_k[j]))
 
+                no_exitations = np.where(induced_ev[i][j] == 0)[0]
+                gen_labels_ij = np.ones(len(time_ev_k[j]))
+                if it == 0:
+                    gen_labels_ij[no_exitations] = 0.
+                else:
+                    gen_labels_ij[no_exitations] = 2.
 
-#         if len(Fi) > 0:
-#             gen[f'gen{it+1}'] = np.hstack(Fi)
-#             ev.append(np.hstack(Fi))
-#         else:
-#             break
-#         it += 1
+                nij = induced_ev[i][j].sum()
 
-#     # Add immigrants and sort
-#     events = np.hstack(ev)
-#     valid_events = events < end_time
-#     events = np.sort(events[valid_events])
+                time_ev[i][j] = np.repeat(time_ev_k[j], repeats=induced_ev[i][j])
 
-#     return events
+                inter_arrival_ij = custom_density(
+                    time_kernel, params_time_kernel, size=nij,
+                    kernel_length=time_kernel_length)
+
+                sim_ev_ij = time_ev[i][j] + inter_arrival_ij
+                sim_ev_i.append(sim_ev_ij)
+                # sim_marks_ij = mark_distribution.rvs(**params_marks_density, size=nij)
+
+                # custom distrib on mark density
+                sim_marks_ij = custom_density(
+                    marks_density, params_marks_density, size=nij,
+                    kernel_length=marks_kernel_length)
+
+                # sim_marks_ij = marksij / marksij.max()
+
+                assert (sim_marks_ij > 1).sum() == 0
+                sim_marks_i.append(sim_marks_ij)
+                sim_labels_i.append(gen_labels_ij)
+
+                s += sim_ev_ij.shape[0]
+            sim_ev.append(np.hstack(sim_ev_i))
+            sim_marks.append(np.hstack(sim_marks_i))
+            sim_labels.append(np.hstack(sim_labels_i))
+
+        if s > 0:
+            gen_time[f'gen{it+1}'] = sim_ev
+            gen_mark[f'gen{it+1}'] = sim_marks
+            gen_labels[f'gen{it}'] = sim_labels
+            for i in range(n_dim):
+                temp = np.vstack([sim_ev[i], sim_marks[i]]).T
+                events[i] = np.concatenate((events[i], temp))
+                if it > 0:
+                    labels[i] = np.concatenate((labels[i], sim_labels[i]))
+                else:
+                    labels[i] = sim_labels[i]
+        else:
+            for i in range(n_dim):
+                if it > 0:
+                    labels[i] = np.concatenate((labels[i], sim_labels[i]))
+                else:
+                    labels[i] = sim_labels[i]
+                valid_events = events[i][:, 0] < end_time
+                temp_ev = events[i][valid_events]
+                temp_lab = labels[i][valid_events]
+
+                sorting = np.argsort(temp_ev[:, 0])
+                events[i] = temp_ev[sorting]
+                labels[i] = temp_lab[sorting]
+            break
+
+        it += 1
+
+    return events, labels
