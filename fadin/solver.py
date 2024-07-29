@@ -348,24 +348,7 @@ class UNHaP(object):
     """Define the UNHaP framework for estimated mixture of Hawkes and
     Poisson processes.
 
-    MarkedFaDIn minimizes the discretized L2 loss of Hawkes processes
-    defined by the intensity as the sum of a baseline parameter
-    mhath: `\\mu_i` and a convolution between the kernel
-    :math:`\\phi_{ij}` and the sum of Dirac functions weighed by their marks
-    :math:`z_i  := \\sum_{t^i_n \\in \\mathscr{F}^i_T} \\delta_{t^i_n}m(t^i_n)`
-    located at the event occurrences :math:`t^i_n`:
-
-    .. math::
-        \\forall i \\in [1 \\dots p], \\quad
-        \\lambda_i(t) = \\mu_i + \\sum_{j=1}^p \\phi_{ij} * z_j(t),
-        \\quad t \\in [0, T]
-
-    where
-
-    * :math:`p` is the dimension of the process
-    * :math:`\\mu_i` are the baseline intensities
-    * :math:`\\phi_{ij}` are the kernels
-    * :math:`z_j(t)` are the marked vector on the discretized grid.
+    Unhap minimizes the discretized L2 mixture loss of Hawkes and Poisson processes.
 
     Parameters
     ----------
