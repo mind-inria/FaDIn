@@ -125,6 +125,12 @@ class DiscreteKernelFiniteSupport(object):
                                        truncated_gaussian | truncated_exponential")
         return grad_values
 
+    def kernel_and_grad(self, kernel_params, time_values):
+        kernel_values = self.kernel_eval(kernel_params, time_values)
+        grad_values = self.grad_eval(kernel_params, time_values)
+
+        return kernel_values, grad_values
+
     def intensity_eval(self, baseline, alpha, kernel_params,
                        events_grid, time_values):
         """Return the intensity function evaluated on the entire grid.
