@@ -1,11 +1,16 @@
 import torch
 import time
 
-from fadin.utils.utils import optimizer, projected_grid
+from fadin.utils.utils import optimizer_fadin, optimizer_unhap, projected_grid
+from fadin.utils.utils import smooth_projection_marked
 from fadin.utils.compute_constants import compute_constants_fadin
+from fadin.utils.compute_constants import compute_constants_unhap
+from fadin.utils.compute_constants import compute_marked_quantities
 from fadin.loss_and_gradient import compute_gradient_fadin
+from fadin.loss_and_gradient import compute_base_gradients
+from fadin.loss_and_gradient import get_grad_eta_mixture, get_grad_rho_mixture
 from fadin.kernels import DiscreteKernelFiniteSupport
-from fadin.init import init_hawkes_params
+from fadin.init import init_hawkes_params_fadin, init_hawkes_params_unhap
 
 
 class FaDIn(object):
@@ -108,7 +113,10 @@ class FaDIn(object):
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
-    random_state : `int`, `RandomState` instance or `None`, `default=None`
+    random_state__version__ = '0.1.dev0'
+
+
+__all__ = ['__version__'] : `int`, `RandomState` instance or `None`, `default=None`
         Set the torch seed to 'random_state'.
 
     Attributes
@@ -226,7 +234,7 @@ class FaDIn(object):
         print('number of events is:', n_ground_events)
         n_ground_events = torch.tensor(n_ground_events)
         # Initialize Hawkes parameters
-        self.params_intens = init_hawkes_params(
+        self.params_intens = init_hawkes_params_fadin(
             self,
             self.init,
             events,
@@ -235,7 +243,7 @@ class FaDIn(object):
         )
 
         # Initialize optimizer
-        self.opt = optimizer(
+        self.opt = optimizer_fadin(
             self.params_intens,
             self.params_solver,
             solver=self.solver
@@ -314,7 +322,7 @@ class FaDIn(object):
         print('iterations in ', time.time() - start)
 
         return self
-    
+
 
 class UNHaP(object):
     """Define the UNHaP framework for estimated mixture of Hawkes and
@@ -330,6 +338,20 @@ class UNHaP(object):
     kernel : `str` or `callable`
         Either define a kernel in ``{'raised_cosine' | 'truncated_gaussian' |
         'truncated_exponential'}`` or a custom kernel.
+
+    init: `str` or `dict`, default='random'
+        Initialization strategy of the parameters of the Hawkes process.
+        If set to 'random', the parameters are initialized randomly.
+        If set to 'moment_matching_max', the parameters are initialized
+        using the moment matching method with max mode.
+        If set to 'moment_matching_mean', the parameters are initialized
+        using the moment matching method with mean mode.
+        Otherwise, the parameters are initialized using the given dictionary,
+        , which must contain the following keys:
+        - 'baseline': `tensor`, shape (n_dim,): Initial baseline
+        - 'alpha': `tensor`, shape (n_dim, n_dim): Initial alpha
+        - 'kernel': `list` of tensors of shape (n_dim, n_dim):
+            Initial kernel parameters.
 
     baseline_mask : `tensor` of shape (n_dim,), or `None`
         Tensor of same shape as the baseline vector, with values in (0, 1).
@@ -374,7 +396,8 @@ class UNHaP(object):
         iterations.
 
     density_hawkes : `str`, `default=linear`
-        Density of the marks of the Hawkes process, in ``{'linear' | 'uniform'}``.
+        Density of the marks of the Hawkes process, in
+        ``{'linear' | 'uniform'}``.
 
     density_noise : `str`, `default=reverse_linear`
         Density of the marks of the Hawkes process, in
@@ -408,11 +431,12 @@ class UNHaP(object):
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
 
     """
-    def __init__(self, n_dim, kernel, baseline_mask=None, alpha_mask=None,
+    def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, batch_rho=100,
                  ztzG_approx=True, tol=10e-5, density_hawkes='linear',
-                 density_noise='uniform', moment_matching=False, random_state=None):
+                 density_noise='uniform', moment_matching=False,
+                 random_state=None):
 
         # Set discretization parameters
         self.delta = delta
@@ -421,6 +445,7 @@ class UNHaP(object):
         self.ztzG_approx = ztzG_approx
 
         # Set optimizer parameters
+        self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
         self.tol = tol
@@ -435,41 +460,61 @@ class UNHaP(object):
 
         self.baseline = torch.rand(self.n_dim)
 
-        if baseline_mask is None:
+        # Set optimization masks
+        if optim_mask is None:
+            optim_mask = {'baseline': None, 'baseline_noise': None, 'alpha': None}
+        # Set baseline optimization mask
+        if optim_mask['baseline'] is None:
             self.baseline_mask = torch.ones([n_dim])
         else:
-            assert baseline_mask.shape == self.baseline.shape, \
+            assert optim_mask['baseline'].shape == torch.Size([n_dim]), \
                 "Invalid baseline_mask shape, must be (n_dim,)"
-            self.baseline_mask = baseline_mask
-        self.baseline = (self.baseline * self.baseline_mask).requires_grad_(True)
-
-        self.baseline_noise = torch.rand(self.n_dim).requires_grad_(True)
-
-        self.alpha = torch.rand(self.n_dim, self.n_dim)
-
-        if alpha_mask is None:
+            self.baseline_mask = optim_mask['baseline']
+        # Set bl_noise optimization mask
+        if optim_mask['baseline_noise'] is None:
+            self.bl_noise_mask = torch.ones([n_dim])
+        else:
+            assert optim_mask['baseline_noise'].shape == torch.Size([n_dim]), \
+                "Invalid baseline_noise_mask shape, must be (n_dim,)"
+            self.bl_noise_mask = optim_mask['baseline_noise']
+        # Set alpha optimization mask
+        if optim_mask['alpha'] is None:
             self.alpha_mask = torch.ones([self.n_dim, self.n_dim])
         else:
-            assert alpha_mask.shape == self.alpha.shape, \
+            assert optim_mask['alpha'].shape == torch.Size([n_dim, n_dim]), \
                 "Invalid alpha_mask shape, must be (n_dim, n_dim)"
-            self.alpha_mask = alpha_mask
-        self.alpha = (self.alpha * self.alpha_mask).requires_grad_(True)
+            self.alpha_mask = optim_mask['alpha']
 
-        kernel_params_init = init_kernel_parameters(kernel,
-                                                    self.kernel_length,
-                                                    self.n_dim)
+        # Initialization option for Hawkes parameters
+        s = ['random', 'moment_matching_max', 'moment_matching_mean']
+        if isinstance(init, str):
+            assert init in s, (
+                f"Invalid string init {init}. init must be a dict or in {s}."
+            )
+        else:
+            keys = set(['baseline', 'alpha', 'kernel'])
+            is_dict = isinstance(init, dict)
+            assert is_dict and set(init.keys()) == keys, (
+                f"If init is not a str, it should be a dict with keys {keys}. "
+                f"Got {init}."
+            )
+        self.init = init
+        self.params_intens = init_hawkes_params_unhap(
+            self,
+            self.init,
+            kernel,
+            self.kernel_length,
+            self.n_dim
+        )
 
-        self.n_kernel_params = len(kernel_params_init)
-
-        self.kernel_model = DiscreteKernelFiniteSupport(self.delta, self.n_dim,
-                                                        kernel, self.kernel_length, 0)
+        self.kernel_model = DiscreteKernelFiniteSupport(
+            self.delta,
+            self.n_dim,
+            kernel,
+            self.kernel_length,
+            0
+        )
         self.kernel = kernel
-        # Set optimizer
-        self.params_intens = [self.baseline, self.baseline_noise, self.alpha]
-
-        for i in range(self.n_kernel_params):
-            self.params_intens.append(
-                kernel_params_init[i].float().clip(1e-4).requires_grad_(True))
 
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' not in params_optim.keys():
@@ -519,9 +564,13 @@ class UNHaP(object):
         mask_void = torch.where(events_grid == 0)
 
         # computation of the marked quantities
-        marked_quantities = compute_marked_quantities(events_grid, marks_grid,
-                                                      self.n_dim, self.density_hawkes,
-                                                      self.density_noise)
+        marked_quantities = compute_marked_quantities(
+            events_grid,
+            marks_grid,
+            self.n_dim,
+            self.density_hawkes,
+            self.density_noise
+        )
 
         self.rho = torch.zeros(self.n_dim, n_grid)
         self.rho[mask_events] = 0.5  # Init
@@ -531,21 +580,15 @@ class UNHaP(object):
 
         if self.moment_matching:
             # Smart initialization of solver parameters
-            self.baseline, self.baseline_noise, self.alpha, kernel_params_init = \
-                smart_init_noise(self, marked_events, n_ground_events, end_time)
-
-            # Set optimizer with smartinit parameters
-            self.params_intens = [self.baseline, self.baseline_noise, self.alpha]
-
-            for i in range(2):  # range(self.n_params_kernel)
-                self.params_intens.append(
-                    kernel_params_init[i].float().clip(1e-4).requires_grad_(True)
+            self.params_intens = init_hawkes_params_unhap(
+                    self, self.init, marked_events, n_ground_events, end_time
                 )
 
-        self.opt_intens, self.opt_mixture = optimizer_unhap([self.params_intens,
-                                                             self.params_mixture],
-                                                            self.params_solver,
-                                                            solver=self.solver)
+        self.opt_intens, self.opt_mixture = optimizer_unhap(
+            [self.params_intens, self.params_mixture],
+            self.params_solver,
+            solver=self.solver
+        )
 
         self.param_rho = self.params_mixture[0].detach()
 
@@ -566,12 +609,20 @@ class UNHaP(object):
         ####################################################
         # save results
         ####################################################
+        self.v_loss = torch.zeros(self.max_iter)
 
-        _, self.param_baseline, self.param_baseline_noise, \
-            self.param_alpha, self.param_kernel = init_saving_params(
-                self.params_intens, self.n_kernel_params, self.n_dim, self.max_iter)
+        self.param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_baseline_noise = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_alpha = torch.zeros(self.max_iter + 1,
+                                       self.n_dim, self.n_dim)
+        self.param_kernel = torch.zeros(self.n_kernel_params,
+                                        self.max_iter + 1,
+                                        self.n_dim, self.n_dim)
+        #  self.param_rho = torch.zeros(self.max_iter + 1, self.n_dim, n_grid)
 
-        # If kernel parameters are optimized
+        self.param_baseline[0] = self.params_intens[0].detach()
+        self.param_baseline_noise[0] = self.params_intens[1].detach()
+        self.param_alpha[0] = self.params_intens[2].detach()
         for i in range(self.n_kernel_params):
             self.param_kernel[i, 0] = self.params_intens[3 + i].detach()
 
@@ -669,128 +720,128 @@ class UNHaP(object):
         return self
 
 
-def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
-         savefig=None):
-    """
-    Plots estimated kernels and baselines of solver.
-    Should be called after calling the `fit` method on solver.
+# def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
+#          savefig=None):
+#     """
+#     Plots estimated kernels and baselines of solver.
+#     Should be called after calling the `fit` method on solver.
 
-    Parameters
-    ----------
-    solver: |`MarkedFaDin` or `FaDIn` solver.
-        `fit` method should be called on the solver before calling `plot`.
+#     Parameters
+#     ----------
+#     solver: |`MarkedFaDin` or `FaDIn` solver.
+#         `fit` method should be called on the solver before calling `plot`.
 
-    plotfig: bool (default `False`)
-        If set to `True`, the figure is plotted.
+#     plotfig: bool (default `False`)
+#         If set to `True`, the figure is plotted.
 
-    bl_noise: bool (default`False`)
-        Whether to plot the baseline of noisy activations.
-        Only works if the solver has 'baseline_noise' attribute.
+#     bl_noise: bool (default`False`)
+#         Whether to plot the baseline of noisy activations.
+#         Only works if the solver has 'baseline_noise' attribute.
 
-    title: `str` or `None`, default=`None`
-        Title of the plot. If set to `None`, the title text is generic.
+#     title: `str` or `None`, default=`None`
+#         Title of the plot. If set to `None`, the title text is generic.
 
-    ch_names: list of `str` (default `None`)
-        Channel names for subplots. If set to `None`, will be set to
-        `np.arange(solver.n_dim).astype('str')`.
-    savefig: str or `None`, default=`None`
-        Path for saving the figure. If set to `None`, the figure is not saved.
+#     ch_names: list of `str` (default `None`)
+#         Channel names for subplots. If set to `None`, will be set to
+#         `np.arange(solver.n_dim).astype('str')`.
+#     savefig: str or `None`, default=`None`
+#         Path for saving the figure. If set to `None`, the figure is not saved.
 
-    Returns
-    -------
-    fig, axs : matplotlib.pyplot Figure
-        n_dim x n_dim subplots, where subplot of coordinates (i, j) shows the
-        kernel component $\\alpha_{i, j}\\phi_{i, j}$ and the baseline $\\mu_i$
-        of the intensity function $\\lambda_i$.
+#     Returns
+#     -------
+#     fig, axs : matplotlib.pyplot Figure
+#         n_dim x n_dim subplots, where subplot of coordinates (i, j) shows the
+#         kernel component $\\alpha_{i, j}\\phi_{i, j}$ and the baseline $\\mu_i$
+#         of the intensity function $\\lambda_i$.
 
-    """
-    # Recover kernel time values and y values for kernel plot
-    discretization = torch.linspace(0, solver.W, 200)
-    kernel = DiscreteKernelFiniteSupport(solver.delta,
-                                         solver.n_dim,
-                                         kernel=solver.kernel,
-                                         kernel_length=solver.W)
+#     """
+#     # Recover kernel time values and y values for kernel plot
+#     discretization = torch.linspace(0, solver.W, 200)
+#     kernel = DiscreteKernelFiniteSupport(solver.delta,
+#                                          solver.n_dim,
+#                                          kernel=solver.kernel,
+#                                          kernel_length=solver.W)
 
-    kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
-                                      discretization).detach()
-    # Plot
-    if ch_names is None:
-        ch_names = np.arange(solver.n_dim).astype('str')
-    fig, axs = plt.subplots(nrows=solver.n_dim,
-                            ncols=solver.n_dim,
-                            figsize=(4 * solver.n_dim, 4 * solver.n_dim),
-                            sharey=True,
-                            sharex=True,
-                            squeeze=False)
-    for i in range(solver.n_dim):
-        for j in range(solver.n_dim):
-            # Plot baseline
-            label = (rf'$\mu_{{{ch_names[i]}}}$=' +
-                     f'{round(solver.baseline[i].item(), 2)}')
-            axs[i, j].hlines(
-                y=solver.baseline[i].item(),
-                xmin=0,
-                xmax=solver.W,
-                label=label,
-                color='orange',
-                linewidth=4
-            )
-            if bl_noise:
-                # Plot noise baseline
-                mutilde = round(solver.baseline_noise[i].item(), 2)
-                label = rf'$\tilde{{\mu}}_{{{ch_names[i]}}}$={mutilde}'
-                axs[i, j].hlines(
-                    y=solver.baseline_noise[i].item(),
-                    xmin=0,
-                    xmax=solver.W,
-                    label=label,
-                    color='green',
-                    linewidth=4
-                )
-            # Plot kernel (i, j)
-            phi_values = solver.alpha[i, j].item() * kappa_values[i, j, 1:]
-            axs[i, j].plot(
-                discretization[1:],
-                phi_values,
-                label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
-                linewidth=4
-            )
-            if solver.kernel == 'truncated_gaussian':
-                # Plot mean of gaussian kernel
-                mean = round(solver.params_intens[-2][i, j].item(), 2)
-                axs[i, j].vlines(
-                    x=mean,
-                    ymin=0,
-                    ymax=torch.max(phi_values).item(),
-                    label=rf'mean={mean}',
-                    color='pink',
-                    linestyles='dashed',
-                    linewidth=3,
-                )
-            # Handle text
-            axs[i, j].set_xlabel('Time', size='x-large')
-            axs[i, j].tick_params(
-                axis='both',
-                which='major',
-                labelsize='x-large'
-            )
-            axs[i, j].set_title(
-                f'{ch_names[j]}-> {ch_names[i]}',
-                size='x-large'
-            )
-            axs[i, j].legend(fontsize='large', loc='best')
-    # Plot title
-    if title is None:
-        fig_title = 'Hawkes influence ' + solver.kernel + ' kernel'
-    else:
-        fig_title = title
-    fig.suptitle(fig_title, size=20)
-    fig.tight_layout()
-    # Save figure
-    if savefig is not None:
-        fig.savefig(savefig)
-    # Plot figure
-    if plotfig:
-        fig.show()
+#     kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
+#                                       discretization).detach()
+#     # Plot
+#     if ch_names is None:
+#         ch_names = np.arange(solver.n_dim).astype('str')
+#     fig, axs = plt.subplots(nrows=solver.n_dim,
+#                             ncols=solver.n_dim,
+#                             figsize=(4 * solver.n_dim, 4 * solver.n_dim),
+#                             sharey=True,
+#                             sharex=True,
+#                             squeeze=False)
+#     for i in range(solver.n_dim):
+#         for j in range(solver.n_dim):
+#             # Plot baseline
+#             label = (rf'$\mu_{{{ch_names[i]}}}$=' +
+#                      f'{round(solver.baseline[i].item(), 2)}')
+#             axs[i, j].hlines(
+#                 y=solver.baseline[i].item(),
+#                 xmin=0,
+#                 xmax=solver.W,
+#                 label=label,
+#                 color='orange',
+#                 linewidth=4
+#             )
+#             if bl_noise:
+#                 # Plot noise baseline
+#                 mutilde = round(solver.baseline_noise[i].item(), 2)
+#                 label = rf'$\tilde{{\mu}}_{{{ch_names[i]}}}$={mutilde}'
+#                 axs[i, j].hlines(
+#                     y=solver.baseline_noise[i].item(),
+#                     xmin=0,
+#                     xmax=solver.W,
+#                     label=label,
+#                     color='green',
+#                     linewidth=4
+#                 )
+#             # Plot kernel (i, j)
+#             phi_values = solver.alpha[i, j].item() * kappa_values[i, j, 1:]
+#             axs[i, j].plot(
+#                 discretization[1:],
+#                 phi_values,
+#                 label=rf'$\phi_{{{ch_names[i]},{ch_names[j]}}}$',
+#                 linewidth=4
+#             )
+#             if solver.kernel == 'truncated_gaussian':
+#                 # Plot mean of gaussian kernel
+#                 mean = round(solver.params_intens[-2][i, j].item(), 2)
+#                 axs[i, j].vlines(
+#                     x=mean,
+#                     ymin=0,
+#                     ymax=torch.max(phi_values).item(),
+#                     label=rf'mean={mean}',
+#                     color='pink',
+#                     linestyles='dashed',
+#                     linewidth=3,
+#                 )
+#             # Handle text
+#             axs[i, j].set_xlabel('Time', size='x-large')
+#             axs[i, j].tick_params(
+#                 axis='both',
+#                 which='major',
+#                 labelsize='x-large'
+#             )
+#             axs[i, j].set_title(
+#                 f'{ch_names[j]}-> {ch_names[i]}',
+#                 size='x-large'
+#             )
+#             axs[i, j].legend(fontsize='large', loc='best')
+#     # Plot title
+#     if title is None:
+#         fig_title = 'Hawkes influence ' + solver.kernel + ' kernel'
+#     else:
+#         fig_title = title
+#     fig.suptitle(fig_title, size=20)
+#     fig.tight_layout()
+#     # Save figure
+#     if savefig is not None:
+#         fig.savefig(savefig)
+#     # Plot figure
+#     if plotfig:
+#         fig.show()
 
-    return fig, axs
+#     return fig, axs
