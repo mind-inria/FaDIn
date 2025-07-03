@@ -1,11 +1,13 @@
-# %% import stuff
+# %% Imports
 import numpy as np
+import matplotlib.pyplot as plt
 
-from fadin.utils.utils_simu import simu_marked_hawkes_cluster, custom_density, \
-    simu_multi_poisson
+from fadin.utils.utils_simu import simu_marked_hawkes_cluster, custom_density
+from fadin.utils.utils_simu import simu_multi_poisson
 from fadin.solver import UNHaP
-from fadin.utils.functions import identity, linear_zero_one, reverse_linear_zero_one, \
-    truncated_gaussian
+from fadin.utils.functions import identity, linear_zero_one
+from fadin.utils.functions import reverse_linear_zero_one, truncated_gaussian
+from fadin.utils.vis import plot
 
 
 # %% Fixing the parameter of the simulation setting
@@ -75,7 +77,6 @@ ev, noisy_marks, true_rho = simulate_data(baseline, baseline_noise.item(),
                                           alpha, end_time, seed=0)
 # %% Apply UNHAP
 
-
 solver = UNHaP(n_dim=1,
                kernel="truncated_gaussian",
                kernel_length=1.,
@@ -95,7 +96,7 @@ print('Estimated baseline is: ', solver.param_baseline[-10:].mean().item())
 print('Estimated alpha is: ', solver.param_alpha[-10:].mean().item())
 print('Estimated kernel mean is: ', (solver.param_kernel[0][-10:].mean().item()))
 print('Estimated kernel sd is: ', solver.param_kernel[1][-10:].mean().item())
-
+print('Estimated noise baseline is: ', solver.param_baseline_noise[-10:].mean().item())
 # error on params
 error_baseline = (solver.param_baseline[-10:].mean().item() - baseline.item()) ** 2
 error_alpha = (solver.param_alpha[-10:].mean().item() - alpha.item()) ** 2
@@ -105,4 +106,13 @@ sum_error = error_baseline + error_alpha + error_mu + error_sigma
 error_params = np.sqrt(sum_error)
 
 print('L2 square errors of the vector of parameters is:', error_params)
+# %% Plot estimated parameters
+fig, axs = plot(
+    solver,
+    plotfig=False,
+    bl_noise=True,
+    title='UNHaP fit',
+    savefig=None
+)
+plt.show(block=True)
 # %%
