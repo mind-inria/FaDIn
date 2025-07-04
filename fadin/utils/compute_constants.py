@@ -1,7 +1,6 @@
 import numba
 import numpy as np
 import torch
-import torch
 from scipy.linalg import toeplitz
 
 from fadin.utils.utils import convert_float_tensor
@@ -23,7 +22,7 @@ def get_zG(events_grid, L):
         zG[i] = n_ei
         # Compute cumsum at the end of the vector of timestamps of size L
         # tau = 0:L-1
-        zG[i, 1:] -= np.cumsum(np.flip(ei[-L + 1:]))
+        zG[i, 1:] -= np.cumsum(np.flip(ei[-L + 1 :]))
 
     return zG
 
@@ -71,7 +70,9 @@ def _get_ztzG(events_grid, L):
                     #         ztzG[i, j, tau, tau_p] = ei[:-tau] @ ej[tau:]
                     # else:
                     diff = tau - tau_p
-                    ztzG[i, j, tau, tau_p] = ei[:n_grid-tau] @ ej[diff:n_grid-tau_p]
+                    ztzG[i, j, tau, tau_p] = (
+                        ei[: n_grid - tau] @ ej[diff : n_grid - tau_p]
+                    )
     return ztzG
 
 
@@ -154,28 +155,32 @@ def compute_constants_fadin(events_grid, L, ztzG_approx=True):
     return zG, zN, ztzG
 
 
-def compute_marked_quantities(events_grid, marks_grid, n_dim,
-                              density_hawkes, density_noise):
-
-    if density_hawkes == 'linear':
-        square_int_hawkes = torch.tensor([4/3 for _ in range(n_dim)])
+def compute_marked_quantities(
+    events_grid, marks_grid, n_dim, density_hawkes, density_noise
+):
+    if density_hawkes == "linear":
+        square_int_hawkes = torch.tensor([4 / 3 for _ in range(n_dim)])
         marks_grid_hawkes = 2 * marks_grid
-    elif density_hawkes == 'uniform':
-        square_int_hawkes = torch.tensor([1. for _ in range(n_dim)])
+    elif density_hawkes == "uniform":
+        square_int_hawkes = torch.tensor([1.0 for _ in range(n_dim)])
         marks_grid_hawkes = events_grid
     else:
-        raise NotImplementedError('this density is not implemented \
-                                    must be in linear | uniform ')
+        raise NotImplementedError(
+            "this density is not implemented \
+                                    must be in linear | uniform "
+        )
 
-    if density_noise == 'reverse_linear':
-        square_int_noise = torch.tensor([4/3 for _ in range(n_dim)])
+    if density_noise == "reverse_linear":
+        square_int_noise = torch.tensor([4 / 3 for _ in range(n_dim)])
         marks_grid_noise = 2 - 2 * marks_grid
-    elif density_noise == 'uniform':
-        square_int_noise = torch.tensor([1. for _ in range(n_dim)])
+    elif density_noise == "uniform":
+        square_int_noise = torch.tensor([1.0 for _ in range(n_dim)])
         marks_grid_noise = events_grid
     else:
-        raise NotImplementedError('this density is not implemented \
-                                    must be in reverse_linear | uniform ')
+        raise NotImplementedError(
+            "this density is not implemented \
+                                    must be in reverse_linear | uniform "
+        )
 
     return square_int_hawkes, marks_grid_hawkes, square_int_noise, marks_grid_noise
 
@@ -202,13 +207,13 @@ def get_xi_tilde(marks_grid, z_tilde, rho, L):
 
     NB: events grid are considered with the distribution of influence of the mark
     """
-    vec = (marks_grid ** 2) * rho - z_tilde ** 2
+    vec = (marks_grid**2) * rho - z_tilde**2
     phi_tilde = get_zG(vec.detach().numpy(), L)
 
     return phi_tilde
 
 
-def get_phi_tilde_events(z_tilde, events_ground_grid,  L, rho, marks_grid_hawkes):
+def get_phi_tilde_events(z_tilde, events_ground_grid, L, rho, marks_grid_hawkes):
     """
     z_tilde.shape = n_dim, n_grid
     zLN.shape = n_dim, n_dim, L
@@ -224,7 +229,8 @@ def get_phi_tilde_events(z_tilde, events_ground_grid,  L, rho, marks_grid_hawkes
             z_tilde_j = z_tilde[j]
             for tau in range(L):
                 phi_tilde_events[i, j, tau] = (
-                    (z_tilde_j[:n_grid-tau]) * prod_i[tau:]).sum()
+                    (z_tilde_j[: n_grid - tau]) * prod_i[tau:]
+                ).sum()
 
     return phi_tilde_events
 
@@ -241,12 +247,14 @@ def get_psi_tilde_approx(z_tilde, L):
     return psi_tilde
 
 
-def compute_constants_unhap(z_tilde, marks_grid, events_grid,
-                            param_rho, marks_grid_hawkes, L):
+def compute_constants_unhap(
+    z_tilde, marks_grid, events_grid, param_rho, marks_grid_hawkes, L
+):
     """Compute all precomputations terms."""
     phi_tilde = get_phi_tilde(z_tilde, L)
     phi_tilde_events = get_phi_tilde_events(
-        z_tilde, events_grid, L, param_rho, marks_grid_hawkes)
+        z_tilde, events_grid, L, param_rho, marks_grid_hawkes
+    )
     psi_tilde = get_psi_tilde_approx(z_tilde, L)
     xi_tilde = get_xi_tilde(marks_grid, z_tilde, param_rho, L)
 
