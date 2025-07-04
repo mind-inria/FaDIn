@@ -481,12 +481,19 @@ class UNHaP(object):
         self.max_iter = max_iter
         self.tol = tol
         self.batch_rho = batch_rho
+        self.n_dim = n_dim
+        self.kernel_model = DiscreteKernelFiniteSupport(
+            self.delta,
+            self.n_dim,
+            kernel,
+            self.kernel_length,
+            0
+        )
 
         self.density_hawkes = density_hawkes
         self.density_noise = density_noise
 
         # Set model parameters
-        self.n_dim = n_dim
 
         self.baseline = torch.rand(self.n_dim)
 
@@ -529,22 +536,6 @@ class UNHaP(object):
                 f"Got {init}."
             )
         self.init = init
-        self.params_intens = init_hawkes_params_unhap(
-            self,
-            self.init,
-            kernel,
-            self.kernel_length,
-            self.n_dim
-        )
-
-        self.kernel_model = DiscreteKernelFiniteSupport(
-            self.delta,
-            self.n_dim,
-            kernel,
-            self.kernel_length,
-            0
-        )
-        self.kernel = kernel
 
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' not in params_optim.keys():
@@ -610,7 +601,7 @@ class UNHaP(object):
 
         # Smart initialization of solver parameters
         self.params_intens = init_hawkes_params_unhap(
-                self, self.init, marked_events, n_ground_events, end_time
+                self, self.init, marked_events, events_grid, n_ground_events, end_time
             )
 
         self.opt_intens, self.opt_mixture = optimizer_unhap(

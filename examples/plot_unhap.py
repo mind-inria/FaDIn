@@ -119,6 +119,7 @@ solver = UNHaP(
     n_dim=1,
     kernel="truncated_gaussian",
     kernel_length=1.0,
+    init='moment_matching_mean',
     delta=delta,
     optim="RMSprop",
     params_optim={"lr": 1e-3},
@@ -126,7 +127,6 @@ solver = UNHaP(
     batch_rho=batch_rho,
     density_hawkes="linear",
     density_noise="uniform",
-    moment_matching=True,
 )
 solver.fit(ev, end_time)
 
