@@ -35,14 +35,17 @@ def compute_gradient_fadin(solver, events_grid, discretization,
         discretization
     )
 
-    if solver.log:
-        solver.v_loss[i] = \
-            discrete_l2_loss_precomputation(solver.zG, solver.zN, solver.ztzG,
-                                            solver.params_intens[0],
-                                            solver.params_intens[1],
-                                            kernel, n_events,
-                                            solver.delta,
-                                            end_time).detach()
+    solver.v_loss[i] = \
+        discrete_l2_loss_precomputation(
+            solver.zG,
+            solver.zN,
+            solver.ztzG,
+            solver.params_intens[0],
+            solver.params_intens[1],
+            kernel, n_events,
+            solver.delta,
+            end_time
+            ).detach()
     # Update baseline gradient
     solver.params_intens[0].grad = get_grad_baseline(
         solver.zG,
