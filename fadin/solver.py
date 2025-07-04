@@ -88,6 +88,12 @@ class FaDIn(object):
     optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
         The algorithms used to optimize the Hawkes processes parameters.
 
+    params_optim : dict, {'lr', ...}, default=dict()
+        Learning rate and parameters of the chosen optimization algorithm.
+        Will be passed as arguments to the `torch.optimizer` constructor chosen
+        via the `optim` parameter.
+        If 'lr' is not given, it is set to 1e-3.
+
     step_size : `float`, `default=1e-3`
         Learning rate of the chosen optimization algorithm.
 
@@ -100,9 +106,6 @@ class FaDIn(object):
         ztzG is approximated with Toeplitz matrix not taking into account
         edge effects.
 
-    log : `boolean`, `default=False`
-        Record the loss values during the optimization.
-
     grad_kernel : `None` or `callable`, default=None
         If kernel in ``{'raised_cosine'| 'truncated_gaussian' |
         'truncated_exponential'}`` the gradient function is implemented.
@@ -113,21 +116,39 @@ class FaDIn(object):
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
+    random_state : `int`, `RandomState` instance or `None`, `default=None`
+        Set the torch seed to 'random_state'.
+        If set to `None`, torch seed will be set to 0.
+
     Attributes
     ----------
-    param_baseline : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
+    params_intens : `list` of `tensor`
+        List of parameters of the Hawkes process at the end of the fit.
+        The list contains the following tensors in this order:
+        - `baseline`: `tensor`, shape (n_dim,): Baseline parameter.
+        - `alpha`: `tensor`, shape (n_dim, n_dim): Weight parameter.
+        - `kernel`: `list` of `tensor`, shape (n_dim, n_dim):
+            Kernel parameters. The size of the list varies depending
+            the number of parameters. The shape of each tensor is
+            `(n_dim, n_dim)`.
 
-    param_alpha : `tensor`, shape (n_dim, n_dim)
-        Weight parameter of the Hawkes process.
+    param_baseline : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+
+    param_baseline_noise : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+
+    param_alpha : `tensor`, shape (max_iter, n_dim, n_dim)
+        Weight parameter of the Hawkes process for each fit iteration.
 
     param_kernel : `list` of `tensor`
-        list containing tensor array of kernels parameters.
+        list containing tensor array of kernels parameters for each fit
+        iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
 
     v_loss : `tensor`, shape (n_iter)
-        If `log=True`, compute the loss accross iterations.
+        loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
     compute_gradient = staticmethod(compute_gradient_fadin)
@@ -136,8 +157,7 @@ class FaDIn(object):
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, ztzG_approx=True,
-                 log=False, grad_kernel=None,
-                 tol=10e-5, random_state=None):
+                 grad_kernel=None, tol=10e-5, random_state=None):
 
         # Discretization parameters
         self.delta = delta
@@ -149,7 +169,6 @@ class FaDIn(object):
         self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
-        self.log = log
         self.tol = tol
         self.n_dim = n_dim
         self.kernel_model = DiscreteKernelFiniteSupport(
@@ -347,18 +366,25 @@ class UNHaP(object):
         - 'kernel': `list` of tensors of shape (n_dim, n_dim):
             Initial kernel parameters.
 
-    baseline_mask : `tensor` of shape (n_dim,), or `None`
-        Tensor of same shape as the baseline vector, with values in (0, 1).
-        `baseline` coordinates where `baseline_mask` is equal to 0
-        will stay constant equal to zero and not be optimized.
-        If set to `None`, all coordinates of baseline will be optimized.
-
-    alpha_mask : `tensor` of shape (n_dim, n_dim), or `None`
-        Tensor of same shape as the `alpha` tensor, with values in (0, 1).
-        `alpha` coordinates and kernel parameters where `alpha_mask` = 0
-        will not be optimized.
-        If set to `None`, all coordinates of alpha will be optimized,
-        and all kernel parameters will be optimized if optimize_kernel=`True`.
+    optim_mask: `dict` of `tensor` or `None`, default=`None`.
+        Dictionary containing the masks for the optimization of the parameters
+        of the Hawkes process. If set to `None`, all parameters are optimized.
+        The dictionary must contain the following keys:
+        - 'baseline': `tensor` of shape (n_dim,), or `None`.
+            Tensor of same shape as the baseline vector, with values in (0, 1).
+            `baseline` coordinates where then tensor is equal to 0
+            will not be optimized. If set to `None`, all coordinates of
+            baseline will be optimized.
+        - 'baseline_noise': `tensor` of shape (n_dim,), or `None`.
+            Tensor of same shape as the noise baseline vector, with values in
+            (0, 1). `baseline_noise` coordinates where then tensor is equal
+            to 0 will not be optimized. If set to `None`, all coordinates of
+            baseline_noise will be optimized.
+        - 'alpha': `tensor` of shape (n_dim, n_dim), or `None`.
+            Tensor of same shape as the `alpha` tensor, with values in (0, 1).
+            `alpha` coordinates and kernel parameters where `alpha_mask` = 0
+            will not be optimized. If set to `None`, all coordinates of alpha
+            and kernel parameters will be optimized.
 
     kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
@@ -369,11 +395,17 @@ class UNHaP(object):
     optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
         The algorithm used to optimize the Hawkes processes parameters.
 
-    params_optim : dict, {'lr', ...}
+    params_optim : dict, {'lr', ...}, default=dict()
         Learning rate and parameters of the chosen optimization algorithm.
+        Will be passed as arguments to the `torch.optimizer` constructor chosen
+        via the `optim` parameter.
+        If 'lr' is not given, it is set to 1e-3.
 
     max_iter : `int`, `default=2000`
         Maximum number of iterations during fit.
+
+    batch_rho : `int`
+        Number of FaDIn iterations between latent variables rho updates.
 
     ztzG_approx : `boolean`, `default=True`
         If ztzG_approx is false, compute the true ztzG precomputation constant
@@ -381,28 +413,18 @@ class UNHaP(object):
         ztzG is approximated with Toeplitz matrix not taking into account
         edge effects.
 
-    batch_rho : `int`
-        Number of FaDIn iterations between latent variables rho updates.
-
     tol : `float`, `default=1e-5`
         The tolerance of the solver (iterations stop when the stopping
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
     density_hawkes : `str`, `default=linear`
-        Density of the marks of the Hawkes process, in
+        Density of the marks of the Hawkes process events, in
         ``{'linear' | 'uniform'}``.
 
     density_noise : `str`, `default=reverse_linear`
-        Density of the marks of the Hawkes process, in
+        Density of the marks of the spurious events, in
         ``{'reverse_linear' | 'uniform'}``.
-
-    moment_matching: boolean, `default=False`
-        If set to False, baseline, alpha and kernel parameters are randomly
-        chosen. If set to True, baseline, alpha and kernel parameters are
-        chosen using the smart init strategy.
-        The smart init strategy is only implemented
-        for truncated gaussian and raised_cosine kernels.
 
     random_state : `int`, `RandomState` instance or `None`, `default=None`
         Set the torch seed to 'random_state'.
@@ -410,27 +432,42 @@ class UNHaP(object):
 
     Attributes
     ----------
-    param_baseline : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
+    params_intens : `list` of `tensor`
+        List of parameters of the Hawkes process at the end of the fit.
+        The list contains the following tensors in this order:
+        - `baseline`: `tensor`, shape (n_dim,): Baseline parameter.
+        - `baseline_noise`: `tensor`, shape (n_dim,): Baseline noise parameter.
+        - `alpha`: `tensor`, shape (n_dim, n_dim): Weight parameter.
+        - `kernel`: `list` of `tensor`, shape (n_dim, n_dim):
+            Kernel parameters. The size of the list varies depending
+            the number of parameters. The shape of each tensor is
+            `(n_dim, n_dim)`.
 
-    param_baseline_noise : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
+    param_baseline : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
 
-    param_alpha : `tensor`, shape (n_dim, n_dim)
-        Weight parameter of the Hawkes process.
+    param_baseline_noise : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+
+    param_alpha : `tensor`, shape (max_iter, n_dim, n_dim)
+        Weight parameter of the Hawkes process for each fit iteration.
 
     param_kernel : `list` of `tensor`
-        list containing tensor array of kernels parameters.
+        list containing tensor array of kernels parameters for each fit
+        iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
+
+    v_loss : `tensor`, shape (n_iter)
+        loss accross iterations.
+        If no early stopping, `n_iter` is equal to `max_iter`.
 
     """
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, batch_rho=100,
                  ztzG_approx=True, tol=10e-5, density_hawkes='linear',
-                 density_noise='uniform', moment_matching=False,
-                 random_state=None):
+                 density_noise='uniform', random_state=None):
 
         # Set discretization parameters
         self.delta = delta
@@ -447,7 +484,6 @@ class UNHaP(object):
 
         self.density_hawkes = density_hawkes
         self.density_noise = density_noise
-        self.moment_matching = moment_matching
 
         # Set model parameters
         self.n_dim = n_dim
@@ -572,11 +608,10 @@ class UNHaP(object):
         # add rho parameter at the end of params
         self.params_mixture = [self.rho]
 
-        if self.moment_matching:
-            # Smart initialization of solver parameters
-            self.params_intens = init_hawkes_params_unhap(
-                    self, self.init, marked_events, n_ground_events, end_time
-                )
+        # Smart initialization of solver parameters
+        self.params_intens = init_hawkes_params_unhap(
+                self, self.init, marked_events, n_ground_events, end_time
+            )
 
         self.opt_intens, self.opt_mixture = optimizer_unhap(
             [self.params_intens, self.params_mixture],
