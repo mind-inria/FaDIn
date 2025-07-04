@@ -1,6 +1,10 @@
-name: Build and/or deploy documentation
+name: Build and deploy documentation
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 
 jobs:
@@ -18,7 +22,7 @@ jobs:
             pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
             pip install -e .[doc]
       - name:  Upload generated HTML as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: DocHTML
           path: doc/_build/html/
@@ -31,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: DocHTML
           path: doc/_build/html/
