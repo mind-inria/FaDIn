@@ -18,7 +18,7 @@ Some examples using FaDIn.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on univariate Hawkes processes simulated...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on univariate Hawkes processes simulated with specific kernels.">
 
 .. only:: html
 
@@ -35,7 +35,7 @@ Some examples using FaDIn.
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on multivariate Hawkes processes simulat...">
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by FaDIn on multivariate Hawkes processes simulated with specific kernels.">
 
 .. only:: html
 
@@ -47,6 +47,23 @@ Some examples using FaDIn.
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">FaDIn on simulated 2-d Hawkes processes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example demonstrates inference performed by UNHaP on univariate Hawkes processes simulated with a truncated gaussian kernel.">
+
+.. only:: html
+
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_unhap_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_examples_plot_unhap.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">UNHaP on simulated univariate Hawkes processes</div>
     </div>
 
 
@@ -62,6 +79,7 @@ Some examples using FaDIn.
 
    /auto_examples/plot_univariate_fadin
    /auto_examples/plot_multivariate_fadin
+   /auto_examples/plot_unhap
 
 
 .. only:: html

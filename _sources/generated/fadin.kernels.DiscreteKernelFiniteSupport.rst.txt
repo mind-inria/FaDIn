@@ -16,6 +16,7 @@
       ~DiscreteKernelFiniteSupport.__init__
       ~DiscreteKernelFiniteSupport.grad_eval
       ~DiscreteKernelFiniteSupport.intensity_eval
+      ~DiscreteKernelFiniteSupport.kernel_and_grad
       ~DiscreteKernelFiniteSupport.kernel_eval
    
    

@@ -3,17 +3,17 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="API Documentation" href="../api.html" /><link rel="prev" title="FaDIn on simulated univariate Hawkes processes" href="plot_univariate_fadin.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="UNHaP on simulated univariate Hawkes processes" href="plot_unhap.html" /><link rel="prev" title="FaDIn on simulated univariate Hawkes processes" href="plot_univariate_fadin.html" />
 
-    <!-- Generated with Sphinx 7.1.2 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 7.1.2 and Furo 2024.08.06 -->
         <title>FaDIn on simulated 2-d Hawkes processes - fadin 0.1.dev0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=045299b1" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
-    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=61a4c737" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=2da93098" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=6302152c" />
     
     
@@ -93,19 +93,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -146,7 +133,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -225,6 +212,7 @@
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Examples Gallery</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="plot_univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">FaDIn on simulated 2-d Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_unhap.html">UNHaP on simulated univariate Hawkes processes</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api.html">API Documentation</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of API Documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -286,14 +274,14 @@ with specific kernels.</p>
 </pre></div>
 </div>
 <p>Let us first define the parameters of our model.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">mpatches</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpatches</span>
 
-<span class="kn">from</span> <span class="nn">fadin.utils.utils_simu</span> <span class="kn">import</span> <span class="n">simu_hawkes_cluster</span>
-<span class="kn">from</span> <span class="nn">fadin.solver</span> <span class="kn">import</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a>
-<span class="kn">from</span> <span class="nn">fadin.kernels</span> <span class="kn">import</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fadin.utils.utils_simu</span><span class="w"> </span><span class="kn">import</span> <span class="n">simu_hawkes_cluster</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fadin.solver</span><span class="w"> </span><span class="kn">import</span> <a href="../generated/fadin.solver.FaDIn.html#fadin.solver.FaDIn" title="fadin.solver.FaDIn" class="sphx-glr-backref-module-fadin-solver sphx-glr-backref-type-py-class"><span class="n">FaDIn</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fadin.kernels</span><span class="w"> </span><span class="kn">import</span> <a href="../generated/fadin.kernels.DiscreteKernelFiniteSupport.html#fadin.kernels.DiscreteKernelFiniteSupport" title="fadin.kernels.DiscreteKernelFiniteSupport" class="sphx-glr-backref-module-fadin-kernels sphx-glr-backref-type-py-class"><span class="n">DiscreteKernelFiniteSupport</span></a>
 
 <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_dim</span></a> <span class="o">=</span> <span class="mi">2</span>
 <a href="https://docs.python.org/3/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dt</span></a> <span class="o">=</span> <span class="mf">0.01</span>
@@ -457,9 +445,6 @@ Simulate generation 137
 Simulate generation 138
 Simulate generation 139
 Simulate generation 140
-Simulate generation 141
-Simulate generation 142
-Simulate generation 143
 </pre></div>
 </div>
 <p>Here, we apply FaDIn.</p>
@@ -485,8 +470,8 @@ Simulate generation 143
       <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_kernel</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: [4025462, 5032651]
-precomput: 120.09188032150269
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>number of events is: [3971403, 4966295]
+precomput: 127.21320867538452
 Fitting model...   0.0%
 Fitting model...   0.0%
 Fitting model...   0.0%
@@ -10487,12 +10472,12 @@ Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
 Fitting model... 100.0%
-iterations in  33.389782428741455
-Estimated baseline is: tensor([0.1356, 0.5181])
-Estimated alpha is: tensor([[0.6359, 0.2643],
-        [0.2960, 0.6603]])
-Estimated parameters of the truncated Exponential kernel is: tensor([[1.0056, 0.8916],
-        [1.1432, 0.9880]])
+iterations in  31.893904209136963
+Estimated baseline is: tensor([0.1356, 0.5145])
+Estimated alpha is: tensor([[0.6341, 0.2653],
+        [0.2951, 0.6604]])
+Estimated parameters of the truncated Exponential kernel is: tensor([[1.0214, 0.8846],
+        [1.1437, 0.9893]])
 </pre></div>
 </div>
 <p>Here, we plot the values of the estimated kernels with FaDIn.</p>
@@ -10523,13 +10508,16 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0056, 0.
   plt.subplot(n_dim, n_dim, i*n_dim + j + 1)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 36.751 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (2 minutes 42.597 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-multivariate-fadin-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/c2c3793a8a8967a373b4b8286a57e617/plot_multivariate_fadin.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_multivariate_fadin.ipynb</span></code></a></p>
 </div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/249f41bcacce2f11424e25d9f61ef920/plot_multivariate_fadin.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_multivariate_fadin.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-zip docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/37c9fac19d4e74446a331a1605dac608/plot_multivariate_fadin.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">plot_multivariate_fadin.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
@@ -10540,12 +10528,12 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0056, 0.
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../api.html">
+          <a class="next-page" href="plot_unhap.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">API Documentation</div>
+                <div class="title">UNHaP on simulated univariate Hawkes processes</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -10564,7 +10552,7 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0056, 0.
         <div class="bottom-of-page">
           <div class="left-details">
             <div class="copyright">
-                Copyright &#169; 2023-2024, Guillaume Staerman
+                Copyright &#169; 2023-2025, Guillaume Staerman
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
             
@@ -10587,6 +10575,6 @@ Estimated parameters of the truncated Exponential kernel is: tensor([[1.0056, 0.
 </div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=d7adbc44"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
-    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
     </body>
 </html>
