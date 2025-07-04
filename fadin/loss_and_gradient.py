@@ -529,10 +529,10 @@ def get_grad_baseline_noise_mixture(baseline_noise, kernel,
     grad_baseline_noise_ = torch.zeros(n_dim)
     for m in range(n_dim):
 
-        grad_baseline_noise_[m] += end_time * baseline_noise[m] * \
-            square_int_noise[m]
-        grad_baseline_noise_[m] -= vec_mark_noise[m].sum() - \
-            vec_mark_noise[m] @ rho[m]
+        grad_baseline_noise_[m] += (
+            end_time * baseline_noise[m] * square_int_noise[m]
+            - vec_mark_noise[m].sum() + vec_mark_noise[m] @ rho[m]
+        )
 
     grad_baseline_noise = 2 * grad_baseline_noise_ / n_ground_events.sum()
 
