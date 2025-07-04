@@ -142,4 +142,4 @@ dmypy.json
 
 # vscode
 .vscode
-experiments/meg/cdl_sample.json
+**/*.json
