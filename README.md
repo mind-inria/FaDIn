@@ -21,7 +21,9 @@ This package implements FaDIn and UNHaP. FaDIn and UNHaP are solvers for inferen
 ## Installation
 
 **To install this package, make sure you have an up-to-date version of** `pip`.
-
+```bash
+python3 -m pip install --upgrade pip
+```
 ### From PyPI (coming soon)
 
 In a dedicated Python env, run:
