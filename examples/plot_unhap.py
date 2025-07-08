@@ -45,7 +45,7 @@ batch_rho = 200
 # %% Create the simulating function
 
 
-def simulate_data(baseline, baseline_noise, alpha, end_time, seed=0):
+def simulate_marked_data(baseline, baseline_noise, alpha, end_time, seed=0):
     n_dim = len(baseline)
 
     marks_kernel = identity
@@ -102,7 +102,7 @@ def simulate_data(baseline, baseline_noise, alpha, end_time, seed=0):
         np.zeros(marked_events[i].shape[0] + noisy_events_[i].shape[0])
         for i in range(n_dim)
     ]
-    labels[0][-marked_events[0].shape[0] :] = 1.0
+    labels[0][-marked_events[0].shape[0]:] = 1.0
     true_rho = [labels[i][events[i][:, 0].argsort()] for i in range(n_dim)]
     # put the mark to one to test the impact of the marks
     # events_cat[0][:, 1] = 1.
@@ -110,7 +110,7 @@ def simulate_data(baseline, baseline_noise, alpha, end_time, seed=0):
     return events_cat, noisy_marks, true_rho
 
 
-ev, noisy_marks, true_rho = simulate_data(
+ev, noisy_marks, true_rho = simulate_marked_data(
     baseline, baseline_noise.item(), alpha, end_time, seed=0
 )
 # %% Apply UNHAP

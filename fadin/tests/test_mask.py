@@ -127,6 +127,6 @@ def test_rc_mask():
             ztzG_approx=ztzG_approx,
             random_state=simu_random_state
         )
-    assert torch.allclose(rc_bl, torch.Tensor([0., 0.]))
-    assert torch.allclose(rc_alpha * torch.Tensor([[1., 1.], [0., 1.]]),
-                          torch.zeros(2, 2))
+        assert torch.allclose(rc_bl, torch.Tensor([0., 0.]))
+        assert torch.allclose(rc_alpha * torch.Tensor([[1., 1.], [0., 1.]]),
+                            torch.zeros(2, 2))
