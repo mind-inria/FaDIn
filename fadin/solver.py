@@ -467,7 +467,8 @@ class UNHaP(object):
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, batch_rho=100,
                  ztzG_approx=True, tol=10e-5, density_hawkes='linear',
-                 density_noise='uniform', random_state=None):
+                 density_noise='uniform', stoc_classif=False,
+                 random_state=None):
 
         # Set discretization parameters
         self.delta = delta
@@ -492,6 +493,7 @@ class UNHaP(object):
 
         self.density_hawkes = density_hawkes
         self.density_noise = density_noise
+        self.stoc_classif = stoc_classif
 
         # Set model parameters
 
@@ -716,8 +718,17 @@ class UNHaP(object):
                 precomputations = compute_constants_unhap(
                     z_tilde, marks_grid, events_grid,
                     self.param_rho, marked_quantities[1], self.L)
-
-                self.param_rho = torch.round(self.params_mixture[0].detach())
+                if self.stoc_classif is False:
+                    # vanilla UNHaP
+                    self.param_rho = torch.round(self.params_mixture[0].detach())
+                if self.stoc_classif is True:
+                    # StocUNHaP
+                    random_rho = torch.rand(self.n_dim, n_grid)
+                    self.param_rho = torch.where(
+                        random_rho < self.params_mixture[0].data,
+                        1.,
+                        0.
+                    )
 
             # Save and clip parameters
             self.params_intens[0].data = self.params_intens[0].data.clip(0) * \
