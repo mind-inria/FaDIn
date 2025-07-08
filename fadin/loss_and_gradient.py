@@ -151,6 +151,26 @@ def discrete_l2_loss_precomputation(zG, zN, ztzG, baseline, alpha, kernel,
     return loss_precomp / n_events.sum()
 
 
+def discrete_ll_loss_conv(intensity, events_grid, delta, end_time):
+    """Compute the LL discrete loss using convolutions.
+
+    Parameters
+    ----------
+    intensity : tensor, shape (n_dim, n_grid)
+        Values of the intensity function evaluated  on the grid.
+
+    events_grid : tensor, shape (n_dim, n_grid)
+        Events projected on the pre-defined grid.
+
+    delta : float
+        Step size of the discretization grid.
+    """
+    mask = events_grid > 0
+    intens = torch.log(intensity[mask])
+    return (intensity.sum(1) * delta -
+            intens.sum()).sum() / end_time
+
+
 def squared_compensator_1(baseline):
     """Compute the value of the first term of the
     discrete l2 loss using precomputations
