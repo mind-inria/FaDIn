@@ -1,22 +1,11 @@
-import pytest
-import torch
 import numpy as np
-from fadin.init import (
-    momentmatching_kernel,
-    init_hawkes_params_fadin,
-    momentmatching_fadin,
-    init_hawkes_params_unhap,
-    momentmatching_unhap,
-    random_params_fadin,
-    random_params_unhap,
-)
 # from fadin.kernels import truncated_gaussian
 from fadin.utils.functions import identity, linear_zero_one
 from fadin.utils.functions import reverse_linear_zero_one, truncated_gaussian
 
 from fadin.utils.utils_simu import simu_marked_hawkes_cluster, custom_density
 from fadin.utils.utils_simu import simu_multi_poisson
-from fadin.solver import FaDIn, UNHaP
+from fadin.solver import UNHaP
 
 baseline = np.array([0.3])
 baseline_noise = np.array([0.05])
