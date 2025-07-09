@@ -1,5 +1,4 @@
-# FaDIn: Fast Discretized Inference For Hawkes Processes with General Parametric Kernels
-# UNHaP: Unmixing Noise from Hawkes Processes
+# FaDIn: a tool box for fast and robust inference for parametric point processes
 
 ![build](https://img.shields.io/github/actions/workflow/status/GuillaumeStaermanML/FaDIn/unit_tests.yml?event=push&style=for-the-badge)
 ![python version](https://img.shields.io/badge/python-3.7_|_3.8_|_3.9_|_3.10_|_3.11-blue?style=for-the-badge)
