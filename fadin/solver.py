@@ -718,10 +718,10 @@ class UNHaP(object):
                 precomputations = compute_constants_unhap(
                     z_tilde, marks_grid, events_grid,
                     self.param_rho, marked_quantities[1], self.L)
-                if self.stoc_classif is False:
+                if not self.stoc_classif:
                     # vanilla UNHaP
                     self.param_rho = torch.round(self.params_mixture[0].detach())
-                if self.stoc_classif is True:
+                else:
                     # StocUNHaP
                     random_rho = torch.rand(self.n_dim, n_grid)
                     self.param_rho = torch.where(
