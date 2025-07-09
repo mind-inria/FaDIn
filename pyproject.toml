@@ -41,6 +41,9 @@ test = [
     "pytest>=7.2",
 ]
 
+experiments = [
+    "dicodile>=0.3",
+]
 doc = [
     "furo",
     "matplotlib",
