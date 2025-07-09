@@ -23,9 +23,9 @@ def maskedsolver(events, T, kernel, max_iter=1000, ztzG_approx=False,
         random_state=random_state
     )
     solver.fit(events, T)
-    estimated_baseline = solver.params_intens[0]
-    estimated_alpha = solver.params_intens[1]
-    param_kernel = solver.params_intens[2:]
+    estimated_baseline = solver.baseline_
+    estimated_alpha = solver.alpha_
+    param_kernel = solver.kernel_
     if kernel == 'raised_cosine':
         # multiply alpha by 2* sigma
         estimated_alpha = 2 * estimated_alpha * param_kernel[1]
@@ -129,4 +129,4 @@ def test_rc_mask():
         )
         assert torch.allclose(rc_bl, torch.Tensor([0., 0.]))
         assert torch.allclose(rc_alpha * torch.Tensor([[1., 1.], [0., 1.]]),
-                            torch.zeros(2, 2))
+                              torch.zeros(2, 2))

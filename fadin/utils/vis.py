@@ -47,7 +47,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
                                          kernel=solver.kernel,
                                          kernel_length=solver.kernel_length)
 
-    kappa_values = kernel.kernel_eval(solver.params_intens[-2:],
+    kappa_values = kernel.kernel_eval(solver.kernel_,
                                       discretization).detach()
     # Plot
     if ch_names is None:
@@ -62,9 +62,9 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
         for j in range(solver.n_dim):
             # Plot baseline
             label = (rf'$\mu_{{{ch_names[i]}}}$=' +
-                     f'{round(solver.baseline[i].item(), 2)}')
+                     f'{round(solver.baseline_[i].item(), 2)}')
             axs[i, j].hlines(
-                y=solver.baseline[i].item(),
+                y=solver.baseline_[i].item(),
                 xmin=0,
                 xmax=solver.kernel_length,
                 label=label,
@@ -73,10 +73,10 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
             )
             if bl_noise:
                 # Plot noise baseline
-                mutilde = round(solver.baseline_noise[i].item(), 2)
+                mutilde = round(solver.baseline_noise_[i].item(), 2)
                 label = rf'$\tilde{{\mu}}_{{{ch_names[i]}}}$={mutilde}'
                 axs[i, j].hlines(
-                    y=solver.baseline_noise[i].item(),
+                    y=solver.baseline_noise_[i].item(),
                     xmin=0,
                     xmax=solver.kernel_length,
                     label=label,
@@ -84,7 +84,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
                     linewidth=4
                 )
             # Plot kernel (i, j)
-            phi_values = solver.alpha[i, j].item() * kappa_values[i, j, 1:]
+            phi_values = solver.alpha_[i, j].item() * kappa_values[i, j, 1:]
             axs[i, j].plot(
                 discretization[1:],
                 phi_values,
@@ -93,7 +93,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
             )
             if solver.kernel == 'truncated_gaussian':
                 # Plot mean of gaussian kernel
-                mean = round(solver.params_intens[-2][i, j].item(), 2)
+                mean = round(solver.kernel_[i, j].item(), 2)
                 axs[i, j].vlines(
                     x=mean,
                     ymin=0,

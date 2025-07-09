@@ -27,11 +27,11 @@ def compute_gradient_fadin(solver, events_grid, discretization,
     """
     # Compute kernel and gradient
     kernel = solver.kernel_model.kernel_eval(
-        solver.params_intens[2:],
+        solver._params_intens[2:],
         discretization
     )
     grad_theta = solver.kernel_model.grad_eval(
-        solver.params_intens[2:],
+        solver._params_intens[2:],
         discretization
     )
 
@@ -39,42 +39,42 @@ def compute_gradient_fadin(solver, events_grid, discretization,
         solver.zG,
         solver.zN,
         solver.ztzG,
-        solver.params_intens[0],
-        solver.params_intens[1],
+        solver._params_intens[0],
+        solver._params_intens[1],
         kernel, n_events,
         solver.delta,
         end_time
     ).detach()
     # Update baseline gradient
-    solver.params_intens[0].grad = get_grad_baseline(
+    solver._params_intens[0].grad = get_grad_baseline(
         solver.zG,
-        solver.params_intens[0],
-        solver.params_intens[1],
+        solver._params_intens[0],
+        solver._params_intens[1],
         kernel,
         solver.delta,
         n_events,
         end_time
     )
     # Update alpha gradient
-    solver.params_intens[1].grad = get_grad_alpha(
+    solver._params_intens[1].grad = get_grad_alpha(
         solver.zG,
         solver.zN,
         solver.ztzG,
-        solver.params_intens[0],
-        solver.params_intens[1],
+        solver._params_intens[0],
+        solver._params_intens[1],
         kernel,
         solver.delta,
         n_events
     )
     # Update kernel gradient
     for j in range(solver.n_kernel_params):
-        solver.params_intens[2 + j].grad = \
+        solver._params_intens[2 + j].grad = \
             get_grad_eta(
                 solver.zG,
                 solver.zN,
                 solver.ztzG,
-                solver.params_intens[0],
-                solver.params_intens[1],
+                solver._params_intens[0],
+                solver._params_intens[1],
                 kernel,
                 grad_theta[j],
                 solver.delta,
@@ -570,7 +570,7 @@ def get_grad_eta_mixture(precomputations, baseline, alpha, kernel,
     grad_theta_ = torch.zeros(n_dim, n_dim)
 
     for m in range(n_dim):
-        cst = 2 * delta * (baseline[m] * square_int_hawkes[m])  # + baseline_noise[m])
+        cst = 2 * delta * (baseline[m] * square_int_hawkes[m])
         for n in range(n_dim):
             grad_theta_[m, n] = cst * alpha[m, n] * (grad_kernel[m, n] @ phi_tilde[n])
 

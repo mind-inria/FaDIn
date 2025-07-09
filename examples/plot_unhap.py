@@ -63,20 +63,20 @@ solver.fit(ev, end_time)
 
 # %% Print estimated parameters
 
-print("Estimated baseline is: ", solver.param_baseline[-10:].mean().item())
-print("Estimated alpha is: ", solver.param_alpha[-10:].mean().item())
-print("Estimated kernel mean is: ", (solver.param_kernel[0][-10:].mean().item()))
-print("Estimated kernel sd is: ", solver.param_kernel[1][-10:].mean().item())
-print("Estimated noise baseline is: ", solver.param_baseline_noise[-10:].mean().item())
+print("Estimated baseline is: ", solver.baseline_.item())
+print("Estimated alpha is: ", solver.alpha_.item())
+print("Estimated kernel mean is: ", solver.kernel_[0].item())
+print("Estimated kernel sd is: ", solver.kernel_[1].item())
+print("Estimated noise baseline is: ", solver.baseline_noise_.item())
 # error on params
-error_baseline = (solver.param_baseline[-10:].mean().item() - baseline.item()) ** 2
-error_baseline_noise = (
-    solver.param_baseline_noise[-10:].mean().item() - baseline_noise.item()
+error_bl = (solver.baseline_.item() - baseline.item()) ** 2
+error_bl_noise = (
+    solver.baseline_noise_.item() - baseline_noise.item()
 ) ** 2
-error_alpha = (solver.param_alpha[-10:].mean().item() - alpha.item()) ** 2
-error_mu = (solver.param_kernel[0][-10:].mean().item() - 0.5) ** 2
-error_sigma = (solver.param_kernel[1][-10:].mean().item() - 0.1) ** 2
-sum_error = error_baseline + error_baseline_noise + error_alpha + error_mu + error_sigma
+error_alpha = (solver.alpha_.item() - alpha.item()) ** 2
+error_mu = (solver.kernel_[0].item() - mu.item()) ** 2
+error_sigma = (solver.kernel_[1].item() - sigma.item()) ** 2
+sum_error = error_bl + error_bl_noise + error_alpha + error_mu + error_sigma
 error_params = np.sqrt(sum_error)
 
 print("L2 square error of the vector of parameters is:", error_params)
