@@ -53,7 +53,7 @@ pre-commit install
 ```
 
 ## Short examples
-A few illustrative examples are provided in the `examples` folder of this repository:
+A few illustrative examples are provided in the `examples` folder of this repository, in particular:
 - `plot_univariate_fadin`: simulate an univariate unmarked Hawkes process, infer Hawkes Process parameters using FaDIn, and plot inferred kernel.
 - `plot_multivariate_fadin`: same as `plot_univariate_fadin` but in the multivariate case.
 - `plot_unhap`: simulate an univariate marked Hawkes process and a marked Poisson process, infer Hawkes Process parameters using UNHaP, ald plot inferred kernels.
