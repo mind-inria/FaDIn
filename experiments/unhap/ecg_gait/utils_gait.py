@@ -1,9 +1,6 @@
 
-import json
-from zipfile import ZipFile
 
 import numpy as np
-import pandas as pd
 
 
 SLOTS = {
