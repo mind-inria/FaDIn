@@ -4,7 +4,6 @@ from zipfile import ZipFile
 
 import numpy as np
 import pandas as pd
-from download import download
 
 
 SLOTS = {
@@ -66,68 +65,6 @@ SLOTS = {
 #     )
 
 #     return gait_zip
-
-
-def get_gait_data(subject=1, trial=1, only_meta=False, verbose=True):
-    """
-    Retrieve gait data from this `dataset`_.
-
-    Parameters
-    ----------
-    subject: int, defaults to 1
-        Subject identifier.
-        Valid subject-trial pairs can be found in this `list`_.
-    trial: int, defaults to 1
-        Trial number.
-        Valid subject-trial pairs can be found in this `list`_.
-    only_meta: bool, default to False
-        If True, only returns the subject metadata
-    verbose : bool, default to True
-        Whether to print download status to the screen.
-
-    Returns
-    -------
-    dictDATA_HOME = Path("gait_data")
-# GAIT_RECORD_ID_LIST_FNAME = DATA_HOME / "gait_record_id_list.json"
-# GAIT_PARTICIPANTS_FNAME = DATA_HOME / "gait_participants.tsv"
-# SLOTS_FNAME = DATA_HOME / "gait_slots.json"
-
-
-# def download_gait(verbose=True):
-#     gait_dir = DATA_HOME / "gait"
-#     gait_dir.mkdir(parents=True, exist_ok=True)
-#     gait_zip = download(
-#         "http://dev.ipol.im/~truong/GaitData.zip",
-#         gait_dir / "GaitData.zip",
-#         replace=False,
-#         verbose=verbose
-#     )
-
-#     return gait_zip
-
-        A dictionary containing metadata and data relative
-        to a trial. The 'data' attribute contains time
-        series for the trial, as a Pandas dataframe.
-
-
-    .. _dataset: https://github.com/deepcharles/gait-data
-    .. _list:
-       https://github.com/deepcharles/gait-data/blob/master/code_list.json
-    """
-    # coerce subject and trial
-    subject = int(subject)
-    trial = int(trial)
-
-    gait_zip = download_gait(verbose=verbose)
-
-    with ZipFile(gait_zip) as zf:
-        with zf.open(f"GaitData/{subject}-{trial}.json") as meta_file, \
-                zf.open(f"GaitData/{subject}-{trial}.csv") as data_file:
-            meta = json.load(meta_file)
-            if not only_meta:
-                data = pd.read_csv(data_file, sep=',', header=0)
-                meta['data'] = data
-            return meta
 
 
 def save_errors(est, gt, key, ae_df, rae_df, method='', verbose=True,
