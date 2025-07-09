@@ -93,7 +93,7 @@ def plot(solver, plotfig=False, bl_noise=False, title=None, ch_names=None,
             )
             if solver.kernel == 'truncated_gaussian':
                 # Plot mean of gaussian kernel
-                mean = round(solver.kernel_[i, j].item(), 2)
+                mean = round(solver.kernel_[0].item(), 2)
                 axs[i, j].vlines(
                     x=mean,
                     ymin=0,
