@@ -122,31 +122,25 @@ class FaDIn(object):
 
     Attributes
     ----------
-    params_intens : `list` of `tensor`
-        List of parameters of the Hawkes process at the end of the fit.
-        The list contains the following tensors in this order:
-        - `baseline`: `tensor`, shape (n_dim,): Baseline parameter.
-        - `alpha`: `tensor`, shape (n_dim, n_dim): Weight parameter.
-        - `kernel`: `list` of `tensor`, shape (n_dim, n_dim):
-            Kernel parameters. The size of the list varies depending
-            the number of parameters. The shape of each tensor is
-            `(n_dim, n_dim)`.
+
+    baseline_ : `tensor`, shape (n_dim,)
+        Final baseline parameter of the Hawkes process after fitting.
+    alpha_ : `tensor`, shape (n_dim, n_dim)
+        Final weight parameter of the Hawkes process kernel after fitting.
+    kernel_ : `list` of `tensor`
+        Final kernels parameters values after fitting.
 
     param_baseline_ : `tensor`, shape (max_iter, n_dim)
         Baseline parameter of the Hawkes process for each fit iteration.
-
     param_baseline_noise_ : `tensor`, shape (max_iter, n_dim)
         Baseline parameter of the Hawkes process for each fit iteration.
-
     param_alpha_ : `tensor`, shape (max_iter, n_dim, n_dim)
         Weight parameter of the Hawkes process for each fit iteration.
-
     param_kernel_ : `list` of `tensor`
         list containing tensor array of kernels parameters for each fit
         iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
-
     v_loss_ : `tensor`, shape (n_iter)
         loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
@@ -166,6 +160,7 @@ class FaDIn(object):
         self.ztzG_approx = ztzG_approx
 
         # Optimizer parameters
+        self.fitted = False
         self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
@@ -234,7 +229,6 @@ class FaDIn(object):
 
         Returns
         -------
-        TODO: attributes
         self : object
             Fitted parameters.
         """
@@ -247,7 +241,8 @@ class FaDIn(object):
         print('number of events is:', n_ground_events)
         n_ground_events = torch.tensor(n_ground_events)
         # Initialize Hawkes parameters
-        self.params_intens_ = init_hawkes_params_fadin(
+        # _params_intens: [baseline, alpha, kernel_params]
+        self._params_intens = init_hawkes_params_fadin(
             self,
             self.init,
             events,
@@ -257,7 +252,7 @@ class FaDIn(object):
 
         # Initialize optimizer
         self.opt = optimizer_fadin(
-            self.params_intens_,
+            self._params_intens,
             self.params_solver,
             solver=self.solver
         )
@@ -288,11 +283,11 @@ class FaDIn(object):
             self.n_dim,
             self.n_dim
         )
-        self.param_baseline_[0] = self.params_intens_[0].detach()
-        self.param_alpha_[0] = self.params_intens_[1].detach()
+        self.param_baseline_[0] = self._params_intens[0].detach()
+        self.param_alpha_[0] = self._params_intens[1].detach()
 
         for i in range(self.n_kernel_params):
-            self.param_kernel_[i, 0] = self.params_intens_[2 + i].detach()
+            self.param_kernel_[i, 0] = self._params_intens[2 + i].detach()
 
         ####################################################
         start = time.time()
@@ -308,17 +303,17 @@ class FaDIn(object):
             self.opt.step()
 
             # Save parameters
-            self.params_intens_[0].data = self.params_intens_[0].data.clip(0) * \
+            self._params_intens[0].data = self._params_intens[0].data.clip(0) * \
                 self.baseline_mask
-            self.params_intens_[1].data = self.params_intens_[1].data.clip(0) * \
+            self._params_intens[1].data = self._params_intens[1].data.clip(0) * \
                 self.alpha_mask
-            self.param_baseline_[i + 1] = self.params_intens_[0].detach()
-            self.param_alpha_[i + 1] = self.params_intens_[1].detach()
+            self.param_baseline_[i + 1] = self._params_intens[0].detach()
+            self.param_alpha_[i + 1] = self._params_intens[1].detach()
             for j in range(self.n_kernel_params):
-                self.params_intens_[2 + j].data = \
-                    self.params_intens_[2 + j].data.clip(0)
+                self._params_intens[2 + j].data = \
+                    self._params_intens[2 + j].data.clip(0)
                 self.param_kernel_[j, i + 1] = \
-                    self.params_intens_[2 + j].detach()
+                    self._params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:
@@ -338,8 +333,26 @@ class FaDIn(object):
                         self.param_kernel_[j] = self.param_kernel_[j, i + 1]
                     break
         print('iterations in ', time.time() - start)
-
+        self.fitted = True
         return self
+
+    @property
+    def alpha_(self):
+        """Return the fitted alpha parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing alpha_"
+        return self.param_alpha_[-1]
+
+    @property
+    def baseline_(self):
+        """Return the fitted baseline parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing baseline_"
+        return self.param_baseline_[-1]
+
+    @property
+    def kernel_(self):
+        """Return the fitted kernel parameters of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing kernel_"
+        return [self.param_kernel_[j, -1] for j in range(self.n_kernel_params)]
 
 
 class UNHaP(object):
@@ -444,32 +457,27 @@ class UNHaP(object):
 
     Attributes
     ----------
-    params_intens_ : `list` of `tensor`
-        List of parameters of the Hawkes process at the end of the fit.
-        The list contains the following tensors in this order:
-        - `baseline`: `tensor`, shape (n_dim,): Baseline parameter.
-        - `baseline_noise`: `tensor`, shape (n_dim,): Baseline noise parameter.
-        - `alpha`: `tensor`, shape (n_dim, n_dim): Weight parameter.
-        - `kernel`: `list` of `tensor`, shape (n_dim, n_dim):
-            Kernel parameters. The size of the list varies depending
-            the number of parameters. The shape of each tensor is
-            `(n_dim, n_dim)`.
+
+    baseline_ : `tensor`, shape (n_dim,)
+        Final baseline parameter of the Hawkes process after fitting.
+    baseline_noise_ : `tensor`, shape (n_dim,)
+        Final baseline noise parameter of the Hawkes process after fitting.
+    alpha_ : `tensor`, shape (n_dim, n_dim)
+        Final weight parameter of the Hawkes process kernel after fitting.
+    kernel_ : `list` of `tensor`
+        Final kernels parameters values after fitting.
 
     param_baseline_ : `tensor`, shape (max_iter, n_dim)
         Baseline parameter of the Hawkes process for each fit iteration.
-
     param_baseline_noise_ : `tensor`, shape (max_iter, n_dim)
         Baseline parameter of the Hawkes process for each fit iteration.
-
     param_alpha_ : `tensor`, shape (max_iter, n_dim, n_dim)
         Weight parameter of the Hawkes process for each fit iteration.
-
     param_kernel_ : `list` of `tensor`
         list containing tensor array of kernels parameters for each fit
         iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
-
     param_rho_ : `tensor`, shape (n_dim, n_grid)
         Final latent variable rho of the mixture model.
 
@@ -492,6 +500,7 @@ class UNHaP(object):
         self.ztzG_approx = ztzG_approx
 
         # Set optimizer parameters
+        self.fitted = False
         self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
@@ -509,10 +518,6 @@ class UNHaP(object):
         self.density_hawkes = density_hawkes
         self.density_noise = density_noise
         self.stoc_classif = stoc_classif
-
-        # Set model parameters
-
-        self.baseline = torch.rand(self.n_dim)
 
         # Set optimization masks
         if optim_mask is None:
@@ -618,7 +623,8 @@ class UNHaP(object):
         self.params_mixture = [self.rho]
 
         # Smart initialization of solver parameters
-        self.params_intens_ = init_hawkes_params_unhap(
+        # _params_intens: [baseline, baseline_noise, alpha, kernel_params]
+        self._params_intens = init_hawkes_params_unhap(
                 self,
                 self.init,
                 marked_events,
@@ -628,7 +634,7 @@ class UNHaP(object):
             )
 
         self.opt_intens, self.opt_mixture = optimizer_unhap(
-            [self.params_intens_, self.params_mixture],
+            [self._params_intens, self.params_mixture],
             self.params_solver,
             solver=self.solver
         )
@@ -665,11 +671,11 @@ class UNHaP(object):
             self.n_dim
         )
 
-        self.param_baseline_[0] = self.params_intens_[0].detach()
-        self.param_baseline_noise_[0] = self.params_intens_[1].detach()
-        self.param_alpha_[0] = self.params_intens_[2].detach()
+        self.param_baseline_[0] = self._params_intens[0].detach()
+        self.param_baseline_noise_[0] = self._params_intens[1].detach()
+        self.param_alpha_[0] = self._params_intens[2].detach()
         for i in range(self.n_kernel_params):
-            self.param_kernel_[i, 0] = self.params_intens_[3 + i].detach()
+            self.param_kernel_[i, 0] = self._params_intens[3 + i].detach()
 
         ####################################################
         start = time.time()
@@ -681,7 +687,7 @@ class UNHaP(object):
 
             # Update kernel and grad values
             kernel, grad_eta = self.kernel_model.kernel_and_grad(
-                self.params_intens_[3:3 + self.n_kernel_params],
+                self._params_intens[3:3 + self.n_kernel_params],
                 discretization
             )
 
@@ -690,10 +696,10 @@ class UNHaP(object):
             ####################################################
 
             # Update baseline, baseline noise and alpha
-            self.params_intens_[0].grad, self.params_intens_[1].grad, \
-                self.params_intens_[2].grad = compute_base_gradients(
+            self._params_intens[0].grad, self._params_intens[1].grad, \
+                self._params_intens[2].grad = compute_base_gradients(
                     precomputations,
-                    self.params_intens_,
+                    self._params_intens,
                     kernel,
                     self.delta,
                     end_time,
@@ -704,11 +710,11 @@ class UNHaP(object):
 
             # Update kernel
             for j in range(self.n_kernel_params):
-                self.params_intens_[3 + j].grad = \
+                self._params_intens[3 + j].grad = \
                     get_grad_eta_mixture(
                         precomputations,
-                        self.params_intens_[0],
-                        self.params_intens_[2],
+                        self._params_intens[0],
+                        self._params_intens[2],
                         kernel,
                         grad_eta[j],
                         self.delta,
@@ -726,7 +732,7 @@ class UNHaP(object):
                     marks_grid,
                     kernel,
                     marked_quantities[0],
-                    self.params_intens_,
+                    self._params_intens,
                     self.delta,
                     mask_void,
                     n_ground_events,
@@ -757,21 +763,47 @@ class UNHaP(object):
                     )
 
             # Save and clip parameters
-            self.params_intens_[0].data = self.params_intens_[0].data.clip(0) * \
+            self._params_intens[0].data = self._params_intens[0].data.clip(0) * \
                 self.baseline_mask
-            self.params_intens_[1].data = self.params_intens_[1].data.clip(0)
-            self.params_intens_[2].data = self.params_intens_[2].data.clip(0) * \
+            self._params_intens[1].data = self._params_intens[1].data.clip(0)
+            self._params_intens[2].data = self._params_intens[2].data.clip(0) * \
                 self.alpha_mask
 
-            self.param_baseline_[i+1] = self.params_intens_[0].detach()
-            self.param_alpha_[i+1] = self.params_intens_[2].detach()
-            self.param_baseline_noise_[i+1] = self.params_intens_[1].detach()
+            self.param_baseline_[i+1] = self._params_intens[0].detach()
+            self.param_alpha_[i+1] = self._params_intens[2].detach()
+            self.param_baseline_noise_[i+1] = self._params_intens[1].detach()
 
             for j in range(self.n_kernel_params):
-                self.params_intens_[3+j].data = \
-                    self.params_intens_[3+j].data.clip(1e-3)
-                self.param_kernel_[j, i+1] = self.params_intens_[3+j].detach()
+                self._params_intens[3+j].data = \
+                    self._params_intens[3+j].data.clip(1e-3)
+                self.param_kernel_[j, i+1] = self._params_intens[3+j].detach()
 
         print('iterations in ', time.time() - start)
-
+        # Save final parameters
+        self.fitted = True
         return self
+
+    @property
+    def alpha_(self):
+        """Return the fitted alpha parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing alpha_"
+        return self.param_alpha_[-1]
+
+    @property
+    def baseline_(self):
+        """Return the fitted baseline parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing baseline_"
+        return self.param_baseline_[-1]
+
+    @property
+    def baseline_noise_(self):
+        """Return the fitted baseline noise parameter of the Hawkes process."""
+        assert self.fitted, \
+            "Solver must be fitted before accessing baseline_noise_"
+        return self.param_baseline_noise_[-1]
+
+    @property
+    def kernel_(self):
+        """Return the fitted kernel parameters of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing kernel_"
+        return [self.param_kernel_[j, -1] for j in range(self.n_kernel_params)]
