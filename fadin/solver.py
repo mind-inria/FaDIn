@@ -466,6 +466,8 @@ class UNHaP(object):
         Final weight parameter of the Hawkes process kernel after fitting.
     kernel_ : `list` of `tensor`
         Final kernels parameters values after fitting.
+    rho_ : `tensor`, shape (n_dim, n_grid)
+        Final latent variable rho of the mixture model.
 
     param_baseline_ : `tensor`, shape (max_iter, n_dim)
         Baseline parameter of the Hawkes process for each fit iteration.
@@ -478,8 +480,7 @@ class UNHaP(object):
         iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
-    param_rho_ : `tensor`, shape (n_dim, n_grid)
-        Final latent variable rho of the mixture model.
+
 
     v_loss_ : `tensor`, shape (n_iter)
         loss accross iterations.
@@ -588,7 +589,7 @@ class UNHaP(object):
         self : object
             Fitted parameters.
         """
-        n_grid = int(1 / self.delta) * end_time + 1
+        n_grid = int(1 / self.delta * end_time) + 1
         discretization = torch.linspace(0, self.kernel_length, self.L)
 
         events_grid, marks_grid, marked_events, _ = \
@@ -639,7 +640,7 @@ class UNHaP(object):
             solver=self.solver
         )
 
-        self.param_rho_ = self.params_mixture[0].detach()
+        self.rho_ = self.params_mixture[0].detach()
 
         ####################################################
         # Precomputations
@@ -650,7 +651,7 @@ class UNHaP(object):
         precomputations = compute_constants_unhap(z_tilde,
                                                   marks_grid,
                                                   events_grid,
-                                                  self.param_rho_,
+                                                  self.rho_,
                                                   marked_quantities[1],
                                                   self.L)
         print('precomput:', time.time() - start)
@@ -703,7 +704,7 @@ class UNHaP(object):
                     kernel,
                     self.delta,
                     end_time,
-                    self.param_rho_,
+                    self.rho_,
                     marked_quantities,
                     n_ground_events
                 )
@@ -747,16 +748,16 @@ class UNHaP(object):
                 z_tilde = marks_grid * torch.round(self.params_mixture[0].data)
                 precomputations = compute_constants_unhap(
                     z_tilde, marks_grid, events_grid,
-                    self.param_rho_, marked_quantities[1], self.L)
+                    self.rho_, marked_quantities[1], self.L)
                 if not self.stoc_classif:
                     # vanilla UNHaP
-                    self.param_rho_ = torch.round(
+                    self.rho_ = torch.round(
                         self.params_mixture[0].detach()
                     )
                 else:
                     # StocUNHaP
                     random_rho = torch.rand(self.n_dim, n_grid)
-                    self.param_rho_ = torch.where(
+                    self.rho_ = torch.where(
                         random_rho < self.params_mixture[0].data,
                         1.,
                         0.
