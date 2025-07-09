@@ -50,7 +50,7 @@ events = simu_hawkes_cluster(T, baseline, alpha, kernel)
 
 ###############################################################################
 # Here, we initiate FaDIn and fit it to the simulated data.
-
+print("Fitting FaDIn solver...")
 solver = FaDIn(
     n_dim=n_dim,
     kernel="truncated_exponential",
@@ -60,12 +60,8 @@ solver = FaDIn(
     max_iter=10000
 )
 solver.fit(events, T)
-
+print("FaDIn solver fitted.")
 # We can now access the estimated parameters of the model.
-
-estimated_baseline = solver.param_baseline_[-10:].mean(0)
-estimated_alpha = solver.param_alpha_[-10:].mean(0)
-param_kernel = [solver.param_kernel_[0][-10:].mean(0)]
 
 print('Estimated baseline is:', solver.baseline_)
 print('Estimated alpha is:', solver.alpha_)
