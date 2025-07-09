@@ -240,7 +240,9 @@ def init_hawkes_params_unhap(solver, init, events, events_grid,
         'alpha' and 'kernel'.
     events: list of array of size number of timestamps,
         list size is self.n_dim.
-    events_grid: TODO
+    events_grid: list of array of size number of timestamps,
+        list size is self.n_dim.
+        Events projected on the time grid.
     n_ground_events : torch.tensor
         Number of ground events for each dimension
     end_time: float
