@@ -62,7 +62,7 @@ SLOTS = {
 
 
 def plot_signal_rho(solver, begin_s, end_s, figtitle="", save_fig=None):
-    rho = solver.param_rho[0]
+    rho = solver.rho_[0]
     print("rho", rho)
     print("shape rho", rho.shape)
     begin_rho = int(begin_s / solver.delta)
@@ -705,31 +705,28 @@ def fadin_fit(
     solver.fit(events, T)
 
     # Print estimated solver parameters
-    estimated_baseline = solver.baseline
-    estimated_alpha = solver.alpha
-    param_kernel = [
-        solver.param_kernel[0][-1].item(),
-        solver.param_kernel[1][-1].item(),
-    ]  # [mean, std]
+    estimated_baseline = solver.baseline_
+    estimated_alpha = solver.alpha_
+    param_kernel = solver.kernel_
 
     if param_kernel[0] == 0:
         abs_error = np.nan
     else:
-        abs_error = np.abs(60 / param_kernel[0] - np.mean(cleandf_hr))
+        abs_error = np.abs(60 / param_kernel[0].item() - np.mean(cleandf_hr))
     rel_abs_error = abs_error / np.mean(cleandf_hr)
 
     if return_ll:
         # Compute solver intensity function on events
         if model in [UNHaP]:
-            intens_bl = estimated_baseline + solver.baseline_noise
+            intens_bl = estimated_baseline + solver.baseline_noise_
         else:
             intens_bl = estimated_baseline
         _, events_grid = projected_grid_marked(events, delta, L * T + 1)
         intens = evaluate_intensity(
             [intens_bl],
-            solver.alpha,
-            solver.param_kernel[0][-1],
-            solver.param_kernel[1][-1],
+            solver.alpha_,
+            solver.kernel_[0],
+            solver.kernel_[1],
             delta,
             events_grid,
         )
@@ -745,7 +742,7 @@ def fadin_fit(
         if model in [UNHaP]:
             print(
                 "Estimated noise baseline is:",
-                torch.round(solver.baseline_noise, decimals=4).item(),
+                torch.round(solver.baseline_noise_, decimals=4).item(),
             )
         print(
             "Estimated alpha is:",
@@ -753,11 +750,11 @@ def fadin_fit(
         )
         print(
             "Estimated mean of gaussian kernel:",
-            np.round(param_kernel[0], decimals=4)
+            np.round(param_kernel[0].item(), decimals=4)
         )
         print(
             "Estimated std of gaussian kernel:",
-            np.round(param_kernel[1], decimals=4)
+            np.round(param_kernel[1].item(), decimals=4)
         )
         # Print monitor QRS interval for comparison
         print(
