@@ -623,137 +623,6 @@ class JointFaDIn(object):
         return self
 
 
-def get_grad_baseline_joint_noise2(zG, baseline, baseline_noise, alpha, kernel,
-                                   delta, end_time, sum_marks,
-                                   square_int_marks, n_ground_events):
-    """Return the gradient of the discrete l2 loss w.r.t. the baseline.
-
-    .. math::
-        N_T\\frac{\\partial\\mathcal{L}_G}{\\partial \\mu_{m}} =
-        2 T \\mu_m -  2 N_T^m + 2 \\Delta\\sum_{j=1}^{p} \\sum_{\\tau=1}^{L}
-        \\phi_{mj}^\\Delta[\\tau]\\Phi_{j}(\\tau; G)
-
-    Parameters
-    ----------
-    zG : tensor, shape (n_dim, L)
-
-    baseline : tensor, shape (n_dim,)
-        Baseline parameter of the intensity of the Hawkes process.
-
-    alpha : tensor, shape (n_dim, n_dim)
-        Alpha parameter of the intensity of the Hawkes process.
-
-    kernel : tensor, shape (n_dim, n_dim, L)
-        Kernel values on the discretization.
-
-    delta : float
-        Step size of the discretization grid.
-
-    sum_marks : tensor, shape (n_dim,)
-        Sum of marks for each dimension.
-
-    end_time : float
-        The end time of the Hawkes process.
-
-    n_ground_events : tensor, shape (n_dim,)
-        Number of events for each dimension.
-
-    Returns
-    ----------
-    grad_baseline: tensor, shape (dim,)
-    """
-    n_dim, _, _ = kernel.shape
-
-    if n_dim > 1:
-        cst1 = end_time * baseline * square_int_marks
-        cst2 = 0.5 * n_ground_events.sum()
-        cst3 = end_time * baseline_noise
-
-        dot_kernel = torch.einsum('kju,ju->kj', kernel, zG)
-        dot_kernel_ = (dot_kernel * alpha).sum(1) * square_int_marks
-
-        grad_baseline = (dot_kernel_ * delta + cst1 - sum_marks + cst3) / cst2
-    else:
-        grad_baseline_ = torch.zeros(n_dim)
-        for k in range(n_dim):
-            temp = 0
-            for j in range(n_dim):
-                temp += alpha[k, j] * (zG[j] @ kernel[k, j])
-            grad_baseline_[k] = delta * temp * square_int_marks[k]
-            grad_baseline_[k] += end_time * baseline[k] * square_int_marks[k]
-            grad_baseline_[k] -= 2 * sum_marks[k]  # add of joint MarkedFaDIn
-            grad_baseline_[k] += end_time * baseline_noise[k]
-        grad_baseline = 2 * grad_baseline_ / n_ground_events.sum()
-
-    return grad_baseline
-
-
-def get_grad_baseline_noise_joint_noise2(zG, baseline, baseline_noise, alpha, kernel,
-                                         delta, end_time, sum_marks, square_int_marks,
-                                         n_ground_events):
-    """Return the gradient of the discrete l2 loss w.r.t. the baseline.
-
-    .. math::
-        N_T\\frac{\\partial\\mathcal{L}_G}{\\partial \\mu_{m}} =
-        2 T \\mu_m -  2 N_T^m + 2 \\Delta\\sum_{j=1}^{p} \\sum_{\\tau=1}^{L}
-        \\phi_{mj}^\\Delta[\\tau]\\Phi_{j}(\\tau; G)
-
-    Parameters
-    ----------
-    zG : tensor, shape (n_dim, L)
-
-    baseline : tensor, shape (n_dim,)
-        Baseline parameter of the intensity of the Hawkes process.
-
-    alpha : tensor, shape (n_dim, n_dim)
-        Alpha parameter of the intensity of the Hawkes process.
-
-    kernel : tensor, shape (n_dim, n_dim, L)
-        Kernel values on the discretization.
-
-    delta : float
-        Step size of the discretization grid.
-
-    sum_marks : tensor, shape (n_dim,)
-        Sum of marks for each dimension.
-
-    end_time : float
-        The end time of the Hawkes process.
-
-    n_ground_events : tensor, shape (n_dim,)
-        Number of events for each dimension.
-
-    Returns
-    ----------
-    grad_baseline: tensor, shape (dim,)
-    """
-    n_dim, _, _ = kernel.shape
-
-    if n_dim > 1:
-        cst1 = end_time * baseline_noise
-        cst2 = 0.5 * n_ground_events.sum()
-        cst3 = end_time * baseline
-
-        dot_kernel = torch.einsum('kju,ju->kj', kernel, zG)
-        dot_kernel_ = (dot_kernel * alpha).sum(1)
-
-        grad_baseline_noise = (
-            dot_kernel_ * delta + cst1 - n_ground_events + cst3) / cst2
-    else:
-        grad_baseline_noise_ = torch.zeros(n_dim)
-        for k in range(n_dim):
-            temp = 0
-            for j in range(n_dim):
-                temp += alpha[k, j] * (zG[j] @ kernel[k, j])
-            grad_baseline_noise_[k] = delta * temp
-            grad_baseline_noise_[k] += end_time * baseline_noise[k]
-            grad_baseline_noise_[k] -= n_ground_events[k]
-            grad_baseline_noise_[k] += end_time * baseline[k]
-        grad_baseline_noise = 2 * grad_baseline_noise_ / n_ground_events.sum()
-
-    return grad_baseline_noise
-
-
 def get_grad_baseline_noise_joint_noise2(zG, baseline, baseline_noise, alpha, kernel,
                                          delta, end_time, sum_marks, square_int_marks,
                                          n_ground_events):
@@ -973,6 +842,71 @@ def get_grad_eta_joint_noise2(zG, zN, ztzG, baseline, baseline_noise, alpha, ker
     grad_theta = grad_theta_ / n_ground_events.sum()
 
     return grad_theta
+
+
+def get_grad_baseline_joint_noise2(zG, baseline, baseline_noise, alpha, kernel,
+                                   delta, end_time, sum_marks,
+                                   square_int_marks, n_ground_events):
+    """Return the gradient of the discrete l2 loss w.r.t. the baseline.
+
+    .. math::
+        N_T\\frac{\\partial\\mathcal{L}_G}{\\partial \\mu_{m}} =
+        2 T \\mu_m -  2 N_T^m + 2 \\Delta\\sum_{j=1}^{p} \\sum_{\\tau=1}^{L}
+        \\phi_{mj}^\\Delta[\\tau]\\Phi_{j}(\\tau; G)
+
+    Parameters
+    ----------
+    zG : tensor, shape (n_dim, L)
+
+    baseline : tensor, shape (n_dim,)
+        Baseline parameter of the intensity of the Hawkes process.
+
+    alpha : tensor, shape (n_dim, n_dim)
+        Alpha parameter of the intensity of the Hawkes process.
+
+    kernel : tensor, shape (n_dim, n_dim, L)
+        Kernel values on the discretization.
+
+    delta : float
+        Step size of the discretization grid.
+
+    sum_marks : tensor, shape (n_dim,)
+        Sum of marks for each dimension.
+
+    end_time : float
+        The end time of the Hawkes process.
+
+    n_ground_events : tensor, shape (n_dim,)
+        Number of events for each dimension.
+
+    Returns
+    ----------
+    grad_baseline: tensor, shape (dim,)
+    """
+    n_dim, _, _ = kernel.shape
+
+    if n_dim > 1:
+        cst1 = end_time * baseline * square_int_marks
+        cst2 = 0.5 * n_ground_events.sum()
+        cst3 = end_time * baseline_noise
+
+        dot_kernel = torch.einsum('kju,ju->kj', kernel, zG)
+        dot_kernel_ = (dot_kernel * alpha).sum(1) * square_int_marks
+
+        grad_baseline = (dot_kernel_ * delta + cst1 - sum_marks + cst3) / cst2
+    else:
+        grad_baseline_ = torch.zeros(n_dim)
+        for k in range(n_dim):
+            temp = 0
+            for j in range(n_dim):
+                temp += alpha[k, j] * (zG[j] @ kernel[k, j])
+            grad_baseline_[k] = delta * temp * square_int_marks[k]
+            grad_baseline_[k] += end_time * baseline[k] * square_int_marks[k]
+            grad_baseline_[k] -= 2 * sum_marks[k]  # add of joint MarkedFaDIn
+            grad_baseline_[k] += end_time * baseline_noise[k]
+        grad_baseline = 2 * grad_baseline_ / n_ground_events.sum()
+
+    return grad_baseline
 
 
 class JointFaDInDenoising(object):
