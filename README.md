@@ -52,6 +52,12 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
+Before running the experiments of the FaDIn and UNHaP papers located in the `experiments` directory, please install the corresponding dependencies beforehand.
+
+```bash
+pip install -e ".[experiments]"
+```
+
 ## Short examples
 A few illustrative examples are provided in the `examples` folder of this repository, in particular:
 - `plot_univariate_fadin`: simulate an univariate unmarked Hawkes process, infer Hawkes Process parameters using FaDIn, and plot inferred kernel.
