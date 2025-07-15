@@ -49,6 +49,17 @@ events = simu_hawkes_cluster(T, baseline, alpha, kernel,
                              params_kernel={'scale': 1 / beta})
 
 ###############################################################################
+# Let's take a closer look at the events
+print('Type of events object', type(events))
+# events is a list of numpy arrays, one for each dimension
+print('Number of events', len(events[0]))
+print('First 10 events timestamps', events[0][:10])
+# For each event, its occurence time (timestamp) is stored in the numpy array.
+
+# `events`` is a list. Its elements are numpy arrays containing the timestamps
+# of the events. This is the expected data format for FaDIn.
+
+###############################################################################
 # Here, we apply FaDIn.
 
 solver = FaDIn(n_dim=1,

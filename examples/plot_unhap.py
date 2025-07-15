@@ -44,6 +44,21 @@ batch_rho = 200
 ev, noisy_marks, true_rho = simulate_marked_data(
     baseline, baseline_noise.item(), alpha, end_time, mu, sigma, seed=0
 )
+
+# %% Let's take a closer look at the events
+print('Type of ev object', type(ev))
+# ev is a list of numpy arrays, one for each dimension
+print('Number of events', len(ev[0]))
+print('Shape of first event array', ev[0].shape)
+# Each dimension is stored as a numpy array of shape (n_events, 2).
+print('First 10 events timestamps and marks', ev[0][:10])
+# Each event is stored as [timestamp, mark].
+# This is the expected data format for UNHaP.
+print('First event timestamp', ev[0][0][0])
+print('First event mark', ev[0][0][1])
+print('Second event timestamp', ev[0][1][0])
+print('Second event mark', ev[0][1][1])
+
 # %% Initiate and fit UNHAP to the simulated events
 
 solver = UNHaP(

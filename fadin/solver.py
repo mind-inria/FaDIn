@@ -221,8 +221,10 @@ class FaDIn(object):
 
         Parameters
         ----------
-        events : list of array of size number of timestamps,
-        list size is self.n_dim.
+        events : list of `self.n_dim` numpy arrays.
+        One numpy array = one dimension. One numpy array
+        has shape (n_events, 1), where n_events is the number of events in this
+        dimension. The timestamp of each event is stored.
 
         end_time : int
             The end time of the Hawkes process.
@@ -359,7 +361,13 @@ class UNHaP(object):
     """Define the UNHaP framework for estimated mixture of Hawkes and
     Poisson processes.
 
-    Unhap minimizes the discretized L2 mixture loss of a mixture of Hawkes and
+    The framework is detailed in:
+
+    Virginie Loison, Guillaume Staerman, Thomas Moreau
+    UNHaP: Unmixing Noise from Hawkes Processes
+    https://proceedings.mlr.press/v258/loison25a.html
+
+    UNHaP minimizes the discretized L2 mixture loss of a mixture of Hawkes and
     Poisson processes.
 
     Parameters
@@ -578,8 +586,10 @@ class UNHaP(object):
 
         Parameters
         ----------
-        events : pandas DataFrame with three columns: timestamps, marks values
-            and type of events.
+        events : list of `self.n_dim` numpy arrays.
+        One numpy array = one dimension. One numpy array
+        has shape (n_events, 2), where n_events is the number of events in this
+        dimension. Each event is stored as (timestamp, mark).
 
         end_time : int
             The end time of the Hawkes process.
