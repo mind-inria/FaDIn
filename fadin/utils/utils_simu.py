@@ -250,8 +250,7 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     processes. Methodology and Computing in Applied Probability, 8, 53-64.
 
     Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes
-    processes.
-    Advances in applied probability, 37(3), 629-646.
+    processes. Advances in applied probability, 37(3), 629-646.
 
     Parameters
     ----------
