@@ -72,7 +72,7 @@ If this package was useful to you, please cite it in your work:
   organization={PMLR}
 }
 
-@improceedings{loison2025unhap,
+@inproceedings{loison2025unhap,
 title={UNHaP: Unmixing Noise from Hawkes Process},
 author={Loison, Virginie and Staerman, Guillaume and Moreau, Thomas},
 booktitle={International Conference on Artificial Intelligence and Statistics},
