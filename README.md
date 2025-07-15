@@ -5,7 +5,7 @@
 ![license](https://img.shields.io/github/license/GuillaumeStaermanML/FaDIn?style=for-the-badge)
 ![code style](https://img.shields.io/badge/code_style-black-black?style=for-the-badge)
 
-This package implements FaDIn and UNHaP. FaDIn and UNHaP are solvers for inference of Hawkes Processes with finite-support kernels on simulated or real data, with the following features:
+This package implements FaDIn and UNHaP. FaDIn and UNHaP are inference methods for parametric Hawkes Processes (HP) with finite-support kernels, with the following features:
 - Computation time is low compared to other methods.
 - Compatible in an univariate setting as well as a multivariate setting.
 - Classical kernels (exponential truncated gaussian, raised cosine) are implemented. The user can add their own kernel for inference. 
