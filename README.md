@@ -7,7 +7,7 @@
 
 This package implements FaDIn and UNHaP. FaDIn and UNHaP are inference methods for parametric Hawkes Processes (HP) with finite-support kernels, with the following features:
 - Computation time is low compared to other methods.
-- Compatible in an univariate setting as well as a multivariate setting.
+- Compatible in univariate and multivariate settings.
 - Classical kernels (exponential truncated gaussian, raised cosine) are implemented. The user can add their own kernel for inference. 
 - Masking: if only a few Hawkes Parameters need to be inferred, the user can mask the other parameters.
 - Smart initialization of parameters before optimization: the user can choose between `random` (purely random), `moment_matching_max` (moment matching with maximum mode) and `moment_matching_mean` (moment matching with mean mode).
