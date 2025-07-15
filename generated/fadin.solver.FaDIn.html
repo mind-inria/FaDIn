@@ -210,8 +210,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../model.html#fadin">3. FaDIn</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../model.html#kernels">4. Kernels</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../auto_examples/index.html">Examples Gallery</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples Gallery</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_multivariate_fadin.html">FaDIn on simulated 2-d Hawkes processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_univariate_fadin.html">FaDIn on simulated univariate Hawkes processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../auto_examples/plot_unhap.html">UNHaP on simulated univariate Hawkes processes</a></li>
 </ul>
 </li>
@@ -260,7 +260,7 @@
 <h1>fadin.solver.FaDIn<a class="headerlink" href="#fadin-solver-fadin" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="fadin.solver.FaDIn">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fadin.solver.</span></span><span class="sig-name descname"><span class="pre">FaDIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fadin.solver.</span></span><span class="sig-name descname"><span class="pre">FaDIn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define the FaDIn framework for estimated Hawkes processes.</p>
 <p>The framework is detailed in:</p>
 <p>Guillaume Staerman, Cédric Allain, Alexandre Gramfort, Thomas Moreau
@@ -335,6 +335,11 @@ and kernel parameters will be optimized.</p>
 </dd>
 <dt><strong>optim</strong><span class="classifier"><cite>str</cite> in <code class="docutils literal notranslate"><span class="pre">{'RMSprop'</span> <span class="pre">|</span> <span class="pre">'Adam'</span> <span class="pre">|</span> <span class="pre">'GD'}</span></code>, default=’RMSprop’</span></dt><dd><p>The algorithms used to optimize the Hawkes processes parameters.</p>
 </dd>
+<dt><strong>params_optim</strong><span class="classifier">dict, {‘lr’, …}, default=dict()</span></dt><dd><p>Learning rate and parameters of the chosen optimization algorithm.
+Will be passed as arguments to the <cite>torch.optimizer</cite> constructor chosen
+via the <cite>optim</cite> parameter.
+If ‘lr’ is not given, it is set to 1e-3.</p>
+</dd>
 <dt><strong>step_size</strong><span class="classifier"><cite>float</cite>, <cite>default=1e-3</cite></span></dt><dd><p>Learning rate of the chosen optimization algorithm.</p>
 </dd>
 <dt><strong>max_iter</strong><span class="classifier"><cite>int</cite>, <cite>default=1000</cite></span></dt><dd><p>Maximum number of iterations during fit.</p>
@@ -344,8 +349,6 @@ that is the computational bottleneck of FaDIn. if ztzG_approx is true,
 ztzG is approximated with Toeplitz matrix not taking into account
 edge effects.</p>
 </dd>
-<dt><strong>log</strong><span class="classifier"><cite>boolean</cite>, <cite>default=False</cite></span></dt><dd><p>Record the loss values during the optimization.</p>
-</dd>
 <dt><strong>grad_kernel</strong><span class="classifier"><cite>None</cite> or <cite>callable</cite>, default=None</span></dt><dd><p>If kernel in <code class="docutils literal notranslate"><span class="pre">{'raised_cosine'|</span> <span class="pre">'truncated_gaussian'</span> <span class="pre">|</span>
 <span class="pre">'truncated_exponential'}</span></code> the gradient function is implemented.
 If kernel is custom, the custom gradient must be given.</p>
@@ -354,19 +357,31 @@ If kernel is custom, the custom gradient must be given.</p>
 criterion is below it). If not reached the solver does ‘max_iter’
 iterations.</p>
 </dd>
+<dt><strong>random_state</strong><span class="classifier"><cite>int</cite>, <cite>RandomState</cite> instance or <cite>None</cite>, <cite>default=None</cite></span></dt><dd><p>Set the torch seed to ‘random_state’.
+If set to <cite>None</cite>, torch seed will be set to 0.</p>
+</dd>
 </dl>
 </dd>
 <dt class="field-even">Attributes<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
-<dt><strong>param_baseline</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim)</span></dt><dd><p>Baseline parameter of the Hawkes process.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">baseline_</span></code><span class="classifier"><cite>tensor</cite>, shape (n_dim,)</span></dt><dd><p>Return the fitted baseline parameter of the Hawkes process.</p>
 </dd>
-<dt><strong>param_alpha</strong><span class="classifier"><cite>tensor</cite>, shape (n_dim, n_dim)</span></dt><dd><p>Weight parameter of the Hawkes process.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_</span></code><span class="classifier"><cite>tensor</cite>, shape (n_dim, n_dim)</span></dt><dd><p>Return the fitted alpha parameter of the Hawkes process.</p>
 </dd>
-<dt><strong>param_kernel</strong><span class="classifier"><cite>list</cite> of <cite>tensor</cite></span></dt><dd><p>list containing tensor array of kernels parameters.
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_</span></code><span class="classifier"><cite>list</cite> of <cite>tensor</cite></span></dt><dd><p>Return the fitted kernel parameters of the Hawkes process.</p>
+</dd>
+<dt><strong>param_baseline_</strong><span class="classifier"><cite>tensor</cite>, shape (max_iter, n_dim)</span></dt><dd><p>Baseline parameter of the Hawkes process for each fit iteration.</p>
+</dd>
+<dt><strong>param_baseline_noise_</strong><span class="classifier"><cite>tensor</cite>, shape (max_iter, n_dim)</span></dt><dd><p>Baseline parameter of the Hawkes process for each fit iteration.</p>
+</dd>
+<dt><strong>param_alpha_</strong><span class="classifier"><cite>tensor</cite>, shape (max_iter, n_dim, n_dim)</span></dt><dd><p>Weight parameter of the Hawkes process for each fit iteration.</p>
+</dd>
+<dt><strong>param_kernel_</strong><span class="classifier"><cite>list</cite> of <cite>tensor</cite></span></dt><dd><p>list containing tensor array of kernels parameters for each fit
+iteration.
 The size of the list varies depending the number of
 parameters. The shape of each tensor is <cite>(n_dim, n_dim)</cite>.</p>
 </dd>
-<dt><strong>v_loss</strong><span class="classifier"><cite>tensor</cite>, shape (n_iter)</span></dt><dd><p>If <cite>log=True</cite>, compute the loss accross iterations.
+<dt><strong>v_loss_</strong><span class="classifier"><cite>tensor</cite>, shape (n_iter)</span></dt><dd><p>loss accross iterations.
 If no early stopping, <cite>n_iter</cite> is equal to <cite>max_iter</cite>.</p>
 </dd>
 </dl>
@@ -387,7 +402,7 @@ If no early stopping, <cite>n_iter</cite> is equal to <cite>max_iter</cite>.</p>
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="fadin.solver.FaDIn.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'random'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'RMSprop'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ztzG_approx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fadin.solver.FaDIn.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
@@ -410,7 +425,16 @@ If no early stopping, <cite>n_iter</cite> is equal to <cite>max_iter</cite>.</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">precomputations</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_</span></code></p></td>
+<td><p>Return the fitted alpha parameter of the Hawkes process.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">baseline_</span></code></p></td>
+<td><p>Return the fitted baseline parameter of the Hawkes process.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">kernel_</span></code></p></td>
+<td><p>Return the fitted kernel parameters of the Hawkes process.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">precomputations</span></code></p></td>
 <td><p></p></td>
 </tr>
 </tbody>

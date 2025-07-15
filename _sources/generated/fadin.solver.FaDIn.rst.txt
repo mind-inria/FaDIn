@@ -25,6 +25,9 @@
 
    .. autosummary::
    
+      ~FaDIn.alpha_
+      ~FaDIn.baseline_
+      ~FaDIn.kernel_
       ~FaDIn.precomputations
    
    
