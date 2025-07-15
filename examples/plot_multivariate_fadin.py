@@ -49,8 +49,8 @@ kernel = 'expon'
 events = simu_hawkes_cluster(T, baseline, alpha, kernel)
 
 ###############################################################################
-# Here, we apply FaDIn.
-
+# Here, we initiate FaDIn and fit it to the simulated data.
+print("Fitting FaDIn solver...")
 solver = FaDIn(
     n_dim=n_dim,
     kernel="truncated_exponential",
@@ -60,25 +60,20 @@ solver = FaDIn(
     max_iter=10000
 )
 solver.fit(events, T)
+print("FaDIn solver fitted.")
+# We can now access the estimated parameters of the model.
 
-# We average on the 10 last values of the optimization.
-
-estimated_baseline = solver.param_baseline[-10:].mean(0)
-estimated_alpha = solver.param_alpha[-10:].mean(0)
-param_kernel = [solver.param_kernel[0][-10:].mean(0)]
-
-print('Estimated baseline is:', estimated_baseline)
-print('Estimated alpha is:', estimated_alpha)
+print('Estimated baseline is:', solver.baseline_)
+print('Estimated alpha is:', solver.alpha_)
 print('Estimated parameters of the truncated Exponential kernel is:',
-      param_kernel[0])
+      solver.kernel_)
 
 ###############################################################################
 # Here, we plot the values of the estimated kernels with FaDIn.
 
 kernel = DiscreteKernelFiniteSupport(dt, n_dim, kernel='truncated_exponential',
                                      kernel_length=kernel_length)
-kernel_values = kernel.kernel_eval(param_kernel,
-                                   discretization)
+kernel_values = kernel.kernel_eval(solver.kernel_, discretization)
 
 plt.subplots(figsize=(12, 8))
 for i in range(n_dim):

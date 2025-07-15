@@ -41,6 +41,17 @@ test = [
     "pytest>=7.2",
 ]
 
+experiments = [
+    "dicodile>=0.3",
+    "vitaldb>=1.4.5",
+    "alphacsc>=0.4.0",
+    "pyhrv>=0.4.1",
+    "biosppy>=2.2.3",
+    "neurokit2>=0.2.7",
+    "plotly>=6.2.0",
+    "peakutils>=1.3.5",
+]
+
 doc = [
     "furo",
     "matplotlib",

@@ -37,8 +37,8 @@ discretization = torch.linspace(0, kernel_length, L)
 # Here, we set the parameters of a Hawkes process with an Exponential(1) distribution.
 
 baseline = np.array([.4])
-alpha = np.array([[0.8]])
-beta = 2.
+alpha = np.array([[0.9]])
+beta = 0.8
 ###############################################################################
 # Here, we simulate the data.
 
@@ -47,6 +47,17 @@ beta = 2.
 kernel = 'expon'
 events = simu_hawkes_cluster(T, baseline, alpha, kernel,
                              params_kernel={'scale': 1 / beta})
+
+###############################################################################
+# Let's take a closer look at the events
+print('Type of events object', type(events))
+# events is a list of numpy arrays, one for each dimension
+print('Number of events', len(events[0]))
+print('First 10 events timestamps', events[0][:10])
+# For each event, its occurence time (timestamp) is stored in the numpy array.
+
+# `events`` is a list. Its elements are numpy arrays containing the timestamps
+# of the events. This is the expected data format for FaDIn.
 
 ###############################################################################
 # Here, we apply FaDIn.
@@ -60,15 +71,12 @@ solver = FaDIn(n_dim=1,
                )
 solver.fit(events, T)
 
-# We average on the 10 last values of the optimization.
+###############################################################################
+# Here, we print the estimated parameters of the Hawkes process.
 
-estimated_baseline = solver.param_baseline[-10:].mean().item()
-estimated_alpha = solver.param_alpha[-10:].mean().item()
-param_kernel = [solver.param_kernel[0][-10:].mean().item()]
-
-print('Estimated baseline is:', estimated_baseline)
-print('Estimated alpha is:', estimated_alpha)
-print('Estimated beta parameter of the exponential kernel is:', param_kernel[0])
+print('Estimated baseline is:', solver.baseline_.item())
+print('Estimated alpha is:', solver.alpha_.item())
+print('Estimated beta parameter of the exponential kernel is:', solver.kernel_)
 
 
 ###############################################################################
@@ -76,8 +84,7 @@ print('Estimated beta parameter of the exponential kernel is:', param_kernel[0])
 
 kernel = DiscreteKernelFiniteSupport(dt, n_dim, kernel='truncated_exponential',
                                      kernel_length=kernel_length)
-kernel_values = kernel.kernel_eval([torch.Tensor([param_kernel])],
-                                   discretization)
+kernel_values = kernel.kernel_eval(solver.kernel_, discretization)
 
 plt.plot(discretization[1:], kernel_values.squeeze()[1:]/kernel_length,
          label='FaDIn\' estimated kernel')

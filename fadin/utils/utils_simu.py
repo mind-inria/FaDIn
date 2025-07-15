@@ -4,10 +4,16 @@ from scipy.interpolate import interp1d
 from scipy.integrate import simpson
 import scipy.stats as stats
 
+from fadin.utils.functions import identity, linear_zero_one
+from fadin.utils.functions import reverse_linear_zero_one, truncated_gaussian
+
 
 def find_max(intensity_function, duration):
     """Find the maximum intensity of a function."""
-    res = minimize_scalar(lambda x: -intensity_function(x), bounds=(0, duration))
+    res = minimize_scalar(
+        lambda x: -intensity_function(x),
+        bounds=(0, duration)
+    )
     return -res.fun
 
 
@@ -29,7 +35,8 @@ def check_random_state(seed):
 
 
 def kernel_norm(x, kernel, kernel_length, params_kernel=dict()):
-    "Normalize the given kernel on a finite support between 0 and kernel_length"
+    """Normalize the given kernel on a finite support between 0 and
+    kernel_length"""
     cdf_normalization = kernel.cdf(kernel_length, **params_kernel) \
         - kernel.cdf(0, **params_kernel)
     return kernel.pdf(x, **params_kernel) / cdf_normalization
@@ -37,7 +44,8 @@ def kernel_norm(x, kernel, kernel_length, params_kernel=dict()):
 
 def compute_intensity(events, s, baseline, alpha, kernel,
                       kernel_length, params_kernel=dict()):
-    "Compute the intensity function at events s giving the history of events"
+    """Compute the intensity function at events s giving the history of events
+    """
     diff = []
     n_dim = len(events)
     for i in range(n_dim):
@@ -49,7 +57,9 @@ def compute_intensity(events, s, baseline, alpha, kernel,
         for j in range(n_dim):
             # param du kernel ij to extend
             contrib_dims[i] += alpha[i, j] *\
-                kernel_norm(diff[j], kernel, kernel_length, **params_kernel).sum()
+                kernel_norm(
+                    diff[j], kernel, kernel_length, **params_kernel
+                ).sum()
     intens = baseline + contrib_dims
     return np.array(intens)
 
@@ -119,7 +129,8 @@ class custom_distribution(stats.rv_continuous):
 def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
     """ Simulate univariate Poisson processes on [0, end_time] with
     the Ogata's modified thinning algorithm.
-    If the intensity is a numerical value, simulate a Homegenous Poisson Process,
+    If the intensity is a numerical value, simulate a Homegenous Poisson
+    Process.
     If the intensity is a function, simulate an Inhomogenous Poisson Process.
 
     Parameters
@@ -167,11 +178,13 @@ def simu_poisson(end_time, intensity, upper_bound=None, random_state=None):
     return events
 
 
-def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None):
+def simu_multi_poisson(end_time, intensity, upper_bound=None,
+                       random_state=None):
     """Simulate multivariate Poisson processes on [0, end_time] with
-    the Ogata's modified thinning algorithm by superposition of univariate processes.
-    If the intensity is a numerical value, simulate a Homegenous Poisson Process,
-    If the intensity is a function, simulate an Inhomogenous Poisson Process.
+    the Ogata's modified thinning algorithm by superposition of univariate
+    processes. If the intensity is a numerical value, simulate a Homegenous
+    Poisson Process. If the intensity is a function, simulate an
+    Inhomogenous Poisson Process.
 
     Parameters
     ----------
@@ -227,16 +240,17 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None, random_state=None)
 def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
                         params_kernel=dict(), kernel_length=None,
                         upper_bound=None, random_state=None):
-    """ Simulate a multivariate Hawkes process following an immigration-birth procedure.
-        Edge effects may be reduced according to the second references below.
+    """ Simulate a multivariate Hawkes process following an immigration-birth
+    procedure. Edge effects may be reduced according to the second
+    references below.
 
     References:
 
-    Møller, J., & Rasmussen, J. G. (2006). Approximate simulation of Hawkes processes.
-    Methodology and Computing in Applied Probability, 8, 53-64.
+    Møller, J., & Rasmussen, J. G. (2006). Approximate simulation of Hawkes
+    processes. Methodology and Computing in Applied Probability, 8, 53-64.
 
-    Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes processes.
-    Advances in applied probability, 37(3), 629-646.
+    Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes
+    processes. Advances in applied probability, 37(3), 629-646.
 
     Parameters
     ----------
@@ -251,7 +265,8 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
 
     kernel: str or callable
         The choice of the kernel for the simulation.
-        String kernel available are probability distribution from scipy.stats module.
+        String kernel available are probability distribution from scipy.stats
+        module.
         A custom kernel can be implemented with the form kernel(x, **params).
 
     params_kernel: dict
@@ -299,7 +314,11 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
                 nij = Dk[i][j].sum()
                 C[i][j] = np.repeat(Ck[j], repeats=Dk[i][j])
                 Eij = custom_density(
-                    kernel, params_kernel, size=nij, kernel_length=kernel_length)
+                    kernel,
+                    params_kernel,
+                    size=nij,
+                    kernel_length=kernel_length
+                )
                 Fij = C[i][j] + Eij
                 Fi.append(Fij)
                 s += Fij.shape[0]
@@ -407,8 +426,10 @@ def simu_hawkes_thinning(end_time, baseline, alpha, kernel,
 
 def simu_marked_hawkes_cluster(end_time, baseline, alpha, time_kernel, marks_kernel,
                                marks_density, params_time_kernel=dict(),
-                               params_marks_kernel=dict(), params_marks_density=dict(),
-                               time_kernel_length=None, marks_kernel_length=None,
+                               params_marks_kernel=dict(),
+                               params_marks_density=dict(),
+                               time_kernel_length=None,
+                               marks_kernel_length=None,
                                random_state=None):
     """ Simulate a multivariate marked Hawkes process following
         an immigration-birth procedure.
@@ -510,7 +531,9 @@ def simu_marked_hawkes_cluster(end_time, baseline, alpha, time_kernel, marks_ker
 
                 nij = induced_ev[i][j].sum()
 
-                time_ev[i][j] = np.repeat(time_ev_k[j], repeats=induced_ev[i][j])
+                time_ev[i][j] = np.repeat(
+                    time_ev_k[j], repeats=induced_ev[i][j]
+                )
 
                 inter_arrival_ij = custom_density(
                     time_kernel, params_time_kernel, size=nij,
@@ -518,14 +541,11 @@ def simu_marked_hawkes_cluster(end_time, baseline, alpha, time_kernel, marks_ker
 
                 sim_ev_ij = time_ev[i][j] + inter_arrival_ij
                 sim_ev_i.append(sim_ev_ij)
-                # sim_marks_ij = mark_distribution.rvs(**params_marks_density, size=nij)
 
                 # custom distrib on mark density
                 sim_marks_ij = custom_density(
                     marks_density, params_marks_density, size=nij,
                     kernel_length=marks_kernel_length)
-
-                # sim_marks_ij = marksij / marksij.max()
 
                 assert (sim_marks_ij > 1).sum() == 0
                 sim_marks_i.append(sim_marks_ij)
@@ -565,3 +585,102 @@ def simu_marked_hawkes_cluster(end_time, baseline, alpha, time_kernel, marks_ker
         it += 1
 
     return events, labels
+
+
+def simulate_marked_data(baseline, baseline_noise, alpha, end_time, mu,
+                         sigma, seed=0):
+    """ Simulate a marked Hawkes process with noise.
+
+    The marked Hawkes process has a truncated_gaussian kernel. The marks
+    densities are `linear_zero_ones` for the Hawkes process and
+    `reverse_linear_zero_ones` for the noisy Poisson process.
+    Parameters
+    ----------
+    baseline : array of float of size (n_dim,)
+        Baseline parameter of the Hawkes process.
+    baseline_noise : float
+        Baseline parameter of the noisy Poisson process.
+    alpha : array of float of size (n_dim, n_dim)
+        Weight parameter associated to the kernel function.
+    end_time : int | float
+        Duration of the event time segment.
+    mu : float
+        Mean of the truncated Gaussian kernel.
+    sigma : float
+        Standard deviation of the truncated Gaussian kernel.
+    seed : int, default=0
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    events_cat : list of arrays
+        The timestamps and the marks of the point process' events.
+        Timestamps are first coordinate.
+    noisy_marks : list of arrays
+        The marks of the noisy Poisson process.
+    true_rho : list of arrays
+        The labels of the events, where 0 indicates noise and 1 indicates
+        marked Hawkes events.
+    """
+    n_dim = len(baseline)
+
+    marks_kernel = identity
+    marks_density = linear_zero_one
+    time_kernel = truncated_gaussian
+
+    params_marks_density = dict()
+    params_marks_kernel = dict(slope=1.2)
+    params_time_kernel = dict(mu=mu, sigma=sigma)
+
+    marked_events, _ = simu_marked_hawkes_cluster(
+        end_time,
+        baseline,
+        alpha,
+        time_kernel,
+        marks_kernel,
+        marks_density,
+        params_marks_kernel=params_marks_kernel,
+        params_marks_density=params_marks_density,
+        time_kernel_length=None,
+        marks_kernel_length=None,
+        params_time_kernel=params_time_kernel,
+        random_state=seed,
+    )
+
+    noisy_events_ = simu_multi_poisson(end_time, [baseline_noise])
+
+    random_marks = [
+        np.random.rand(noisy_events_[i].shape[0]) for i in range(n_dim)
+    ]
+    noisy_marks = [
+        custom_density(
+            reverse_linear_zero_one,
+            dict(),
+            size=noisy_events_[i].shape[0],
+            kernel_length=1.0,
+        )
+        for i in range(n_dim)
+    ]
+    noisy_events = [
+        np.concatenate(
+            (noisy_events_[i].reshape(-1, 1), random_marks[i].reshape(-1, 1)),
+            axis=1
+        )
+        for i in range(n_dim)
+    ]
+
+    events = [
+        np.concatenate((noisy_events[i], marked_events[i]), axis=0)
+        for i in range(n_dim)
+    ]
+
+    events_cat = [events[i][events[i][:, 0].argsort()] for i in range(n_dim)]
+
+    labels = [
+        np.zeros(marked_events[i].shape[0] + noisy_events_[i].shape[0])
+        for i in range(n_dim)
+    ]
+    labels[0][-marked_events[0].shape[0]:] = 1.0
+    true_rho = [labels[i][events[i][:, 0].argsort()] for i in range(n_dim)]
+
+    return events_cat, noisy_marks, true_rho

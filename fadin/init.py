@@ -220,8 +220,8 @@ def momentmatching_fadin(solver, events, n_ground_events, end_time,
     return baseline, alpha, kernel_params_init
 
 
-def init_hawkes_params_unhap(solver, init, events, n_ground_events,
-                             end_time):
+def init_hawkes_params_unhap(solver, init, events, events_grid,
+                             n_ground_events, end_time):
     """
     Computes the initial Hawkes parameters for the UNHaP solver.
 
@@ -240,6 +240,9 @@ def init_hawkes_params_unhap(solver, init, events, n_ground_events,
         'alpha' and 'kernel'.
     events: list of array of size number of timestamps,
         list size is self.n_dim.
+    events_grid: list of array of size number of timestamps,
+        list size is self.n_dim.
+        Events projected on the time grid.
     n_ground_events : torch.tensor
         Number of ground events for each dimension
     end_time: float
@@ -268,6 +271,7 @@ def init_hawkes_params_unhap(solver, init, events, n_ground_events,
         baseline, baseline_noise, alpha, kernel_params_init = momentmatching_unhap(
             solver,
             events,
+            events_grid,
             n_ground_events,
             end_time,
             mm_mode
@@ -312,10 +316,9 @@ def momentmatching_unhap(solver, events, events_grid, n_ground_events,
     alpha = torch.ones(solver.n_dim, solver.n_dim) / (solver.n_dim + 2)
 
     # Kernel parameters init
-    if solver.optimize_kernel:
-        kernel_params_init = momentmatching_kernel(
-            solver, events, events_grid, n_ground_events, plot_delta, mode
-        )
+    kernel_params_init = momentmatching_kernel(
+        solver, events, n_ground_events, plot_delta, mode
+    )
     return baseline, baseline_noise, alpha, kernel_params_init
 
 

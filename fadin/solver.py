@@ -88,6 +88,12 @@ class FaDIn(object):
     optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
         The algorithms used to optimize the Hawkes processes parameters.
 
+    params_optim : dict, {'lr', ...}, default=dict()
+        Learning rate and parameters of the chosen optimization algorithm.
+        Will be passed as arguments to the `torch.optimizer` constructor chosen
+        via the `optim` parameter.
+        If 'lr' is not given, it is set to 1e-3.
+
     step_size : `float`, `default=1e-3`
         Learning rate of the chosen optimization algorithm.
 
@@ -100,9 +106,6 @@ class FaDIn(object):
         ztzG is approximated with Toeplitz matrix not taking into account
         edge effects.
 
-    log : `boolean`, `default=False`
-        Record the loss values during the optimization.
-
     grad_kernel : `None` or `callable`, default=None
         If kernel in ``{'raised_cosine'| 'truncated_gaussian' |
         'truncated_exponential'}`` the gradient function is implemented.
@@ -113,21 +116,33 @@ class FaDIn(object):
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
+    random_state : `int`, `RandomState` instance or `None`, `default=None`
+        Set the torch seed to 'random_state'.
+        If set to `None`, torch seed will be set to 0.
+
     Attributes
     ----------
-    param_baseline : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
 
-    param_alpha : `tensor`, shape (n_dim, n_dim)
-        Weight parameter of the Hawkes process.
+    baseline_ : `tensor`, shape (n_dim,)
+        Final baseline parameter of the Hawkes process after fitting.
+    alpha_ : `tensor`, shape (n_dim, n_dim)
+        Final weight parameter of the Hawkes process kernel after fitting.
+    kernel_ : `list` of `tensor`
+        Final kernels parameters values after fitting.
 
-    param_kernel : `list` of `tensor`
-        list containing tensor array of kernels parameters.
+    param_baseline_ : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+    param_baseline_noise_ : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+    param_alpha_ : `tensor`, shape (max_iter, n_dim, n_dim)
+        Weight parameter of the Hawkes process for each fit iteration.
+    param_kernel_ : `list` of `tensor`
+        list containing tensor array of kernels parameters for each fit
+        iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
-
-    v_loss : `tensor`, shape (n_iter)
-        If `log=True`, compute the loss accross iterations.
+    v_loss_ : `tensor`, shape (n_iter)
+        loss accross iterations.
         If no early stopping, `n_iter` is equal to `max_iter`.
     """
     compute_gradient = staticmethod(compute_gradient_fadin)
@@ -136,8 +151,7 @@ class FaDIn(object):
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, ztzG_approx=True,
-                 log=False, grad_kernel=None,
-                 tol=10e-5, random_state=None):
+                 grad_kernel=None, tol=10e-5, random_state=None):
 
         # Discretization parameters
         self.delta = delta
@@ -146,10 +160,10 @@ class FaDIn(object):
         self.ztzG_approx = ztzG_approx
 
         # Optimizer parameters
+        self.fitted = False
         self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
-        self.log = log
         self.tol = tol
         self.n_dim = n_dim
         self.kernel_model = DiscreteKernelFiniteSupport(
@@ -207,15 +221,16 @@ class FaDIn(object):
 
         Parameters
         ----------
-        events : list of array of size number of timestamps,
-        list size is self.n_dim.
+        events : list of `self.n_dim` numpy arrays.
+        One numpy array = one dimension. One numpy array
+        has shape (n_events, 1), where n_events is the number of events in this
+        dimension. The timestamp of each event is stored.
 
         end_time : int
             The end time of the Hawkes process.
 
         Returns
         -------
-        TODO: attributes
         self : object
             Fitted parameters.
         """
@@ -228,7 +243,8 @@ class FaDIn(object):
         print('number of events is:', n_ground_events)
         n_ground_events = torch.tensor(n_ground_events)
         # Initialize Hawkes parameters
-        self.params_intens = init_hawkes_params_fadin(
+        # _params_intens: [baseline, alpha, kernel_params]
+        self._params_intens = init_hawkes_params_fadin(
             self,
             self.init,
             events,
@@ -238,7 +254,7 @@ class FaDIn(object):
 
         # Initialize optimizer
         self.opt = optimizer_fadin(
-            self.params_intens,
+            self._params_intens,
             self.params_solver,
             solver=self.solver
         )
@@ -257,18 +273,23 @@ class FaDIn(object):
         ####################################################
         self.v_loss = torch.zeros(self.max_iter)
 
-        self.param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
-        self.param_alpha = torch.zeros(self.max_iter + 1,
-                                       self.n_dim,
-                                       self.n_dim)
-        self.param_kernel = torch.zeros(self.n_kernel_params,
-                                        self.max_iter + 1,
-                                        self.n_dim, self.n_dim)
-        self.param_baseline[0] = self.params_intens[0].detach()
-        self.param_alpha[0] = self.params_intens[1].detach()
+        self.param_baseline_ = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_alpha_ = torch.zeros(
+            self.max_iter + 1,
+            self.n_dim,
+            self.n_dim
+        )
+        self.param_kernel_ = torch.zeros(
+            self.n_kernel_params,
+            self.max_iter + 1,
+            self.n_dim,
+            self.n_dim
+        )
+        self.param_baseline_[0] = self._params_intens[0].detach()
+        self.param_alpha_[0] = self._params_intens[1].detach()
 
         for i in range(self.n_kernel_params):
-            self.param_kernel[i, 0] = self.params_intens[2 + i].detach()
+            self.param_kernel_[i, 0] = self._params_intens[2 + i].detach()
 
         ####################################################
         start = time.time()
@@ -284,45 +305,70 @@ class FaDIn(object):
             self.opt.step()
 
             # Save parameters
-            self.params_intens[0].data = self.params_intens[0].data.clip(0) * \
+            self._params_intens[0].data = self._params_intens[0].data.clip(0) * \
                 self.baseline_mask
-            self.params_intens[1].data = self.params_intens[1].data.clip(0) * \
+            self._params_intens[1].data = self._params_intens[1].data.clip(0) * \
                 self.alpha_mask
-            self.param_baseline[i + 1] = self.params_intens[0].detach()
-            self.param_alpha[i + 1] = self.params_intens[1].detach()
+            self.param_baseline_[i + 1] = self._params_intens[0].detach()
+            self.param_alpha_[i + 1] = self._params_intens[1].detach()
             for j in range(self.n_kernel_params):
-                self.params_intens[2 + j].data = \
-                    self.params_intens[2 + j].data.clip(0)
-                self.param_kernel[j, i + 1] = \
-                    self.params_intens[2 + j].detach()
+                self._params_intens[2 + j].data = \
+                    self._params_intens[2 + j].data.clip(0)
+                self.param_kernel_[j, i + 1] = \
+                    self._params_intens[2 + j].detach()
 
             # Early stopping
             if i % 100 == 0:
-                error_b = torch.abs(self.param_baseline[i + 1] -
-                                    self.param_baseline[i]).max()
-                error_al = torch.abs(self.param_alpha[i + 1] -
-                                     self.param_alpha[i]).max()
-                error_k = torch.abs(self.param_kernel[0, i + 1] -
-                                    self.param_kernel[0, i]).max()
+                error_b = torch.abs(self.param_baseline_[i + 1] -
+                                    self.param_baseline_[i]).max()
+                error_al = torch.abs(self.param_alpha_[i + 1] -
+                                     self.param_alpha_[i]).max()
+                error_k = torch.abs(self.param_kernel_[0, i + 1] -
+                                    self.param_kernel_[0, i]).max()
 
                 if error_b < self.tol and error_al < self.tol \
                    and error_k < self.tol:
                     print('early stopping at iteration:', i)
-                    self.param_baseline = self.param_baseline[:i + 1]
-                    self.param_alpha = self.param_alpha[:i + 1]
+                    self.param_baseline_ = self.param_baseline_[:i + 1]
+                    self.param_alpha_ = self.param_alpha_[:i + 1]
                     for j in range(self.n_kernel_params):
-                        self.param_kernel[j] = self.param_kernel[j, i + 1]
+                        self.param_kernel_[j] = self.param_kernel_[j, i + 1]
                     break
         print('iterations in ', time.time() - start)
-
+        self.fitted = True
         return self
+
+    @property
+    def alpha_(self):
+        """Return the fitted alpha parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing alpha_"
+        return self.param_alpha_[-1]
+
+    @property
+    def baseline_(self):
+        """Return the fitted baseline parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing baseline_"
+        return self.param_baseline_[-1]
+
+    @property
+    def kernel_(self):
+        """Return the fitted kernel parameters of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing kernel_"
+        return [self.param_kernel_[j, -1] for j in range(self.n_kernel_params)]
 
 
 class UNHaP(object):
     """Define the UNHaP framework for estimated mixture of Hawkes and
     Poisson processes.
 
-    Unhap minimizes the discretized L2 mixture loss of Hawkes and Poisson processes.
+    The framework is detailed in:
+
+    Virginie Loison, Guillaume Staerman, Thomas Moreau
+    UNHaP: Unmixing Noise from Hawkes Processes
+    https://proceedings.mlr.press/v258/loison25a.html
+
+    UNHaP minimizes the discretized L2 mixture loss of a mixture of Hawkes and
+    Poisson processes.
 
     Parameters
     ----------
@@ -347,18 +393,25 @@ class UNHaP(object):
         - 'kernel': `list` of tensors of shape (n_dim, n_dim):
             Initial kernel parameters.
 
-    baseline_mask : `tensor` of shape (n_dim,), or `None`
-        Tensor of same shape as the baseline vector, with values in (0, 1).
-        `baseline` coordinates where `baseline_mask` is equal to 0
-        will stay constant equal to zero and not be optimized.
-        If set to `None`, all coordinates of baseline will be optimized.
-
-    alpha_mask : `tensor` of shape (n_dim, n_dim), or `None`
-        Tensor of same shape as the `alpha` tensor, with values in (0, 1).
-        `alpha` coordinates and kernel parameters where `alpha_mask` = 0
-        will not be optimized.
-        If set to `None`, all coordinates of alpha will be optimized,
-        and all kernel parameters will be optimized if optimize_kernel=`True`.
+    optim_mask: `dict` of `tensor` or `None`, default=`None`.
+        Dictionary containing the masks for the optimization of the parameters
+        of the Hawkes process. If set to `None`, all parameters are optimized.
+        The dictionary must contain the following keys:
+        - 'baseline': `tensor` of shape (n_dim,), or `None`.
+            Tensor of same shape as the baseline vector, with values in (0, 1).
+            `baseline` coordinates where then tensor is equal to 0
+            will not be optimized. If set to `None`, all coordinates of
+            baseline will be optimized.
+        - 'baseline_noise': `tensor` of shape (n_dim,), or `None`.
+            Tensor of same shape as the noise baseline vector, with values in
+            (0, 1). `baseline_noise` coordinates where then tensor is equal
+            to 0 will not be optimized. If set to `None`, all coordinates of
+            baseline_noise will be optimized.
+        - 'alpha': `tensor` of shape (n_dim, n_dim), or `None`.
+            Tensor of same shape as the `alpha` tensor, with values in (0, 1).
+            `alpha` coordinates and kernel parameters where `alpha_mask` = 0
+            will not be optimized. If set to `None`, all coordinates of alpha
+            and kernel parameters will be optimized.
 
     kernel_length : `float`, `default=1.`
         Length of kernels in the Hawkes process.
@@ -369,11 +422,17 @@ class UNHaP(object):
     optim : `str` in ``{'RMSprop' | 'Adam' | 'GD'}``, default='RMSprop'
         The algorithm used to optimize the Hawkes processes parameters.
 
-    params_optim : dict, {'lr', ...}
+    params_optim : dict, {'lr', ...}, default=dict()
         Learning rate and parameters of the chosen optimization algorithm.
+        Will be passed as arguments to the `torch.optimizer` constructor chosen
+        via the `optim` parameter.
+        If 'lr' is not given, it is set to 1e-3.
 
     max_iter : `int`, `default=2000`
         Maximum number of iterations during fit.
+
+    batch_rho : `int`
+        Number of FaDIn iterations between latent variables rho updates.
 
     ztzG_approx : `boolean`, `default=True`
         If ztzG_approx is false, compute the true ztzG precomputation constant
@@ -381,28 +440,24 @@ class UNHaP(object):
         ztzG is approximated with Toeplitz matrix not taking into account
         edge effects.
 
-    batch_rho : `int`
-        Number of FaDIn iterations between latent variables rho updates.
-
     tol : `float`, `default=1e-5`
         The tolerance of the solver (iterations stop when the stopping
         criterion is below it). If not reached the solver does 'max_iter'
         iterations.
 
     density_hawkes : `str`, `default=linear`
-        Density of the marks of the Hawkes process, in
+        Density of the marks of the Hawkes process events, in
         ``{'linear' | 'uniform'}``.
 
     density_noise : `str`, `default=reverse_linear`
-        Density of the marks of the Hawkes process, in
+        Density of the marks of the spurious events, in
         ``{'reverse_linear' | 'uniform'}``.
 
-    moment_matching: boolean, `default=False`
-        If set to False, baseline, alpha and kernel parameters are randomly
-        chosen. If set to True, baseline, alpha and kernel parameters are
-        chosen using the smart init strategy.
-        The smart init strategy is only implemented
-        for truncated gaussian and raised_cosine kernels.
+    stoc_classif: `boolean`, `default=False`.
+        Whether to add stochasticity in the classification step of the
+        optimization.
+        If set to `True`, the rho parameter is updated stochastically.
+        If set to `False`, the rho parameter is updated deterministically.
 
     random_state : `int`, `RandomState` instance or `None`, `default=None`
         Set the torch seed to 'random_state'.
@@ -410,26 +465,41 @@ class UNHaP(object):
 
     Attributes
     ----------
-    param_baseline : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
 
-    param_baseline_noise : `tensor`, shape (n_dim)
-        Baseline parameter of the Hawkes process.
+    baseline_ : `tensor`, shape (n_dim,)
+        Final baseline parameter of the Hawkes process after fitting.
+    baseline_noise_ : `tensor`, shape (n_dim,)
+        Final baseline noise parameter of the Hawkes process after fitting.
+    alpha_ : `tensor`, shape (n_dim, n_dim)
+        Final weight parameter of the Hawkes process kernel after fitting.
+    kernel_ : `list` of `tensor`
+        Final kernels parameters values after fitting.
+    rho_ : `tensor`, shape (n_dim, n_grid)
+        Final latent variable rho of the mixture model.
 
-    param_alpha : `tensor`, shape (n_dim, n_dim)
-        Weight parameter of the Hawkes process.
-
-    param_kernel : `list` of `tensor`
-        list containing tensor array of kernels parameters.
+    param_baseline_ : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+    param_baseline_noise_ : `tensor`, shape (max_iter, n_dim)
+        Baseline parameter of the Hawkes process for each fit iteration.
+    param_alpha_ : `tensor`, shape (max_iter, n_dim, n_dim)
+        Weight parameter of the Hawkes process for each fit iteration.
+    param_kernel_ : `list` of `tensor`
+        list containing tensor array of kernels parameters for each fit
+        iteration.
         The size of the list varies depending the number of
         parameters. The shape of each tensor is `(n_dim, n_dim)`.
+
+
+    v_loss_ : `tensor`, shape (n_iter)
+        loss accross iterations.
+        If no early stopping, `n_iter` is equal to `max_iter`.
 
     """
     def __init__(self, n_dim, kernel, init='random', optim_mask=None,
                  kernel_length=1, delta=0.01, optim='RMSprop',
                  params_optim=dict(), max_iter=2000, batch_rho=100,
                  ztzG_approx=True, tol=10e-5, density_hawkes='linear',
-                 density_noise='uniform', moment_matching=False,
+                 density_noise='uniform', stoc_classif=False,
                  random_state=None):
 
         # Set discretization parameters
@@ -439,24 +509,30 @@ class UNHaP(object):
         self.ztzG_approx = ztzG_approx
 
         # Set optimizer parameters
+        self.fitted = False
         self.kernel = kernel
         self.solver = optim
         self.max_iter = max_iter
         self.tol = tol
         self.batch_rho = batch_rho
+        self.n_dim = n_dim
+        self.kernel_model = DiscreteKernelFiniteSupport(
+            self.delta,
+            self.n_dim,
+            kernel,
+            self.kernel_length,
+            0
+        )
 
         self.density_hawkes = density_hawkes
         self.density_noise = density_noise
-        self.moment_matching = moment_matching
-
-        # Set model parameters
-        self.n_dim = n_dim
-
-        self.baseline = torch.rand(self.n_dim)
+        self.stoc_classif = stoc_classif
 
         # Set optimization masks
         if optim_mask is None:
-            optim_mask = {'baseline': None, 'baseline_noise': None, 'alpha': None}
+            optim_mask = {
+                'baseline': None, 'baseline_noise': None, 'alpha': None
+            }
         # Set baseline optimization mask
         if optim_mask['baseline'] is None:
             self.baseline_mask = torch.ones([n_dim])
@@ -478,7 +554,6 @@ class UNHaP(object):
             assert optim_mask['alpha'].shape == torch.Size([n_dim, n_dim]), \
                 "Invalid alpha_mask shape, must be (n_dim, n_dim)"
             self.alpha_mask = optim_mask['alpha']
-
         # Initialization option for Hawkes parameters
         s = ['random', 'moment_matching_max', 'moment_matching_mean']
         if isinstance(init, str):
@@ -493,22 +568,6 @@ class UNHaP(object):
                 f"Got {init}."
             )
         self.init = init
-        self.params_intens = init_hawkes_params_unhap(
-            self,
-            self.init,
-            kernel,
-            self.kernel_length,
-            self.n_dim
-        )
-
-        self.kernel_model = DiscreteKernelFiniteSupport(
-            self.delta,
-            self.n_dim,
-            kernel,
-            self.kernel_length,
-            0
-        )
-        self.kernel = kernel
 
         # If the learning rate is not given, fix it to 1e-3
         if 'lr' not in params_optim.keys():
@@ -527,8 +586,10 @@ class UNHaP(object):
 
         Parameters
         ----------
-        events : pandas DataFrame with three columns: timestamps, marks values
-            and type of events.
+        events : list of `self.n_dim` numpy arrays.
+        One numpy array = one dimension. One numpy array
+        has shape (n_events, 2), where n_events is the number of events in this
+        dimension. Each event is stored as (timestamp, mark).
 
         end_time : int
             The end time of the Hawkes process.
@@ -538,7 +599,7 @@ class UNHaP(object):
         self : object
             Fitted parameters.
         """
-        n_grid = int(1 / self.delta) * end_time + 1
+        n_grid = int(1 / self.delta * end_time) + 1
         discretization = torch.linspace(0, self.kernel_length, self.L)
 
         events_grid, marks_grid, marked_events, _ = \
@@ -572,19 +633,24 @@ class UNHaP(object):
         # add rho parameter at the end of params
         self.params_mixture = [self.rho]
 
-        if self.moment_matching:
-            # Smart initialization of solver parameters
-            self.params_intens = init_hawkes_params_unhap(
-                    self, self.init, marked_events, n_ground_events, end_time
-                )
+        # Smart initialization of solver parameters
+        # _params_intens: [baseline, baseline_noise, alpha, kernel_params]
+        self._params_intens = init_hawkes_params_unhap(
+                self,
+                self.init,
+                marked_events,
+                events_grid,
+                n_ground_events,
+                end_time
+            )
 
         self.opt_intens, self.opt_mixture = optimizer_unhap(
-            [self.params_intens, self.params_mixture],
+            [self._params_intens, self.params_mixture],
             self.params_solver,
             solver=self.solver
         )
 
-        self.param_rho = self.params_mixture[0].detach()
+        self.rho_ = self.params_mixture[0].detach()
 
         ####################################################
         # Precomputations
@@ -595,7 +661,7 @@ class UNHaP(object):
         precomputations = compute_constants_unhap(z_tilde,
                                                   marks_grid,
                                                   events_grid,
-                                                  self.param_rho,
+                                                  self.rho_,
                                                   marked_quantities[1],
                                                   self.L)
         print('precomput:', time.time() - start)
@@ -603,22 +669,24 @@ class UNHaP(object):
         ####################################################
         # save results
         ####################################################
-        self.v_loss = torch.zeros(self.max_iter)
+        self.v_loss_ = torch.zeros(self.max_iter)
 
-        self.param_baseline = torch.zeros(self.max_iter + 1, self.n_dim)
-        self.param_baseline_noise = torch.zeros(self.max_iter + 1, self.n_dim)
-        self.param_alpha = torch.zeros(self.max_iter + 1,
-                                       self.n_dim, self.n_dim)
-        self.param_kernel = torch.zeros(self.n_kernel_params,
-                                        self.max_iter + 1,
-                                        self.n_dim, self.n_dim)
-        #  self.param_rho = torch.zeros(self.max_iter + 1, self.n_dim, n_grid)
+        self.param_baseline_ = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_baseline_noise_ = torch.zeros(self.max_iter + 1, self.n_dim)
+        self.param_alpha_ = torch.zeros(
+            self.max_iter + 1, self.n_dim, self.n_dim)
+        self.param_kernel_ = torch.zeros(
+            self.n_kernel_params,
+            self.max_iter + 1,
+            self.n_dim,
+            self.n_dim
+        )
 
-        self.param_baseline[0] = self.params_intens[0].detach()
-        self.param_baseline_noise[0] = self.params_intens[1].detach()
-        self.param_alpha[0] = self.params_intens[2].detach()
+        self.param_baseline_[0] = self._params_intens[0].detach()
+        self.param_baseline_noise_[0] = self._params_intens[1].detach()
+        self.param_alpha_[0] = self._params_intens[2].detach()
         for i in range(self.n_kernel_params):
-            self.param_kernel[i, 0] = self.params_intens[3 + i].detach()
+            self.param_kernel_[i, 0] = self._params_intens[3 + i].detach()
 
         ####################################################
         start = time.time()
@@ -630,7 +698,7 @@ class UNHaP(object):
 
             # Update kernel and grad values
             kernel, grad_eta = self.kernel_model.kernel_and_grad(
-                self.params_intens[3:3 + self.n_kernel_params],
+                self._params_intens[3:3 + self.n_kernel_params],
                 discretization
             )
 
@@ -639,25 +707,25 @@ class UNHaP(object):
             ####################################################
 
             # Update baseline, baseline noise and alpha
-            self.params_intens[0].grad, self.params_intens[1].grad, \
-                self.params_intens[2].grad = compute_base_gradients(
+            self._params_intens[0].grad, self._params_intens[1].grad, \
+                self._params_intens[2].grad = compute_base_gradients(
                     precomputations,
-                    self.params_intens,
+                    self._params_intens,
                     kernel,
                     self.delta,
                     end_time,
-                    self.param_rho,
+                    self.rho_,
                     marked_quantities,
                     n_ground_events
                 )
 
             # Update kernel
             for j in range(self.n_kernel_params):
-                self.params_intens[3 + j].grad = \
+                self._params_intens[3 + j].grad = \
                     get_grad_eta_mixture(
                         precomputations,
-                        self.params_intens[0],
-                        self.params_intens[2],
+                        self._params_intens[0],
+                        self._params_intens[2],
                         kernel,
                         grad_eta[j],
                         self.delta,
@@ -675,7 +743,7 @@ class UNHaP(object):
                     marks_grid,
                     kernel,
                     marked_quantities[0],
-                    self.params_intens,
+                    self._params_intens,
                     self.delta,
                     mask_void,
                     n_ground_events,
@@ -683,32 +751,70 @@ class UNHaP(object):
 
                 self.opt_mixture.step()
 
-                self.params_mixture[0].data = self.params_mixture[0].data.clip(0, 1)
+                self.params_mixture[0].data = \
+                    self.params_mixture[0].data.clip(0, 1)
                 self.params_mixture[0].data[mask_void] = 0.
                 # round the rho
                 z_tilde = marks_grid * torch.round(self.params_mixture[0].data)
                 precomputations = compute_constants_unhap(
                     z_tilde, marks_grid, events_grid,
-                    self.param_rho, marked_quantities[1], self.L)
-
-                self.param_rho = torch.round(self.params_mixture[0].detach())
+                    self.rho_, marked_quantities[1], self.L)
+                if not self.stoc_classif:
+                    # vanilla UNHaP
+                    self.rho_ = torch.round(
+                        self.params_mixture[0].detach()
+                    )
+                else:
+                    # StocUNHaP
+                    random_rho = torch.rand(self.n_dim, n_grid)
+                    self.rho_ = torch.where(
+                        random_rho < self.params_mixture[0].data,
+                        1.,
+                        0.
+                    )
 
             # Save and clip parameters
-            self.params_intens[0].data = self.params_intens[0].data.clip(0) * \
+            self._params_intens[0].data = self._params_intens[0].data.clip(0) * \
                 self.baseline_mask
-            self.params_intens[1].data = self.params_intens[1].data.clip(0)
-            self.params_intens[2].data = self.params_intens[2].data.clip(0) * \
+            self._params_intens[1].data = self._params_intens[1].data.clip(0)
+            self._params_intens[2].data = self._params_intens[2].data.clip(0) * \
                 self.alpha_mask
 
-            self.param_baseline[i+1] = self.params_intens[0].detach()
-            self.param_alpha[i+1] = self.params_intens[2].detach()
-            self.param_baseline_noise[i+1] = self.params_intens[1].detach()
+            self.param_baseline_[i+1] = self._params_intens[0].detach()
+            self.param_alpha_[i+1] = self._params_intens[2].detach()
+            self.param_baseline_noise_[i+1] = self._params_intens[1].detach()
 
             for j in range(self.n_kernel_params):
-                self.params_intens[3+j].data = \
-                    self.params_intens[3+j].data.clip(1e-3)
-                self.param_kernel[j, i+1] = self.params_intens[3+j].detach()
+                self._params_intens[3+j].data = \
+                    self._params_intens[3+j].data.clip(1e-3)
+                self.param_kernel_[j, i+1] = self._params_intens[3+j].detach()
 
         print('iterations in ', time.time() - start)
-
+        # Save final parameters
+        self.fitted = True
         return self
+
+    @property
+    def alpha_(self):
+        """Return the fitted alpha parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing alpha_"
+        return self.param_alpha_[-1]
+
+    @property
+    def baseline_(self):
+        """Return the fitted baseline parameter of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing baseline_"
+        return self.param_baseline_[-1]
+
+    @property
+    def baseline_noise_(self):
+        """Return the fitted baseline noise parameter of the Hawkes process."""
+        assert self.fitted, \
+            "Solver must be fitted before accessing baseline_noise_"
+        return self.param_baseline_noise_[-1]
+
+    @property
+    def kernel_(self):
+        """Return the fitted kernel parameters of the Hawkes process."""
+        assert self.fitted, "Solver must be fitted before accessing kernel_"
+        return [self.param_kernel_[j, -1] for j in range(self.n_kernel_params)]

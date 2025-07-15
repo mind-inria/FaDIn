@@ -166,7 +166,7 @@ def compute_marked_quantities(
         marks_grid_hawkes = events_grid
     else:
         raise NotImplementedError(
-            "this density is not implemented \
+            f"events mark density {density_hawkes} is not implemented \
                                     must be in linear | uniform "
         )
 
@@ -178,7 +178,7 @@ def compute_marked_quantities(
         marks_grid_noise = events_grid
     else:
         raise NotImplementedError(
-            "this density is not implemented \
+            f"noise mark density {density_noise} is not implemented \
                                     must be in reverse_linear | uniform "
         )
 

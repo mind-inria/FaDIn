@@ -86,6 +86,36 @@ def projected_grid(events, grid_step, n_grid):
     return events_grid
 
 
+def projected_grid_marked(events, delta, n_grid):
+    """Project the marked events on the defined grid with their associated mark
+
+    Return a torch tensor with values of the mark on the discretized grid.
+    If several events are projected on the same step of the grid,
+    marks are added together.
+    """
+    n_dim = len(events)
+    size_discret = int(1 / delta)
+    marks_grid = torch.zeros(n_dim, n_grid)
+    events_grid = torch.zeros(n_dim, n_grid)
+    for i in range(n_dim):
+        temp = np.round(events[i][:, 0] / delta) * delta
+        temp2 = np.round(temp * size_discret)
+        idx, a, _, count = np.unique(
+            temp2, return_counts=True, return_index=True, return_inverse=True)
+
+        marks_grid[i, idx.astype(int)] += torch.tensor(events[i][a, 1])
+        events_grid[i, idx.astype(int)] += torch.tensor(count)
+        # sum marked values when more than one events are projected on the
+        # same element of the grid
+        u = np.where(count > 1)[0]
+        for j in range(len(u)):
+            id = u[j]
+            marks_grid[i, int(idx[id])] += torch.tensor(
+                events[i][a[u[j]]+1:a[u[j]]+count[u[j]], 1]).sum()
+
+    return marks_grid, events_grid
+
+
 def smooth_projection_marked(marked_events, delta, n_grid):
     """Project events on the grid and remove duplica in both events grid and
     the original events lists. Return also the marks on the grid."""
