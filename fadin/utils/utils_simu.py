@@ -241,8 +241,8 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
                         params_kernel=dict(), kernel_length=None,
                         upper_bound=None, random_state=None):
     """ Simulate a multivariate Hawkes process following an immigration-birth
-    procedure.
-        Edge effects may be reduced according to the second references below.
+    procedure. Edge effects may be reduced according to the second
+    references below.
 
     References:
 
