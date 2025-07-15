@@ -182,10 +182,9 @@ def simu_multi_poisson(end_time, intensity, upper_bound=None,
                        random_state=None):
     """Simulate multivariate Poisson processes on [0, end_time] with
     the Ogata's modified thinning algorithm by superposition of univariate
-    processes.
-    If the intensity is a numerical value, simulate a Homegenous Poisson
-    Process.
-    If the intensity is a function, simulate an Inhomogenous Poisson Process.
+    processes. If the intensity is a numerical value, simulate a Homegenous
+    Poisson Process. If the intensity is a function, simulate an
+    Inhomogenous Poisson Process.
 
     Parameters
     ----------
