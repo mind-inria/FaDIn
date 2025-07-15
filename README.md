@@ -9,7 +9,7 @@ This package implements FaDIn and UNHaP. FaDIn and UNHaP are inference methods f
 - Computation time is low compared to other methods.
 - Compatible in univariate and multivariate settings.
 - *Flexible:* Various kernel choices are implemented, with classical ones (exponential, truncated Gaussian, raised cosine) and an API to add custom kernels for inference. 
-- Masking: if only a few Hawkes Parameters need to be inferred, the user can mask the other parameters.
+- *Masking:* if some parameters can be fixed,  the user can mask them easily.
 - Smart initialization of parameters before optimization: the user can choose between `random` (purely random), `moment_matching_max` (moment matching with maximum mode) and `moment_matching_mean` (moment matching with mean mode).
 
 
