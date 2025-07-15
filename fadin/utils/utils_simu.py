@@ -248,8 +248,7 @@ def simu_hawkes_cluster(end_time, baseline, alpha, kernel,
     References:
 
     Møller, J., & Rasmussen, J. G. (2006). Approximate simulation of Hawkes
-    processes.
-    Methodology and Computing in Applied Probability, 8, 53-64.
+    processes. Methodology and Computing in Applied Probability, 8, 53-64.
 
     Møller, J., & Rasmussen, J. G. (2005). Perfect simulation of Hawkes
     processes.
